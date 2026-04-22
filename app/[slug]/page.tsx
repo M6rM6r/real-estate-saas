@@ -42,7 +42,6 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   ])
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <PublicAgencyPage
       tenant={tenant}
       profile={profilesSnap.empty ? null : profilesSnap.docs[0].data() as any}
