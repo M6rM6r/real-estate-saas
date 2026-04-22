@@ -318,7 +318,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 <div className="text-center py-8">
                   <p className="text-2xl mb-2">✅</p>
                   <p className="font-semibold text-gray-900">Message sent!</p>
-                  <p className="text-sm text-gray-500 mt-1">We'll be in touch shortly.</p>
+                  <p className="text-sm text-gray-500 mt-1">We&apos;ll be in touch shortly.</p>
                 </div>
               ) : (
                 <form onSubmit={handleLeadSubmit} className="space-y-3">
