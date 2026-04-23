@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     slug: z.string().min(1).max(60).regex(/^[a-z0-9-]+$/),
     email: z.string().email(),
     tempPassword: z.string().min(8),
+    primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#3B82F6'),
   })
 
   let body: z.infer<typeof CreateTenantSchema>
@@ -73,9 +74,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: issues }, { status: 400 })
   }
 
-  const { name, slug, email, tempPassword } = body
+  const { name, slug, email, tempPassword, primary_color } = body
 
   try {
+    // Check slug uniqueness before creating auth user
+    const slugCheck = await adminDb.collection('tenants').where('slug', '==', slug).limit(1).get()
+    if (!slugCheck.empty) {
+      return NextResponse.json({ error: 'Slug already in use' }, { status: 409 })
+    }
+
     // Create Firebase Auth user
     const userRecord = await adminAuth.createUser({ email, password: tempPassword })
 
@@ -86,6 +93,7 @@ export async function POST(request: NextRequest) {
       name,
       slug,
       status: 'active',
+      primary_color,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -107,7 +115,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     })
 
-    return NextResponse.json({ id: tenantId, name, slug, status: 'active' })
+    return NextResponse.json({ id: tenantId, name, slug, status: 'active', primary_color }, { status: 201 })
   } catch (err: unknown) {
     console.error('[POST /api/admin/tenants]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

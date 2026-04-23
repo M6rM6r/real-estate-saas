@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
+import { requireAdmin } from '@/lib/admin-auth'
 
 const DEMO_LOGS = [
   { id: 'demo-log-1', action: 'admin_login_success', targetType: 'admin', performedBy: 'admin@rewrew7.com', createdAt: new Date().toISOString() },
@@ -10,27 +11,33 @@ const DEMO_LOGS = [
   { id: 'demo-log-5', action: 'suspend_tenant', targetType: 'tenant', targetId: 'demo-4', performedBy: 'super_admin', createdAt: new Date(Date.now() - 345600000).toISOString() },
 ]
 
-export async function GET() {
-  // Return demo data if in demo mode
+export async function GET(request: NextRequest) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
+
   if (process.env.DEMO_MODE === 'true') {
     return NextResponse.json(DEMO_LOGS)
   }
 
-  // Check if Firebase is configured
-  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL ||
-      !process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY.includes('YOUR_PRIVATE_KEY_HERE')) {
-    return NextResponse.json({
-      error: 'Firebase Admin credentials not configured',
-      logs: [],
-    }, { status: 503 })
-  }
+  const { searchParams } = new URL(request.url)
+  const tenantId = searchParams.get('tenantId')
+  const action = searchParams.get('action')
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500)
 
-  const snap = await adminDb
-    .collection('admin_logs')
-    .orderBy('createdAt', 'desc')
-    .limit(200)
-    .get()
+  let query = adminDb.collection('admin_logs').orderBy('createdAt', 'desc') as FirebaseFirestore.Query
 
-  const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  if (tenantId) query = query.where('targetId', '==', tenantId)
+  if (action) query = query.where('action', '==', action)
+
+  const snap = await query.limit(limit).get()
+  const logs = snap.docs.map(d => {
+    const data = d.data()
+    return {
+      id: d.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt,
+    }
+  })
+
   return NextResponse.json(logs)
 }

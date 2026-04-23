@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEFAULT: deny everything not explicitly allowed
+    // All data access goes through the Next.js API routes which use the
+    // Firebase Admin SDK (bypasses these rules). These rules protect against
+    // direct client SDK access.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

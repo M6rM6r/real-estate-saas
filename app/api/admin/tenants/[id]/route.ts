@@ -3,6 +3,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
 import { requireAdmin } from '@/lib/admin-auth'
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
+
+  const [tenantDoc, profileDoc, usersSnap, postsSnap] = await Promise.all([
+    adminDb.collection('tenants').doc(params.id).get(),
+    adminDb.collection('tenants').doc(params.id).collection('profiles').doc(params.id).get(),
+    adminDb.collection('users').where('tenantId', '==', params.id).get(),
+    adminDb.collection('posts').where('tenantId', '==', params.id).count().get(),
+  ])
+
+  if (!tenantDoc.exists) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  return NextResponse.json({
+    id: tenantDoc.id,
+    ...tenantDoc.data(),
+    profile: profileDoc.exists ? { id: profileDoc.id, ...profileDoc.data() } : null,
+    agentCount: usersSnap.size,
+    postCount: postsSnap.data().count,
+    users: usersSnap.docs.map(d => ({ id: d.id, email: d.data().email, role: d.data().role })),
+  })
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
