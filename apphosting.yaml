@@ -52,6 +52,23 @@ env:
     secret: ADMIN_JWT_SECRET
     availability:
       - RUNTIME
+  - variable: UPSTASH_REDIS_REST_URL
+    secret: UPSTASH_REDIS_REST_URL
+    availability:
+      - RUNTIME
+  - variable: UPSTASH_REDIS_REST_TOKEN
+    secret: UPSTASH_REDIS_REST_TOKEN
+    availability:
+      - RUNTIME
+  - variable: NEXT_PUBLIC_APP_URL
+    secret: NEXT_PUBLIC_APP_URL
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: ADMIN_JWT_SECRET
+    secret: ADMIN_JWT_SECRET
+    availability:
+      - RUNTIME
   - variable: ADMIN_EMAIL
     secret: ADMIN_EMAIL
     availability:
