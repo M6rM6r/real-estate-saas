@@ -13,57 +13,31 @@ const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.Cartesian
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false })
 
+type AgencyActivity = {
+  id: string
+  name: string
+  slug: string
+  status: string
+  postCount: number
+  createdAt: string
+}
+
 type Metrics = {
   totalAgencies: number
   totalPosts: number
   totalMedia: number
   agenciesPerMonth: { month: string; count: number }[]
   topAgencies: { name: string; slug: string; postCount: number }[]
+  allAgencies: AgencyActivity[]
 }
 
-// Icons
-const BuildingIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" />
-    <path d="M4.5 10.75a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75zM4.5 14.75a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z" />
-  </svg>
-)
 
-const DocumentIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" />
-    <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" />
-  </svg>
-)
 
-const ImageIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .138.112.25.25.25h16.5A.25.25 0 0020 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-  </svg>
-)
-
-const ArrowRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-    <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
-  </svg>
-)
-
-const LogoutIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-    <path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm5.03 4.72a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H3a.75.75 0 010-1.5h8.69l-1.72-1.72a.75.75 0 011.06-1.06l3 3z" clipRule="evenodd" />
-  </svg>
-)
-
-function StatCard({ label, value, icon: Icon, color = '#00ff41' }: { label: string; value: number | string; icon: React.ComponentType; color?: string }) {
+function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="glass-panel glass-panel-hover rounded-xl p-6 group">
-      <div className="flex items-start justify-between mb-4">
-        <p className="text-gray-400 font-mono text-xs uppercase tracking-widest">{label}</p>
-        <div className="w-5 h-5 text-neon-green/50 group-hover:text-neon-green transition-colors flex-shrink-0">
-          <Icon />
-        </div>
-      </div>
-      <p className="text-neon-green font-mono text-4xl font-bold text-glow">{value}</p>
+    <div style={{ background: '#111', border: '1px solid #333', borderRadius: 12, padding: 24 }}>
+      <p style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', marginBottom: 8 }}>{label}</p>
+      <p style={{ color: '#00ff41', fontSize: 36, fontWeight: 'bold', fontFamily: 'monospace' }}>{value}</p>
     </div>
   )
 }
@@ -99,27 +73,19 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-mono font-bold text-neon-green text-glow">SYSTEM DASHBOARD</h1>
           </div>
           <div className="flex gap-4">
-            <Link 
-              href="/admin/tenants" 
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg glass-panel hover:bg-white/5 border-white/10 text-sm font-mono text-gray-300 hover:text-neon-green hover:border-neon-green/40 transition-all shadow-lg"
-            >
-              Tenants
-              <ArrowRightIcon />
+            <Link href="/admin/tenants" style={{ color: '#aaa', fontFamily: 'monospace', fontSize: 13, padding: '8px 16px', border: '1px solid #333', borderRadius: 8 }}>
+              Tenants →
             </Link>
-            <Link 
-              href="/admin/logs" 
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg glass-panel hover:bg-white/5 border-white/10 text-sm font-mono text-gray-300 hover:text-neon-green hover:border-neon-green/40 transition-all shadow-lg"
-            >
-              Audit Log
-              <ArrowRightIcon />
+            <Link href="/admin/logs" style={{ color: '#aaa', fontFamily: 'monospace', fontSize: 13, padding: '8px 16px', border: '1px solid #333', borderRadius: 8 }}>
+              Audit Log →
             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in-up">
-          <StatCard label="Total Agencies" value={metrics.totalAgencies} icon={BuildingIcon} />
-          <StatCard label="Posts (Last 30d)" value={metrics.totalPosts} icon={DocumentIcon} />
-          <StatCard label="Total Media Files" value={metrics.totalMedia} icon={ImageIcon} />
+          <StatCard label="Total Agencies" value={metrics.totalAgencies} />
+          <StatCard label="Posts (Last 30d)" value={metrics.totalPosts} />
+          <StatCard label="Total Media Files" value={metrics.totalMedia} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -162,13 +128,89 @@ export default function AdminDashboard() {
                         <div className="w-1.5 h-1.5 rounded-full bg-neon-green/30 group-hover:bg-neon-green transition-colors" />
                         {agency.name}
                       </td>
-                      <td className="py-3 text-gray-500">{agency.slug}</td>
+                      <td className="py-3 text-gray-500">
+                        <a href={`/${agency.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-neon-green transition-colors">
+                          /{agency.slug} ↗
+                        </a>
+                      </td>
                       <td className="py-3 text-right text-neon-green font-bold">{agency.postCount}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        {/* Agency Activity Monitor */}
+        <div className="glass-panel rounded-xl p-6 mb-8 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+            <h2 className="font-mono text-sm text-gray-400 uppercase tracking-widest">
+              Agency Activity Monitor
+            </h2>
+            <Link
+              href="/admin/tenants"
+              className="font-mono text-xs text-neon-green hover:text-white transition-colors"
+            >
+              Manage Tenants →
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full font-mono text-sm">
+              <thead>
+                <tr className="text-gray-500 text-xs uppercase tracking-wider">
+                  <th className="text-left pb-4 font-medium">Agency</th>
+                  <th className="text-left pb-4 font-medium">Status</th>
+                  <th className="text-right pb-4 font-medium">Posts</th>
+                  <th className="text-left pb-4 font-medium">Joined</th>
+                  <th className="text-right pb-4 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {(metrics.allAgencies ?? metrics.topAgencies?.map(a => ({ ...a, id: a.slug, status: 'active', createdAt: '' }))).map((agency) => (
+                  <tr key={agency.id ?? agency.slug} className="hover:bg-white/5 transition-colors group">
+                    <td className="py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${agency.status === 'active' ? 'bg-neon-green shadow-[0_0_6px_rgba(0,255,65,0.6)]' : 'bg-red-500'}`} />
+                        <span className="text-white">{agency.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${agency.status === 'active' ? 'bg-neon-green/10 text-neon-green' : 'bg-red-500/10 text-red-400'}`}>
+                        {(agency.status ?? 'active').toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="text-neon-green font-bold">{agency.postCount}</span>
+                    </td>
+                    <td className="py-3 text-gray-500 text-xs">
+                      {agency.createdAt ? new Date(agency.createdAt).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <a
+                          href={`/${agency.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded text-xs font-mono border border-white/10 text-gray-400 hover:border-neon-green hover:text-neon-green transition-colors"
+                        >
+                          View Page ↗
+                        </a>
+                        <Link
+                          href="/admin/tenants"
+                          className="px-3 py-1 rounded text-xs font-mono border border-white/10 text-gray-400 hover:border-white/30 hover:text-white transition-colors"
+                        >
+                          Manage
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {(!metrics.allAgencies || metrics.allAgencies.length === 0) && (
+              <p className="text-center text-gray-600 font-mono text-sm py-8">No agencies yet. Create one in Tenants →</p>
+            )}
           </div>
         </div>
 
@@ -179,9 +221,8 @@ export default function AdminDashboard() {
                 window.location.href = '/admin/login'
               })
             }}
-            className="flex items-center gap-2 font-mono text-xs text-gray-500 hover:text-red-400 transition-all px-4 py-2.5 rounded-lg hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+            style={{ fontFamily: 'monospace', fontSize: 12, color: '#666', padding: '8px 16px', border: '1px solid #333', borderRadius: 8, background: 'transparent', cursor: 'pointer' }}
           >
-            <LogoutIcon />
             TERMINATE SESSION
           </button>
         </div>

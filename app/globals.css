@@ -97,16 +97,4 @@
   }
 }
 
-/* Hide any decorative SVG backgrounds */
-body > svg,
-body > div > svg,
-#__next > svg,
-#__next > div > svg {
-  display: none !important;
-}
 
-/* Hide any large white rounded elements */
-[class*="rounded-full"],
-[class*="rounded-3xl"] {
-  background-color: transparent !important;
-}

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { adminAuth } from '@/lib/firebase-admin'
+import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,10 +10,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the ID token with Firebase Admin
-    await adminAuth.verifyIdToken(token)
+    const decoded = await adminAuth.verifyIdToken(token)
+    const uid = decoded.uid
+
+    // Ensure the user has a tenant mapping in Firestore
+    const userDoc = await adminDb.collection('users').doc(uid).get()
+    if (!userDoc.exists || !userDoc.data()?.tenantId) {
+      return NextResponse.json(
+        { error: 'Account not linked to a tenant. Contact support.' },
+        { status: 403 }
+      )
+    }
 
     // Set httpOnly cookie so middleware can check it
-    const response = NextResponse.json({ ok: true })
+    const response = NextResponse.json({ ok: true, tenantId: userDoc.data()!.tenantId })
     response.cookies.set('fb_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

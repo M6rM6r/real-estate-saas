@@ -26,7 +26,7 @@ export default function AdminTenants() {
   const [msg, setMsg] = useState('')
 
   const load = () =>
-    fetch('/api/admin/tenants').then(r => r.json()).then(setTenants)
+    fetch('/api/admin/tenants').then(r => r.json()).then(data => setTenants(Array.isArray(data) ? data : []))
 
   useEffect(() => { load() }, [])
 

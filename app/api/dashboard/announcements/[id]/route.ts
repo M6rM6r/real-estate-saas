@@ -7,10 +7,16 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const existing = await adminDb.collection('posts').doc(params.id).get()
+  if (!existing.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (existing.data()?.tenantId !== session.tenantId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const body = await request.json()
   const { title, body: description, images, published, ...rest } = body
 
-  const updateData: any = { ...rest }
+  const updateData: Record<string, unknown> = { ...rest }
   if (title !== undefined) updateData.title = title
   if (description !== undefined) updateData.body = description
   if (images !== undefined) updateData.images = images
@@ -28,6 +34,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const existing = await adminDb.collection('posts').doc(params.id).get()
+  if (!existing.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (existing.data()?.tenantId !== session.tenantId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   await adminDb.collection('posts').doc(params.id).delete()
-  return NextResponse.json({ message: 'Deleted' })
+  return NextResponse.json({ success: true })
 }

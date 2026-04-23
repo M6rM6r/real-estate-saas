@@ -9,21 +9,20 @@ const ADMIN_JWT_SECRET = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ── Super admin routes (auth temporarily disabled) ──────
-  // TODO: re-enable when login layout is fixed
-  // if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-  //   const token = request.cookies.get('admin_session')?.value
-  //   if (!token) {
-  //     return NextResponse.redirect(new URL('/admin/login', request.url))
-  //   }
-  //   try {
-  //     await jwtVerify(token, ADMIN_JWT_SECRET)
-  //   } catch {
-  //     const res = NextResponse.redirect(new URL('/admin/login', request.url))
-  //     res.cookies.delete('admin_session')
-  //     return res
-  //   }
-  // }
+  // ── Super admin routes ──────────────────────────────────
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const token = request.cookies.get('admin_session')?.value
+    if (!token) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+    try {
+      await jwtVerify(token, ADMIN_JWT_SECRET)
+    } catch {
+      const res = NextResponse.redirect(new URL('/admin/login', request.url))
+      res.cookies.delete('admin_session')
+      return res
+    }
+  }
 
   // ── Agency dashboard routes ─────────────────────────────
   // Firebase stores the ID token in a cookie we set ourselves called 'fb_session'

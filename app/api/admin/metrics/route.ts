@@ -27,6 +27,13 @@ const DEMO_METRICS = {
     { name: 'Downtown Properties', slug: 'downtown-properties', postCount: 15 },
     { name: 'JBR Residences', slug: 'jbr-residences', postCount: 7 },
   ],
+  allAgencies: [
+    { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', status: 'active', postCount: 45, createdAt: '2024-08-15' },
+    { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', postCount: 32, createdAt: '2024-07-20' },
+    { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', postCount: 28, createdAt: '2024-09-05' },
+    { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', postCount: 15, createdAt: '2024-10-12' },
+    { id: 'demo-5', name: 'JBR Residences', slug: 'jbr-residences', status: 'active', postCount: 7, createdAt: '2024-05-08' },
+  ],
 }
 
 export async function GET() {
@@ -93,5 +100,16 @@ export async function GET() {
     totalMedia: mediaSnap.data().count,
     agenciesPerMonth,
     topAgencies: postCounts.slice(0, 10),
+    allAgencies: postCounts.map(a => {
+      const t = tenants.find(t => t.slug === a.slug)
+      return {
+        id: t?.id ?? '',
+        name: a.name,
+        slug: a.slug,
+        status: (t as unknown as Record<string, unknown>)?.status ?? 'active',
+        postCount: a.postCount,
+        createdAt: t?.createdAt?.toDate ? t.createdAt.toDate().toISOString().slice(0, 10) : '',
+      }
+    }),
   })
 }

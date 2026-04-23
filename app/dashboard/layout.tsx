@@ -44,6 +44,7 @@ const XIcon = () => (
 const navItems = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserIcon },
   { href: '/dashboard/listings', label: 'Listings', icon: HomeIcon },
+  { href: '/dashboard/page-builder', label: 'Page Builder', icon: CogIcon },
   { href: '/dashboard/news', label: 'News', icon: NewspaperIcon },
   { href: '/dashboard/announcements', label: 'Announcements', icon: MegaphoneIcon },
   { href: '/dashboard/gallery', label: 'Gallery', icon: PhotoIcon },

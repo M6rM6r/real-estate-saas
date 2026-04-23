@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { SignJWT } from 'jose'
-import { firestore } from '@/lib/firebase-admin'
+import { adminDb } from '@/lib/firebase-admin'
 
 const ADMIN_JWT_SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET ?? 'fallback-dev-secret-32-characters!!'
@@ -26,18 +26,19 @@ export async function POST(request: NextRequest) {
   const validEmail = process.env.ADMIN_EMAIL ?? ''
   const validPassword = process.env.ADMIN_PASSWORD ?? ''
 
+  if (!validEmail || !validPassword) {
+    return NextResponse.json({ error: 'Admin credentials not configured in environment' }, { status: 503 })
+  }
+
   if (!timingSafeEqual(email, validEmail) || !timingSafeEqual(password, validPassword)) {
-    // Skip Firestore logging in demo mode
-    if (process.env.DEMO_MODE !== 'true') {
-      try {
-        await firestore.collection('admin_logs').add({
-          action: 'admin_login_failed',
-          performedBy: email || 'unknown',
-          metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' },
-          createdAt: new Date(),
-        })
-      } catch { /* ignore Firestore errors */ }
-    }
+    try {
+      await adminDb.collection('admin_logs').add({
+        action: 'admin_login_failed',
+        performedBy: email || 'unknown',
+        metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' },
+        createdAt: new Date(),
+      })
+    } catch { /* ignore Firestore errors */ }
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
@@ -47,16 +48,13 @@ export async function POST(request: NextRequest) {
     .setExpirationTime('8h')
     .sign(ADMIN_JWT_SECRET)
 
-  // Skip Firestore logging in demo mode
-  if (process.env.DEMO_MODE !== 'true') {
-    try {
-      await firestore.collection('admin_logs').add({
-        action: 'admin_login_success',
-        performedBy: email,
-        createdAt: new Date(),
-      })
-    } catch { /* ignore Firestore errors */ }
-  }
+  try {
+    await adminDb.collection('admin_logs').add({
+      action: 'admin_login_success',
+      performedBy: email,
+      createdAt: new Date(),
+    })
+  } catch { /* ignore Firestore errors */ }
 
   const response = NextResponse.json({ success: true })
   response.cookies.set('admin_session', token, {
