@@ -18,9 +18,9 @@ type Profile = {
   bio?: string | null
   licence_no?: string | null
   tagline?: string | null
-  contactEmail?: string | null
-  contactPhone?: string | null
-  contactAddress?: string | null
+  contact_email?: string | null
+  contact_phone?: string | null
+  contact_address?: string | null
   social_links?: {
     instagram?: string
     x?: string
@@ -327,7 +327,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               )}
               <h3 className="text-xl font-bold">{tenant.name}</h3>
               {profile?.bio && <p className="text-gray-400 text-sm mt-2">{profile.bio}</p>}
-              {profile?.contactAddress && <p className="text-gray-300 text-sm mt-4">📍 {profile.contactAddress}</p>}
+              {profile?.contact_address && <p className="text-gray-300 text-sm mt-4">📍 {profile.contact_address}</p>}
             </div>
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">Contact</h4>
@@ -336,14 +336,14 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                   💬 WhatsApp: {whatsapp}
                 </a>
               )}
-              {profile?.contactEmail && (
-                <a href={`mailto:${profile.contactEmail}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
-                  ✉️ {profile.contactEmail}
+              {profile?.contact_email && (
+                <a href={`mailto:${profile.contact_email}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  ✉️ {profile.contact_email}
                 </a>
               )}
-              {profile?.contactPhone && (
-                 <a href={`tel:${profile.contactPhone}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
-                  📞 {profile.contactPhone}
+              {profile?.contact_phone && (
+                 <a href={`tel:${profile.contact_phone}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  📞 {profile.contact_phone}
                 </a>
               )}
               <div className="flex gap-2 mt-4">

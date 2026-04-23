@@ -1,256 +1,327 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Pencil, Trash2, Loader as Loader2, Users } from 'lucide-react';
 
 type Tenant = {
-  id: string
-  slug: string
-  name: string
-  status: string
-  created_at: string
-  agentCount: number
-  postCount: number
+  id: string;
+  name: string;
+  slug: string;
+  status: 'active' | 'suspended';
+  agentCount?: number;
+  postCount?: number;
+  created_at: string;
+};
+
+const emptyForm = { name: '', slug: '', email: '', tempPassword: '' };
+
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
-function slugify(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
+export default function AdminTenantsPage() {
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [status, setStatus] = useState<'active' | 'suspended'>('active');
+  const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-export default function AdminTenants() {
-  const [tenants, setTenants] = useState<Tenant[]>([])
-  const [showCreate, setShowCreate] = useState(false)
-  const [editTenant, setEditTenant] = useState<Tenant | null>(null)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', slug: '', email: '', tempPassword: '' })
-  const [loading, setLoading] = useState(false)
-  const [msg, setMsg] = useState('')
+  const fetchData = () => {
+    fetch('/api/admin/tenants')
+      .then((r) => r.json())
+      .then(setTenants)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
 
-  const load = () =>
-    fetch('/api/admin/tenants').then(r => r.json()).then(data => setTenants(Array.isArray(data) ? data : []))
+  useEffect(fetchData, []);
 
-  useEffect(() => { load() }, [])
+  const openCreate = () => {
+    setEditId(null);
+    setForm(emptyForm);
+    setStatus('active');
+    setModalOpen(true);
+  };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    const res = await fetch('/api/admin/tenants', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    const data = await res.json()
-    setLoading(false)
-    if (res.ok) {
-      setShowCreate(false)
-      setForm({ name: '', slug: '', email: '', tempPassword: '' })
-      setMsg('Agency created successfully')
-      load()
-    } else {
-      setMsg(data.error ?? 'Error creating agency')
+  const openEdit = (t: Tenant) => {
+    setEditId(t.id);
+    setForm({ name: t.name, slug: t.slug, email: '', tempPassword: '' });
+    setStatus(t.status);
+    setModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (editId) {
+        await fetch(`/api/admin/tenants/${editId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: form.name, slug: form.slug, status }),
+        });
+      } else {
+        await fetch('/api/admin/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name,
+            slug: form.slug,
+            email: form.email,
+            tempPassword: form.tempPassword,
+          }),
+        });
+      }
+      setModalOpen(false);
+      fetchData();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
-  }
-
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editTenant) return
-    setLoading(true)
-    const res = await fetch(`/api/admin/tenants/${editTenant.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editTenant.name, slug: editTenant.slug, status: editTenant.status }),
-    })
-    setLoading(false)
-    if (res.ok) {
-      setEditTenant(null)
-      setMsg('Agency updated')
-      load()
-    }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!deleteId) return
-    setLoading(true)
-    await fetch(`/api/admin/tenants/${deleteId}`, { method: 'DELETE' })
-    setLoading(false)
-    setDeleteId(null)
-    setMsg('Agency deleted')
-    load()
+    if (!deleteId) return;
+    setDeleting(true);
+    try {
+      await fetch(`/api/admin/tenants/${deleteId}`, { method: 'DELETE' });
+      setTenants(tenants.filter((t) => t.id !== deleteId));
+      setDeleteId(null);
+    } catch {
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 border-2 border-[#00ff41] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-mono font-bold text-[#00ff41]">TENANT MANAGEMENT</h1>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-[#00ff41] text-black font-mono text-sm font-bold px-4 py-2 rounded hover:bg-[#00cc34] transition-colors"
-          >
-            + CREATE AGENCY
-          </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-wider">{'>'} TENANTS</h1>
+        <Button
+          onClick={openCreate}
+          className="bg-[#00ff41] hover:bg-[#00ff41]/80 text-[#0c0c0c] font-bold font-mono"
+        >
+          <Plus className="h-4 w-4 mr-2" /> CREATE_TENANT
+        </Button>
+      </div>
+
+      {tenants.length === 0 ? (
+        <div className="text-center text-[#00ff41]/40 py-20">
+          <Users className="h-12 w-12 mx-auto mb-4 text-[#00ff41]/20" />
+          No tenants found.
         </div>
-
-        {msg && (
-          <div className="mb-4 p-3 bg-[#001a00] border border-[#00ff41]/40 rounded font-mono text-[#00ff41] text-sm">
-            {msg}
-          </div>
-        )}
-
-        <div className="bg-[#111] border border-[#00ff41]/20 rounded-lg overflow-hidden">
-          <table className="w-full font-mono text-sm">
+      ) : (
+        <div className="overflow-x-auto border border-[#00ff41]/20 rounded-lg">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#00ff41]/20 text-gray-400 text-xs uppercase">
-                <th className="text-left px-4 py-3">Agency</th>
-                <th className="text-left px-4 py-3">Slug</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-right px-4 py-3">Agents</th>
-                <th className="text-right px-4 py-3">Posts</th>
-                <th className="text-left px-4 py-3">Created</th>
-                <th className="text-right px-4 py-3">Actions</th>
+              <tr className="border-b border-[#00ff41]/20 bg-[#111]">
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Name</th>
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Slug</th>
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Status</th>
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Agents</th>
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Posts</th>
+                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Joined</th>
+                <th className="text-right px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {tenants.map(t => (
-                <tr key={t.id} className="border-t border-gray-800 hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 text-white">{t.name}</td>
-                  <td className="px-4 py-3 text-gray-400">/{t.slug}</td>
+              {tenants.map((t) => (
+                <tr key={t.id} className="border-b border-[#00ff41]/10 hover:bg-[#00ff41]/5">
+                  <td className="px-4 py-3 text-[#00ff41] font-medium">{t.name}</td>
+                  <td className="px-4 py-3 text-[#00ff41]/60 font-mono text-xs">{t.slug}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${t.status === 'active' ? 'bg-[#001a00] text-[#00ff41]' : 'bg-[#1a0000] text-red-400'}`}>
-                      {t.status.toUpperCase()}
-                    </span>
+                    <Badge
+                      className={`text-xs font-bold uppercase ${
+                        t.status === 'active'
+                          ? 'bg-green-400/20 text-green-400'
+                          : 'bg-red-400/20 text-red-400'
+                      }`}
+                    >
+                      {t.status}
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-300">{t.agentCount}</td>
-                  <td className="px-4 py-3 text-right text-gray-300">{t.postCount}</td>
-                  <td className="px-4 py-3 text-gray-500">{new Date(t.created_at).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    <button
-                      onClick={() => setEditTenant(t)}
-                      className="text-xs text-gray-400 hover:text-[#00ff41] transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(t.id)}
-                      className="text-xs text-red-600 hover:text-red-400 transition-colors"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-[#00ff41]/60">{t.agentCount ?? 0}</td>
+                  <td className="px-4 py-3 text-[#00ff41]/60">{t.postCount ?? 0}</td>
+                  <td className="px-4 py-3 text-[#00ff41]/40 text-xs">
+                    {new Date(t.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEdit(t)}
+                        className="text-[#00ff41]/60 hover:text-[#00ff41] hover:bg-[#00ff41]/10"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(t.id)}
+                        className="text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
 
-      {/* Create Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-[#111] border border-[#00ff41]/30 rounded-xl p-8 w-full max-w-md">
-            <h2 className="font-mono font-bold text-[#00ff41] mb-6">CREATE AGENCY</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              {[
-                { label: 'Agency Name', key: 'name', type: 'text' },
-                { label: 'Slug', key: 'slug', type: 'text' },
-                { label: 'Admin Email', key: 'email', type: 'email' },
-                { label: 'Temp Password', key: 'tempPassword', type: 'password' },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="block text-xs font-mono text-gray-400 mb-1">{f.label.toUpperCase()}</label>
-                  <input
-                    type={f.type}
-                    required
-                    value={form[f.key as keyof typeof form]}
-                    onChange={e => {
-                      const val = e.target.value
-                      setForm(prev => ({
-                        ...prev,
-                        [f.key]: val,
-                        ...(f.key === 'name' ? { slug: slugify(val) } : {}),
-                      }))
-                    }}
-                    className="w-full bg-[#1a1a1a] border border-gray-700 text-white font-mono rounded px-3 py-2 focus:outline-none focus:border-[#00ff41] text-sm"
+      {/* Create/Edit Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="bg-[#111] border-[#00ff41]/30 text-[#00ff41] font-mono">
+          <DialogHeader>
+            <DialogTitle className="text-[#00ff41]">
+              {editId ? '> EDIT_TENANT' : '> CREATE_TENANT'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-[#00ff41]/80 text-xs uppercase">Name</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm({
+                    ...form,
+                    name,
+                    slug: editId ? form.slug : slugify(name),
+                  });
+                }}
+                className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[#00ff41]/80 text-xs uppercase">Slug</Label>
+              <Input
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+              />
+            </div>
+            {!editId && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-[#00ff41]/80 text-xs uppercase">Email</Label>
+                  <Input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
                   />
                 </div>
-              ))}
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={loading} className="flex-1 bg-[#00ff41] text-black font-mono font-bold py-2 rounded hover:bg-[#00cc34] disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Create'}
-                </button>
-                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 border border-gray-700 text-gray-400 font-mono py-2 rounded hover:border-gray-500">
-                  Cancel
-                </button>
+                <div className="space-y-2">
+                  <Label className="text-[#00ff41]/80 text-xs uppercase">Temp Password</Label>
+                  <Input
+                    type="text"
+                    value={form.tempPassword}
+                    onChange={(e) => setForm({ ...form, tempPassword: e.target.value })}
+                    className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+                  />
+                </div>
+              </>
+            )}
+            {editId && (
+              <div className="space-y-2">
+                <Label className="text-[#00ff41]/80 text-xs uppercase">Status</Label>
+                <Select value={status} onValueChange={(v) => setStatus(v as 'active' | 'suspended')}>
+                  <SelectTrigger className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#111] border-[#00ff41]/30">
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </form>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {editTenant && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-[#111] border border-[#00ff41]/30 rounded-xl p-8 w-full max-w-md">
-            <h2 className="font-mono font-bold text-[#00ff41] mb-6">EDIT AGENCY</h2>
-            <form onSubmit={handleEdit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono text-gray-400 mb-1">NAME</label>
-                <input
-                  type="text"
-                  value={editTenant.name}
-                  onChange={e => setEditTenant({ ...editTenant, name: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-gray-700 text-white font-mono rounded px-3 py-2 focus:outline-none focus:border-[#00ff41] text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-mono text-gray-400 mb-1">SLUG</label>
-                <input
-                  type="text"
-                  value={editTenant.slug}
-                  onChange={e => setEditTenant({ ...editTenant, slug: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-gray-700 text-white font-mono rounded px-3 py-2 focus:outline-none focus:border-[#00ff41] text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-mono text-gray-400 mb-1">STATUS</label>
-                <select
-                  value={editTenant.status}
-                  onChange={e => setEditTenant({ ...editTenant, status: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-gray-700 text-white font-mono rounded px-3 py-2 focus:outline-none focus:border-[#00ff41] text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={loading} className="flex-1 bg-[#00ff41] text-black font-mono font-bold py-2 rounded hover:bg-[#00cc34] disabled:opacity-50">
-                  {loading ? 'Saving...' : 'Save'}
-                </button>
-                <button type="button" onClick={() => setEditTenant(null)} className="flex-1 border border-gray-700 text-gray-400 font-mono py-2 rounded">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setModalOpen(false)}
+              className="text-[#00ff41]/60"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving || !form.name || !form.slug}
+              className="bg-[#00ff41] hover:bg-[#00ff41]/80 text-[#0c0c0c] font-bold"
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editId ? 'UPDATE' : 'CREATE'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirm */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-[#111] border border-red-500/40 rounded-xl p-8 w-full max-w-sm text-center">
-            <p className="font-mono text-red-400 mb-2 text-lg font-bold">CONFIRM DELETE</p>
-            <p className="text-gray-400 font-mono text-sm mb-6">This will permanently delete the agency and ALL their data. This cannot be undone.</p>
-            <div className="flex gap-3">
-              <button onClick={handleDelete} disabled={loading} className="flex-1 bg-red-600 text-white font-mono font-bold py-2 rounded hover:bg-red-500 disabled:opacity-50">
-                {loading ? 'Deleting...' : 'Delete'}
-              </button>
-              <button onClick={() => setDeleteId(null)} className="flex-1 border border-gray-700 text-gray-400 font-mono py-2 rounded">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <DialogContent className="bg-[#111] border-[#00ff41]/30 text-[#00ff41] font-mono">
+          <DialogHeader>
+            <DialogTitle className="text-red-400">{'>'} DELETE_TENANT</DialogTitle>
+          </DialogHeader>
+          <p className="text-[#00ff41]/60 text-sm">
+            This will permanently delete the tenant and all associated data. This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteId(null)}
+              className="text-[#00ff41]/60"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              DELETE
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 }

@@ -53,8 +53,8 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
     description: profileData?.bio ?? 'Professional real estate services',
     url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
     ...(profileData?.logo_url ? { logo: profileData.logo_url } : {}),
-    ...(profileData?.phone ? { telephone: profileData.phone } : {}),
-    ...(profileData?.address ? { address: { '@type': 'PostalAddress', streetAddress: profileData.address } } : {}),
+    ...(profileData?.contact_phone ? { telephone: profileData.contact_phone } : {}),
+    ...(profileData?.contact_address ? { address: { '@type': 'PostalAddress', streetAddress: profileData.contact_address } } : {}),
   }
 
   return (

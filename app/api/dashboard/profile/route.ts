@@ -4,25 +4,30 @@ import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { z } from 'zod'
 
-const ProfileSchema = z.object({
-  display_name: z.string().max(100).optional(),
-  bio: z.string().max(2000).optional(),
-  phone: z.string().max(30).optional(),
-  email: z.string().email().max(200).optional(),
-  website: z.string().url().max(300).optional().nullable(),
+const ProfileDataSchema = z.object({
   logo_url: z.string().url().max(500).optional().nullable(),
   cover_url: z.string().url().max(500).optional().nullable(),
-  address: z.string().max(300).optional().nullable(),
-  social_links: z
-    .object({
-      instagram: z.string().max(200).optional(),
-      facebook: z.string().max(200).optional(),
-      twitter: z.string().max(200).optional(),
-      linkedin: z.string().max(200).optional(),
-      whatsapp: z.string().max(30).optional(),
-    })
-    .optional(),
+  bio: z.string().max(2000).optional().nullable(),
+  tagline: z.string().max(200).optional().nullable(),
+  contact_email: z.string().email().max(200).optional().nullable(),
+  contact_phone: z.string().max(30).optional().nullable(),
+  contact_address: z.string().max(300).optional().nullable(),
+  social_links: z.object({
+    instagram: z.string().max(200).optional(),
+    x: z.string().max(200).optional(),
+    linkedin: z.string().max(200).optional(),
+    whatsapp: z.string().max(30).optional(),
+  }).optional(),
+}).optional()
+
+const TenantDataSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
   primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+}).optional()
+
+const PatchSchema = z.object({
+  profile: ProfileDataSchema,
+  tenant: TenantDataSchema,
 })
 
 export async function GET(request: NextRequest) {
@@ -54,14 +59,14 @@ export async function PATCH(request: NextRequest) {
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let body: z.infer<typeof ProfileSchema>
+  let body: z.infer<typeof PatchSchema>
   try {
-    body = ProfileSchema.parse(await request.json())
+    body = PatchSchema.parse(await request.json())
   } catch {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { primary_color, ...profileFields } = body
+  const { profile: profileFields, tenant: tenantFields } = body
 
   const ref = adminDb
     .collection('tenants')
@@ -69,12 +74,16 @@ export async function PATCH(request: NextRequest) {
     .collection('profiles')
     .doc(session.tenantId)
 
-  const update = { ...profileFields, updatedAt: new Date() }
-  await ref.set(update, { merge: true })
+  if (profileFields && Object.keys(profileFields).length > 0) {
+    await ref.set({ ...profileFields, updatedAt: new Date() }, { merge: true })
+  }
 
-  // If primary_color provided, update tenant document too
-  if (primary_color) {
-    await adminDb.collection('tenants').doc(session.tenantId).update({ primary_color })
+  // Update tenant doc with name and/or primary_color if provided
+  const tenantUpdate: Record<string, unknown> = {}
+  if (tenantFields?.name) tenantUpdate.name = tenantFields.name
+  if (tenantFields?.primary_color) tenantUpdate.primary_color = tenantFields.primary_color
+  if (Object.keys(tenantUpdate).length > 0) {
+    await adminDb.collection('tenants').doc(session.tenantId).update(tenantUpdate)
   }
 
   const doc = await ref.get()

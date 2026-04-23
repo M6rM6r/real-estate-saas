@@ -1,453 +1,346 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { auth } from '@/lib/firebase'
+import { useEffect, useState } from 'react';
+import { authFetch } from '@/lib/api';
+import type { Profile, Tenant } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader as Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin, Instagram, Twitter, Linkedin, MessageCircle } from 'lucide-react';
 
-type Profile = {
-  logo_url?: string | null
-  cover_url?: string | null
-  bio?: string | null
-  tagline?: string | null
-  contactEmail?: string | null
-  contactPhone?: string | null
-  contactAddress?: string | null
-  social_links?: {
-    instagram?: string
-    x?: string
-    linkedin?: string
-    whatsapp?: string
-  } | null
-}
-
-type Tenant = {
-  name?: string
-  slug?: string
-  primary_color?: string | null
-}
-
-async function getToken() {
-  return auth.currentUser?.getIdToken() ?? null
-}
-
-const PRESET_COLORS = [
-  '#2563eb', '#7c3aed', '#db2777', '#dc2626',
-  '#d97706', '#16a34a', '#0891b2', '#00ff41',
-]
+type ProfileResponse = {
+  profile: Profile;
+  tenant: Tenant & { primary_color: string };
+};
 
 export default function PageBuilderPage() {
-  const [profile, setProfile] = useState<Profile>({})
-  const [tenant, setTenant] = useState<Tenant>({})
-  const [primaryColor, setPrimaryColor] = useState('#2563eb')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [activeTab, setActiveTab] = useState<'branding' | 'content' | 'contact' | 'social'>('branding')
+  const [data, setData] = useState<ProfileResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<Profile>({
+    tenant_id: '',
+    logo_url: '',
+    cover_url: '',
+    bio: '',
+    tagline: '',
+    contact_email: '',
+    contact_phone: '',
+    contact_address: '',
+    social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
+  });
+  const [primaryColor, setPrimaryColor] = useState('#2563eb');
 
   useEffect(() => {
-    const load = async () => {
-      const token = await getToken()
-      if (!token) return
-      const res = await fetch('/api/dashboard/profile', {
-        headers: { Authorization: `Bearer ${token}` },
+    authFetch<ProfileResponse>('/api/dashboard/profile')
+      .then((res) => {
+        setData(res);
+        setProfile(res.profile);
+        setPrimaryColor(res.tenant.primary_color || '#2563eb');
       })
-      if (res.ok) {
-        const data = await res.json()
-        setProfile(data.profile ?? {})
-        setTenant(data.tenant ?? {})
-        setPrimaryColor(data.tenant?.primary_color ?? '#2563eb')
-      }
-      setLoading(false)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await authFetch('/api/dashboard/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          profile,
+          tenant: { primary_color: primaryColor },
+        }),
+      });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
-    load()
-  }, [])
+  };
 
-  const save = async () => {
-    const token = await getToken()
-    if (!token) return
-    setSaving(true)
-    await fetch('/api/dashboard/profile', {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        profile,
-        tenant: { primary_color: primaryColor },
-      }),
-    })
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
-
-  const updateProfile = (key: keyof Profile, value: string) => {
-    setProfile(p => ({ ...p, [key]: value }))
-  }
+  const copyLink = () => {
+    const url = `${window.location.origin}/${data?.tenant.slug || ''}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const updateSocial = (key: string, value: string) => {
-    setProfile(p => ({ ...p, social_links: { ...p.social_links, [key]: value } }))
-  }
+    setProfile({
+      ...profile,
+      social_links: { ...profile.social_links, [key]: value },
+    });
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-400 font-mono animate-pulse">Loading page builder...</p>
+        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
-    )
+    );
   }
 
-  const publicUrl = tenant.slug
-    ? `${process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')}/${tenant.slug}`
-    : null
-
-  const [copied, setCopied] = useState(false)
-  const copyLink = () => {
-    if (!publicUrl) return
-    navigator.clipboard.writeText(publicUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const tabs = [
-    { id: 'branding', label: 'Branding' },
-    { id: 'content', label: 'Content' },
-    { id: 'contact', label: 'Contact' },
-    { id: 'social', label: 'Social' },
-  ] as const
+  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${data?.tenant.slug || ''}`;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-mono font-bold text-white">Page Builder</h1>
-          <p className="text-gray-400 text-sm mt-1">Customize your public agency page</p>
+      {/* Public URL Banner */}
+      <div className="bg-[#12121a] border border-gray-800 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-gray-400 mb-1">Your Public Page</p>
+          <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
         </div>
-        <button
-          onClick={save}
-          disabled={saving}
-          className="px-6 py-2.5 rounded-lg font-mono text-sm font-bold text-black transition-all disabled:opacity-50"
-          style={{ backgroundColor: primaryColor }}
-        >
-          {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Changes'}
-        </button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyLink}
+            className="border-gray-700 text-gray-300"
+          >
+            {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+            {copied ? 'Copied' : 'Copy Link'}
+          </Button>
+          <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-700 text-gray-300"
+            >
+              <ExternalLink className="h-4 w-4 mr-1" /> Open Page
+            </Button>
+          </a>
+        </div>
       </div>
 
-      {/* Public URL Banner */}
-      {publicUrl && (
-        <div className="glass-panel rounded-xl p-4 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1">Your Public Agency URL</p>
-            <p className="font-mono text-sm text-white truncate">{publicUrl}</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <button
-              onClick={copyLink}
-              className="px-4 py-2 rounded-lg text-xs font-mono font-bold border transition-all"
-              style={{
-                borderColor: copied ? primaryColor : 'rgba(255,255,255,0.15)',
-                color: copied ? primaryColor : '#aaa',
-                background: copied ? `${primaryColor}15` : 'transparent',
-              }}
-            >
-              {copied ? '✓ Copied!' : 'Copy Link'}
-            </button>
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-lg text-xs font-mono font-bold text-black transition-all"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Open Page ↗
-            </a>
-          </div>
-        </div>
-      )}
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Editor */}
+        <div className="lg:col-span-3">
+          <Tabs defaultValue="branding">
+            <TabsList className="bg-[#12121a] border-gray-800">
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="contact">Contact</TabsTrigger>
+              <TabsTrigger value="social">Social</TabsTrigger>
+            </TabsList>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Editor Panel */}
-        <div className="glass-panel rounded-xl overflow-hidden">
-          {/* Tabs */}
-          <div className="flex border-b border-white/5">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-3 font-mono text-xs uppercase tracking-wider transition-colors ${
-                  activeTab === tab.id
-                    ? 'text-white border-b-2'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
-                style={activeTab === tab.id ? { borderColor: primaryColor } : {}}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="p-6 space-y-5">
-            {/* Branding Tab */}
-            {activeTab === 'branding' && (
-              <>
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-3">
-                    Brand Color
-                  </label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {PRESET_COLORS.map(c => (
-                      <button
-                        key={c}
-                        onClick={() => setPrimaryColor(c)}
-                        className="w-8 h-8 rounded-full border-2 transition-all"
-                        style={{
-                          backgroundColor: c,
-                          borderColor: primaryColor === c ? 'white' : 'transparent',
-                          transform: primaryColor === c ? 'scale(1.2)' : 'scale(1)',
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={primaryColor}
-                      onChange={e => setPrimaryColor(e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer bg-transparent border-0"
-                    />
-                    <input
-                      type="text"
-                      value={primaryColor}
-                      onChange={e => setPrimaryColor(e.target.value)}
-                      className="flex-1 bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-2 focus:outline-none focus:border-white/30 text-sm"
-                      placeholder="#2563eb"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                    Logo URL
-                  </label>
+            <TabsContent value="branding" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Primary Color</Label>
+                <div className="flex gap-3 items-center">
                   <input
-                    type="url"
-                    value={profile.logo_url ?? ''}
-                    onChange={e => updateProfile('logo_url', e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm"
-                    placeholder="https://..."
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="h-10 w-14 rounded border border-gray-700 bg-transparent cursor-pointer"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                    Cover Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={profile.cover_url ?? ''}
-                    onChange={e => updateProfile('cover_url', e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm"
-                    placeholder="https://..."
+                  <Input
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="bg-[#1a1a2e] border-gray-700 text-white w-32"
                   />
-                </div>
-              </>
-            )}
-
-            {/* Content Tab */}
-            {activeTab === 'content' && (
-              <>
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                    Tagline
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.tagline ?? ''}
-                    onChange={e => updateProfile('tagline', e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm"
-                    placeholder="Your trusted real estate partner"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                    Bio / About
-                  </label>
-                  <textarea
-                    value={profile.bio ?? ''}
-                    onChange={e => updateProfile('bio', e.target.value)}
-                    rows={5}
-                    className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm resize-none"
-                    placeholder="Tell visitors about your agency..."
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Contact Tab */}
-            {activeTab === 'contact' && (
-              <>
-                {[
-                  { key: 'contactEmail', label: 'Email', placeholder: 'contact@agency.com', type: 'email' },
-                  { key: 'contactPhone', label: 'Phone', placeholder: '+1 555 000 0000', type: 'tel' },
-                  { key: 'contactAddress', label: 'Address', placeholder: '123 Main St, City', type: 'text' },
-                ].map(({ key, label, placeholder, type }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                      {label}
-                    </label>
-                    <input
-                      type={type}
-                      value={(profile as any)[key] ?? ''}
-                      onChange={e => updateProfile(key as keyof Profile, e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm"
-                      placeholder={placeholder}
-                    />
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Social Tab */}
-            {activeTab === 'social' && (
-              <>
-                {[
-                  { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/...' },
-                  { key: 'x', label: 'X (Twitter)', placeholder: 'https://x.com/...' },
-                  { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/...' },
-                  { key: 'whatsapp', label: 'WhatsApp', placeholder: '+1234567890' },
-                ].map(({ key, label, placeholder }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">
-                      {label}
-                    </label>
-                    <input
-                      type="text"
-                      value={profile.social_links?.[key as keyof typeof profile.social_links] ?? ''}
-                      onChange={e => updateSocial(key, e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-white/30 transition-all placeholder:text-gray-600 text-sm"
-                      placeholder={placeholder}
-                    />
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Live Preview Panel */}
-        <div className="glass-panel rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-            <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">Live Preview</span>
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500/60" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-              <div className="w-3 h-3 rounded-full bg-green-500/60" />
-            </div>
-          </div>
-
-          {/* Preview content */}
-          <div className="overflow-y-auto max-h-[600px] bg-white text-gray-900">
-            {/* Cover */}
-            <div
-              className="relative h-40 flex items-end px-6 pb-4"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {profile.cover_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={profile.cover_url}
-                  alt="cover"
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-              )}
-              <div className="relative z-10 flex items-end gap-4">
-                {profile.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={profile.logo_url}
-                    alt="logo"
-                    className="w-14 h-14 rounded-xl border-2 border-white object-cover bg-white"
-                  />
-                ) : (
-                  <div
-                    className="w-14 h-14 rounded-xl border-2 border-white flex items-center justify-center text-2xl font-bold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {tenant.name?.[0] ?? 'A'}
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-white font-bold text-xl leading-tight">{tenant.name ?? 'Agency Name'}</h2>
-                  {profile.tagline && (
-                    <p className="text-white/80 text-sm">{profile.tagline}</p>
-                  )}
                 </div>
               </div>
-            </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Logo URL</Label>
+                <Input
+                  value={profile.logo_url || ''}
+                  onChange={(e) => setProfile({ ...profile, logo_url: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Cover Image URL</Label>
+                <Input
+                  value={profile.cover_url || ''}
+                  onChange={(e) => setProfile({ ...profile, cover_url: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+            </TabsContent>
 
-            {/* Body */}
-            <div className="p-6 space-y-4">
-              {profile.bio && (
-                <div>
-                  <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">About</h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">{profile.bio}</p>
-                </div>
-              )}
+            <TabsContent value="content" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Tagline</Label>
+                <Input
+                  value={profile.tagline || ''}
+                  onChange={(e) => setProfile({ ...profile, tagline: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Bio</Label>
+                <Textarea
+                  value={profile.bio || ''}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  rows={5}
+                  className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
+                />
+              </div>
+            </TabsContent>
 
-              {(profile.contactEmail || profile.contactPhone || profile.contactAddress) && (
-                <div>
-                  <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-2">Contact</h3>
-                  <div className="space-y-1 text-sm text-gray-700">
-                    {profile.contactEmail && <p>✉ {profile.contactEmail}</p>}
-                    {profile.contactPhone && <p>📞 {profile.contactPhone}</p>}
-                    {profile.contactAddress && <p>📍 {profile.contactAddress}</p>}
-                  </div>
-                </div>
-              )}
+            <TabsContent value="contact" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Email</Label>
+                <Input
+                  value={profile.contact_email || ''}
+                  onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Phone</Label>
+                <Input
+                  value={profile.contact_phone || ''}
+                  onChange={(e) => setProfile({ ...profile, contact_phone: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Address</Label>
+                <Input
+                  value={profile.contact_address || ''}
+                  onChange={(e) => setProfile({ ...profile, contact_address: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+            </TabsContent>
 
-              {profile.social_links && Object.values(profile.social_links).some(Boolean) && (
-                <div>
-                  <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-2">Social</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(profile.social_links).map(([key, val]) =>
-                      val ? (
-                        <span
-                          key={key}
-                          className="px-3 py-1 rounded-full text-xs text-white font-medium"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          {key}
-                        </span>
-                      ) : null
+            <TabsContent value="social" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-300">Instagram</Label>
+                <Input
+                  value={profile.social_links?.instagram || ''}
+                  onChange={(e) => updateSocial('instagram', e.target.value)}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">X (Twitter)</Label>
+                <Input
+                  value={profile.social_links?.x || ''}
+                  onChange={(e) => updateSocial('x', e.target.value)}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">LinkedIn</Label>
+                <Input
+                  value={profile.social_links?.linkedin || ''}
+                  onChange={(e) => updateSocial('linkedin', e.target.value)}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">WhatsApp</Label>
+                <Input
+                  value={profile.social_links?.whatsapp || ''}
+                  onChange={(e) => updateSocial('whatsapp', e.target.value)}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="mt-6 bg-blue-600 hover:bg-blue-700"
+          >
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
+        </div>
+
+        {/* Live Preview */}
+        <div className="lg:col-span-2">
+          <Card className="bg-[#12121a] border-gray-800 sticky top-4">
+            <CardHeader>
+              <CardTitle className="text-sm text-gray-400">Live Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg overflow-hidden border border-gray-700 bg-white">
+                {/* Preview Hero */}
+                <div className="relative h-32 overflow-hidden">
+                  {profile.cover_url ? (
+                    <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                    {profile.logo_url && (
+                      <img
+                        src={profile.logo_url}
+                        alt=""
+                        className="w-10 h-10 rounded-lg object-cover mb-2 border border-white/30"
+                      />
+                    )}
+                    <p className="font-bold text-sm">{data?.tenant.name}</p>
+                    {profile.tagline && (
+                      <p className="text-xs text-white/70 mt-0.5">{profile.tagline}</p>
                     )}
                   </div>
                 </div>
-              )}
-
-              {/* Placeholder listings */}
-              <div>
-                <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-2">Listings</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {[1, 2].map(i => (
-                    <div key={i} className="rounded-lg overflow-hidden border border-gray-100">
-                      <div className="h-20 bg-gray-100" />
-                      <div className="p-2">
-                        <div className="h-2 bg-gray-200 rounded w-3/4 mb-1" />
-                        <div
-                          className="h-2 rounded w-1/2"
-                          style={{ backgroundColor: primaryColor, opacity: 0.3 }}
-                        />
+                {/* Preview About */}
+                <div className="p-3">
+                  <p className="text-xs font-semibold mb-1" style={{ color: primaryColor }}>
+                    About Us
+                  </p>
+                  <p className="text-gray-600 text-xs line-clamp-3">
+                    {profile.bio || 'No bio yet.'}
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    {profile.contact_phone && (
+                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                        <Phone className="h-3 w-3" style={{ color: primaryColor }} />
+                        {profile.contact_phone}
                       </div>
-                    </div>
-                  ))}
+                    )}
+                    {profile.contact_email && (
+                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                        <Mail className="h-3 w-3" style={{ color: primaryColor }} />
+                        {profile.contact_email}
+                      </div>
+                    )}
+                    {profile.contact_address && (
+                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                        <MapPin className="h-3 w-3" style={{ color: primaryColor }} />
+                        {profile.contact_address}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1.5 mt-2">
+                    {profile.social_links?.whatsapp && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                        <MessageCircle className="h-3 w-3" />
+                      </div>
+                    )}
+                    {profile.social_links?.instagram && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                        <Instagram className="h-3 w-3" />
+                      </div>
+                    )}
+                    {profile.social_links?.x && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                        <Twitter className="h-3 w-3" />
+                      </div>
+                    )}
+                    {profile.social_links?.linkedin && (
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                        <Linkedin className="h-3 w-3" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

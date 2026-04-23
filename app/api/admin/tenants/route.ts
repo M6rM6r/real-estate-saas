@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       return {
         id: doc.id,
         ...doc.data(),
+        created_at: (doc.data().createdAt?.toDate?.()?.toISOString() ?? doc.data().createdAt ?? null),
+        createdAt: undefined,
         agentCount: usersSnap.data().count,
         postCount: postsSnap.data().count,
       }

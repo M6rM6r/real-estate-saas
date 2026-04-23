@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
   const snap = await adminDb.collection('posts')
     .where('tenantId', '==', session.tenantId).where('type', '==', 'announcement')
     .orderBy('createdAt', 'desc').get()
-  return NextResponse.json(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  return NextResponse.json(snap.docs.map(d => {
+    const { createdAt, ...rest } = d.data()
+    return { id: d.id, ...rest, created_at: createdAt?.toDate?.()?.toISOString() ?? null }
+  }))
 }
 
 export async function POST(request: NextRequest) {

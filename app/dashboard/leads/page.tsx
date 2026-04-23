@@ -1,109 +1,137 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback } from 'react'
-import { authHeaders } from '@/lib/firebase-client-auth'
+import { useEffect, useState } from 'react';
+import { authFetch } from '@/lib/api';
+import type { Lead, LeadStatus } from '@/lib/types';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Users, Phone, Clock } from 'lucide-react';
 
-type Lead = {
-  id: string
-  name: string
-  phone: string
-  email: string | null
-  message: string | null
-  status: 'new' | 'contacted' | 'closed'
-  listing_id: string | null
-  createdAt: string | { seconds: number }
-}
-
-const STATUS_COLORS = {
-  new: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-yellow-100 text-yellow-700',
-  closed: 'bg-green-100 text-green-700',
-}
+const statusColor: Record<LeadStatus, string> = {
+  new: 'bg-blue-500/20 text-blue-400',
+  contacted: 'bg-yellow-500/20 text-yellow-400',
+  closed: 'bg-green-500/20 text-green-400',
+};
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [loading, setLoading] = useState(true)
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
 
-  const load = useCallback(async () => {
-    const hdrs = await authHeaders()
-    if (!hdrs) return
-    const res = await fetch('/api/dashboard/leads', {
-      headers: hdrs,
-    })
-    const json = await res.json()
-    setLeads(json ?? [])
-    setLoading(false)
-  }, [])
+  useEffect(() => {
+    authFetch<Lead[]>('/api/dashboard/leads')
+      .then(setLeads)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  useEffect(() => { load() }, [load])
+  const updateStatus = async (id: string, status: LeadStatus) => {
+    try {
+      await authFetch(`/api/dashboard/leads/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      setLeads(leads.map((l) => (l.id === id ? { ...l, status } : l)));
+    } catch {}
+  };
 
-  const updateStatus = async (id: string, status: Lead['status']) => {
-    const hdrs = await authHeaders()
-    if (!hdrs) return
-    await fetch(`/api/dashboard/leads/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...hdrs },
-      body: JSON.stringify({ status }),
-    })
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l))
+  const filtered = filter === 'all' ? leads : leads.filter((l) => l.status === filter);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  if (loading) return (
-    <div className="p-8 space-y-3">
-      {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
-    </div>
-  )
-
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
-        <span className="text-sm text-gray-500">{leads.length} lead{leads.length !== 1 ? 's' : ''}</span>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Leads</h1>
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-40 bg-[#12121a] border-gray-700 text-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-[#1a1a2e] border-gray-700">
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="new">New</SelectItem>
+            <SelectItem value="contacted">Contacted</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {!leads.length ? (
-        <p className="text-center text-gray-400 py-12">No leads yet. Share your public page to get enquiries.</p>
+      {filtered.length === 0 ? (
+        <div className="text-center text-gray-500 py-20">No leads found.</div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500 uppercase">
-                <th className="text-left px-4 py-3">Name</th>
-                <th className="text-left px-4 py-3">Phone</th>
-                <th className="text-left px-4 py-3">Message</th>
-                <th className="text-left px-4 py-3">Date</th>
-                <th className="text-left px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map(lead => (
-                <tr key={lead.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {lead.name}
-                    {lead.email && <div className="text-xs text-gray-400">{lead.email}</div>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{lead.phone}</td>
-                  <td className="px-4 py-3 text-gray-500 max-w-xs">
-                    <span className="line-clamp-2">{lead.message ?? '—'}</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{typeof lead.createdAt === 'object' && lead.createdAt !== null && 'seconds' in lead.createdAt ? new Date((lead.createdAt as {seconds: number}).seconds * 1000).toLocaleDateString() : new Date(lead.createdAt as string).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={lead.status}
-                      onChange={e => updateStatus(lead.id, e.target.value as Lead['status'])}
-                      className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${STATUS_COLORS[lead.status]}`}
-                    >
-                      <option value="new">New</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </td>
+        <Card className="bg-[#12121a] border-gray-800 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Name</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Phone</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Message</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((lead) => (
+                  <tr key={lead.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                    <td className="px-4 py-3 text-white font-medium">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-gray-500" />
+                        {lead.name}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-300">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        {lead.phone}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 max-w-xs truncate">
+                      {lead.message || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Select
+                        value={lead.status}
+                        onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}
+                      >
+                        <SelectTrigger className="w-28 h-7 text-xs bg-transparent border-gray-700">
+                          <Badge className={statusColor[lead.status]}>
+                            {lead.status}
+                          </Badge>
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1a1a2e] border-gray-700">
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3 text-gray-400">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
+                        {new Date(lead.created_at).toLocaleDateString()}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
-  )
+  );
 }

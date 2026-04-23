@@ -1,246 +1,271 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback } from 'react'
-import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
-import { useDropzone } from 'react-dropzone'
+import { useEffect, useState } from 'react';
+import { authFetch } from '@/lib/api';
+import type { Post } from '@/lib/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Plus, Pencil, Trash2, Loader as Loader2, X, Newspaper } from 'lucide-react';
 
-type Post = {
-  id: string
-  title: string
-  body: string | null
-  images: string[]
-  published: boolean
-  created_at: string
-}
-
-const EMPTY_FORM = {
+const emptyForm = {
   title: '',
   body: '',
-  coverImage: '' as string,
-  published: false,
-}
+  published: true,
+  images: [] as string[],
+};
 
 export default function NewsPage() {
-  const [news, setNews] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState<'create' | 'edit' | null>(null)
-  const [editing, setEditing] = useState<Post | null>(null)
-  const [form, setForm] = useState({ ...EMPTY_FORM })
-  const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [items, setItems] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
 
-  const load = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    const res = await fetch('/api/dashboard/news', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    const json = await res.json()
-    setNews(json.data ?? json ?? [])
-    setLoading(false)
-  }, [])
+  const fetchData = () => {
+    authFetch<Post[]>('/api/dashboard/news')
+      .then(setItems)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
 
-  useEffect(() => { load() }, [load])
+  useEffect(fetchData, []);
 
   const openCreate = () => {
-    setForm({ ...EMPTY_FORM })
-    setModal('create')
-  }
+    setEditingId(null);
+    setForm(emptyForm);
+    setModalOpen(true);
+  };
 
-  const openEdit = (p: Post) => {
-    setEditing(p)
-    setForm({ title: p.title, body: p.body ?? '', coverImage: p.images[0] ?? '', published: p.published })
-    setModal('edit')
-  }
+  const openEdit = (item: Post) => {
+    setEditingId(item.id);
+    setForm({
+      title: item.title,
+      body: item.body || '',
+      published: item.published,
+      images: item.images || [],
+    });
+    setModalOpen(true);
+  };
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] },
-    maxFiles: 1,
-    onDrop: async (files) => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      setUploading(true)
-      const fd = new FormData()
-      files.forEach(f => fd.append('files', f))
-      fd.append('bucket', 'covers')
-      const res = await fetch('/api/dashboard/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: fd,
-      })
-      const json = await res.json()
-      if (json.urls?.[0]) setForm(p => ({ ...p, coverImage: json.urls[0] }))
-      setUploading(false)
-    },
-  })
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    setSaving(true)
-
-    const payload = {
-      type: 'news',
-      title: form.title,
-      body: form.body,
-      images: form.coverImage ? [form.coverImage] : [],
-      published: form.published,
-      published_at: form.published ? new Date().toISOString() : null,
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        title: form.title,
+        body: form.body || undefined,
+        published: form.published,
+        images: form.images,
+      };
+      if (editingId) {
+        await authFetch(`/api/dashboard/news/${editingId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await authFetch('/api/dashboard/news', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
+      setModalOpen(false);
+      fetchData();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
-
-    if (modal === 'create') {
-      await fetch('/api/dashboard/news', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify(payload),
-      })
-    } else if (editing) {
-      await fetch(`/api/dashboard/news/${editing.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify(payload),
-      })
-    }
-    setSaving(false)
-    setModal(null)
-    setEditing(null)
-    load()
-  }
+  };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this article?')) return
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    await fetch(`/api/dashboard/news/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    load()
+    if (!confirm('Delete this news article?')) return;
+    try {
+      await authFetch(`/api/dashboard/news/${id}`, { method: 'DELETE' });
+      fetchData();
+    } catch {}
+  };
+
+  const addImage = () => {
+    if (imageUrl.trim()) {
+      setForm({ ...form, images: [...form.images, imageUrl.trim()] });
+      setImageUrl('');
+    }
+  };
+
+  const removeImage = (idx: number) => {
+    setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <p className="text-neon-green font-mono animate-pulse text-glow">Loading intel...</p>
-    </div>
-  )
-
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-mono font-bold text-neon-green tracking-wider text-glow mb-2">NEWS HQ</h1>
-          <p className="text-gray-400 font-mono text-sm">Disseminate updates to your tenant network.</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">News</h1>
+        <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" /> New Article
+        </Button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="text-center text-gray-500 py-20">
+          <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-600" />
+          No news articles yet.
         </div>
-        <button onClick={openCreate}
-          className="bg-neon-green/90 text-black font-mono font-bold px-6 py-3 rounded-lg hover:bg-neon-green hover:shadow-[0_0_15px_rgba(0,255,65,0.4)] transition-all duration-300 uppercase tracking-widest text-sm">
-          + TRANSMIT NEWS
-        </button>
-      </div>
-
-      <div className="space-y-6">
-        {news.map(item => (
-          <div key={item.id} className="glass-panel group rounded-2xl flex flex-col sm:flex-row overflow-hidden hover:border-neon-green/40 transition-all duration-300">
-            {item.images[0] ? (
-              <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 overflow-hidden border-r border-white/5">
-                <Image
-                  src={item.images[0]}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  priority={false}
-                />
-              </div>
-            ) : (
-              <div className="w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-black/60 border-r border-white/5 flex items-center justify-center text-gray-500 font-mono text-xs tracking-widest uppercase">
-                NO COVER
-              </div>
-            )}
-            <div className="flex-1 p-6 flex flex-col justify-between">
-              <div>
-                <h3 className="font-mono text-white text-lg font-bold group-hover:text-neon-green transition-colors">{item.title}</h3>
-                <p className="font-mono text-sm text-gray-400 mt-2 line-clamp-2">{item.body}</p>
-              </div>
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5">
-                <div className="flex items-center gap-4">
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${item.published ? 'text-neon-green' : 'text-gray-500'}`}>
-                    {item.published ? '● BROADCASTED' : '○ DRAFT'}
-                  </span>
-                  <span className="text-[10px] font-mono text-gray-500 tracking-widest">{new Date(item.created_at).toLocaleDateString()}</span>
+      ) : (
+        <div className="space-y-3">
+          {items.map((item) => (
+            <Card key={item.id} className="bg-[#12121a] border-gray-800">
+              <CardContent className="p-4 flex items-start gap-4">
+                {item.images?.[0] && (
+                  <img
+                    src={item.images[0]}
+                    alt=""
+                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-white truncate">{item.title}</h3>
+                    {!item.published && (
+                      <Badge className="bg-gray-500/20 text-gray-400">Draft</Badge>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-sm line-clamp-2">{item.body || 'No content'}</p>
+                  <p className="text-gray-600 text-xs mt-1">
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </p>
                 </div>
-                <div className="flex gap-4">
-                  <button onClick={() => openEdit(item)} className="text-xs font-mono text-gray-400 hover:text-white transition-colors tracking-widest uppercase">EDIT</button>
-                  <button onClick={() => handleDelete(item.id)} className="text-xs font-mono text-red-500 hover:text-red-400 transition-colors tracking-widest uppercase">DEL</button>
+                <div className="flex gap-1 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEdit(item)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(item.id)}
+                    className="text-gray-400 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
-        {!news.length && <p className="text-center font-mono text-gray-400 py-12 border border-dashed border-white/10 rounded-2xl">NO TRANSMISSIONS DETECTED.</p>}
-      </div>
-
-      {modal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-panel rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in-up border border-neon-green/20">
-            <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-md z-10">
-              <h2 className="text-xl font-mono font-bold text-neon-green uppercase tracking-widest">{modal === 'create' ? 'INIT TRANSMISSION' : 'ALTER TRANSMISSION'}</h2>
-              <button onClick={() => setModal(null)} className="text-gray-500 hover:text-white transition-colors">
-                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            <form onSubmit={handleSave} className="p-8 space-y-6">
-              <div className="space-y-2">
-                <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest">Headline *</label>
-                <input required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest">Payload (Content)</label>
-                <textarea rows={8} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
-                  className="w-full bg-black/40 border border-white/10 text-white font-mono rounded-lg px-4 py-3 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all resize-none" />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-xs font-mono text-gray-400 uppercase tracking-widest">Transmission Cover</label>
-                <div {...getRootProps()} className="border-2 border-dashed border-white/20 bg-black/20 rounded-xl p-8 text-center cursor-pointer hover:border-neon-green/50 hover:bg-neon-green/5 transition-all group">
-                  <input {...getInputProps()} />
-                  {uploading ? <p className="font-mono text-neon-green animate-pulse">UPLOADING DATA…</p>
-                    : form.coverImage
-                    ? <div className="relative h-48 w-full rounded-lg overflow-hidden border border-white/10">
-                        <Image
-                            src={form.coverImage}
-                            alt=""
-                            fill
-                            className="object-cover"
-                            priority={false}
-                        />
-                      </div>
-                    : <div className="space-y-2">
-                        <p className="font-mono text-sm text-gray-400 group-hover:text-neon-green transition-colors">DRAG IMAGE HERE OR CLICK</p>
-                    </div>}
-                </div>
-              </div>
-              <div className="flex items-center gap-4 py-4 border-t border-white/10">
-                <div className="relative flex items-center">
-                  <input type="checkbox" id="published_news" checked={form.published} onChange={e => setForm(p => ({ ...p, published: e.target.checked }))} className="peer sr-only" />
-                  <div className="w-11 h-6 bg-gray-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-neon-green after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                </div>
-                 <label htmlFor="published_news" className="font-mono text-sm text-gray-300 font-bold uppercase tracking-widest cursor-pointer">MAKE PUBLIC (PUBLISH)</label>
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button type="submit" disabled={saving}
-                  className="flex-1 bg-neon-green/90 text-black font-mono font-bold py-3.5 rounded-lg hover:bg-neon-green hover:shadow-[0_0_20px_rgba(0,255,65,0.4)] disabled:opacity-50 transition-all uppercase tracking-widest">
-                  {saving ? 'PROCESSING…' : 'DISPATCH'}
-                </button>
-                <button type="button" onClick={() => setModal(null)}
-                  className="flex-1 border border-gray-600 text-gray-400 font-mono py-3.5 rounded-lg hover:text-white hover:border-gray-400 transition-all uppercase tracking-widest">
-                  ABORT
-                </button>
-              </div>
-            </form>
-          </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
+
+      {/* Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="bg-[#12121a] border-gray-800 text-white max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingId ? 'Edit Article' : 'New Article'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-gray-300">Title *</Label>
+              <Input
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                className="bg-[#1a1a2e] border-gray-700 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Content</Label>
+              <Textarea
+                value={form.body}
+                onChange={(e) => setForm({ ...form, body: e.target.value })}
+                rows={5}
+                className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={form.published}
+                onCheckedChange={(v) => setForm({ ...form, published: v })}
+              />
+              <Label className="text-gray-300">Published</Label>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Images</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="Enter image URL"
+                  className="bg-[#1a1a2e] border-gray-700 text-white flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addImage}
+                  className="border-gray-700 text-gray-300"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {form.images.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.images.map((url, i) => (
+                    <div key={i} className="relative group">
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-16 h-16 rounded object-cover border border-gray-700"
+                      />
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setModalOpen(false)} className="text-gray-400">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving || !form.title}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editingId ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 }

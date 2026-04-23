@@ -108,7 +108,7 @@ export async function GET() {
         slug: a.slug,
         status: (t as unknown as Record<string, unknown>)?.status ?? 'active',
         postCount: a.postCount,
-        createdAt: t?.createdAt?.toDate ? t.createdAt.toDate().toISOString().slice(0, 10) : '',
+        created_at: t?.createdAt?.toDate ? t.createdAt.toDate().toISOString().slice(0, 10) : '',
       }
     }),
   })
