@@ -2,7 +2,39 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 
+const DEMO_METRICS = {
+  totalAgencies: 5,
+  totalPosts: 127,
+  totalMedia: 348,
+  agenciesPerMonth: [
+    { month: '2024-05', count: 1 },
+    { month: '2024-06', count: 0 },
+    { month: '2024-07', count: 1 },
+    { month: '2024-08', count: 2 },
+    { month: '2024-09', count: 0 },
+    { month: '2024-10', count: 1 },
+    { month: '2024-11', count: 0 },
+    { month: '2024-12', count: 0 },
+    { month: '2025-01', count: 0 },
+    { month: '2025-02', count: 0 },
+    { month: '2025-03', count: 0 },
+    { month: '2025-04', count: 0 },
+  ],
+  topAgencies: [
+    { name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', postCount: 45 },
+    { name: 'Palm Realty', slug: 'palm-realty', postCount: 32 },
+    { name: 'Marina Estates', slug: 'marina-estates', postCount: 28 },
+    { name: 'Downtown Properties', slug: 'downtown-properties', postCount: 15 },
+    { name: 'JBR Residences', slug: 'jbr-residences', postCount: 7 },
+  ],
+}
+
 export async function GET() {
+  // Return demo data if in demo mode
+  if (process.env.DEMO_MODE === 'true') {
+    return NextResponse.json(DEMO_METRICS)
+  }
+
   // Check if Firebase is configured
   if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL ||
       !process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY.includes('YOUR_PRIVATE_KEY_HERE')) {

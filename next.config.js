@@ -12,6 +12,26 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['sharp', 'firebase-admin', '@google-cloud/storage', '@google-cloud/firestore', 'google-auth-library'],
   },
+  // Performance optimizations
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  ...(process.env.ANALYZE === 'true' && {
+    webpack: (config) => {
+      if (process.env.ANALYZE) {
+        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+        config.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: './analyze/client.html',
+            openAnalyzer: false,
+          })
+        )
+      }
+      return config
+    },
+  }),
 }
 
 module.exports = nextConfig

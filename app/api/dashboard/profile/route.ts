@@ -20,19 +20,6 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  let body: Record<string, unknown>
-  try { body = await request.json() } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
-  const allowed = ['bio', 'licenceNo', 'logoUrl', 'coverUrl', 'socialLinks', 'workingHours']
-  const update: Record<string, unknown> = { updatedAt: new Date() }
-  for (const key of allowed) {
-    if (key in body) update[key] = body[key]
-  }
-
-  const ref = adminDb
     .collection('tenants')
     .doc(session.tenantId)
     .collection('profiles')

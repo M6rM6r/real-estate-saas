@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import PhotoSwipeLightbox from 'photoswipe/lightbox'
+import 'photoswipe/style.css'
 
 type Tenant = {
   id: string
@@ -14,6 +17,10 @@ type Profile = {
   cover_url?: string | null
   bio?: string | null
   licence_no?: string | null
+  tagline?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  contactAddress?: string | null
   social_links?: {
     instagram?: string
     x?: string
@@ -45,12 +52,22 @@ type Media = {
   sort_order: number
 }
 
+type TeamMember = {
+  id: string
+  email: string
+  role: 'agent' | 'admin'
+  display_name?: string | null
+  photo_url?: string | null
+  phone?: string | null
+}
+
 interface Props {
   tenant: Tenant
   profile: Profile
   listings: Post[]
   news: Post[]
   gallery: Media[]
+  team: TeamMember[]
 }
 
 const DAY_LABELS: Record<string, string> = {
@@ -58,7 +75,7 @@ const DAY_LABELS: Record<string, string> = {
   thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun',
 }
 
-export default function PublicAgencyPage({ tenant, profile, listings, news, gallery }: Props) {
+export default function PublicAgencyPage({ tenant, profile, listings, news, gallery, team }: Props) {
   const primary = tenant.primary_color ?? '#2563eb'
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [carouselIdx, setCarouselIdx] = useState(0)
@@ -71,6 +88,19 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
   const waLink = whatsapp
     ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${tenant.name}, I found you via your website.`)}`
     : '#'
+
+  useEffect(() => {
+    let lightbox = new PhotoSwipeLightbox({
+      gallery: '#media-vault-gallery',
+      children: 'a',
+      pswpModule: () => import('photoswipe')
+    });
+    lightbox.init();
+    return () => {
+      lightbox.destroy();
+      lightbox = null as any;
+    };
+  }, []);
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,10 +138,18 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/70" />
           <div className="relative z-10 text-center text-white px-4">
             {profile?.logo_url && (
-              <img src={profile.logo_url} alt={tenant.name} className="w-24 h-24 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg" />
+              <Image
+                src={profile.logo_url}
+                alt={tenant.name}
+                width={96}
+                height={96}
+                className="w-24 h-24 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg"
+                priority={true}
+              />
             )}
             <h1 className="text-4xl md:text-6xl font-bold mb-3">{tenant.name}</h1>
-            {profile?.bio && <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-6">{profile.bio}</p>}
+            {profile?.tagline && <p className="text-xl md:text-2xl text-primary font-medium mb-4">{profile.tagline}</p>}
+            {profile?.bio && <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-6 drop-shadow-xl">{profile.bio}</p>}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {whatsapp && (
                 <a href={waLink} target="_blank" rel="noopener noreferrer"
@@ -140,7 +178,14 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               {listings.map(l => (
                 <button key={l.id} onClick={() => openListing(l)} className="text-left group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
                   {l.images[0] ? (
-                    <img src={l.images[0]} alt={l.title} className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image
+                      src={l.images[0]}
+                      alt={l.title}
+                      width={400}
+                      height={208}
+                      className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                      priority={false}
+                    />
                   ) : (
                     <div className="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-300 text-sm">No image</div>
                   )}
@@ -168,7 +213,14 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {news.map(item => (
                   <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm shrink-0 w-80">
-                    {item.images[0] && <img src={item.images[0]} alt={item.title} className="w-full h-44 object-cover" />}
+                    {item.images[0] && <Image
+                      src={item.images[0]}
+                      alt={item.title}
+                      width={320}
+                      height={176}
+                      className="w-full h-44 object-cover"
+                      priority={false}
+                    />}
                     <div className="p-5">
                       <p className="text-xs text-gray-400 mb-1">{new Date(item.created_at).toLocaleDateString()}</p>
                       <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
@@ -190,14 +242,70 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           )}
         </section>
 
+        {/* Team */}
+        {team.length > 0 && (
+          <section className="py-16 bg-gray-50">
+            <div className="px-4 md:px-8 max-w-7xl mx-auto">
+              <h2 className="text-3xl font-bold mb-8 text-center">Our Team</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {team.map(member => (
+                  <div key={member.id} className="bg-white rounded-2xl p-6 text-center shadow-sm">
+                    {member.photo_url ? (
+                      <Image
+                        src={member.photo_url}
+                        alt={member.display_name || member.email}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+                        priority={false}
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center text-2xl">
+                        {(member.display_name || member.email).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <h3 className="font-semibold text-gray-900">{member.display_name || member.email.split('@')[0]}</h3>
+                    <p className="text-sm text-gray-500 capitalize">{member.role}</p>
+                    {member.phone && (
+                      <a href={`tel:${member.phone}`} className="text-sm text-primary hover:underline mt-2 block">
+                        {member.phone}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Gallery */}
         {gallery.length > 0 && (
           <section className="py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-8">Gallery</h2>
-              <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-                {gallery.map(item => (
-                  <img key={item.id} src={item.url} alt={item.label ?? ''} className="break-inside-avoid w-full rounded-xl object-cover" />
+              <div id="media-vault-gallery" className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                {gallery.map((item, i) => (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    data-pswp-width="1920"
+                    data-pswp-height="1080"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block group relative overflow-hidden break-inside-avoid rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <Image
+                      src={item.url}
+                      alt={item.label ?? `Gallery image ${i + 1}`}
+                      width={600}
+                      height={400}
+                      className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      priority={false}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                       <span className="opacity-0 group-hover:opacity-100 bg-white/20 backdrop-blur text-white px-3 py-1 rounded-full text-sm font-medium transition-opacity">&#x26F6; Enlarge</span>
+                    </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -208,26 +316,68 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         <footer className="bg-gray-900 text-white py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              {profile?.logo_url && <img src={profile.logo_url} alt={tenant.name} className="w-16 h-16 object-contain mb-3 rounded" />}
+              {profile?.logo_url && (
+                <Image 
+                  src={profile.logo_url} 
+                  alt={tenant.name} 
+                  width={64} 
+                  height={64} 
+                  className="w-16 h-16 object-contain mb-3 rounded" 
+                />
+              )}
               <h3 className="text-xl font-bold">{tenant.name}</h3>
               {profile?.bio && <p className="text-gray-400 text-sm mt-2">{profile.bio}</p>}
+              {profile?.contactAddress && <p className="text-gray-300 text-sm mt-4">📍 {profile.contactAddress}</p>}
             </div>
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">Contact</h4>
               {whatsapp && (
-                <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white block mb-1">
-                  WhatsApp: {whatsapp}
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  💬 WhatsApp: {whatsapp}
                 </a>
               )}
-              <div className="flex gap-3 mt-3">
+              {profile?.contactEmail && (
+                <a href={`mailto:${profile.contactEmail}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  ✉️ {profile.contactEmail}
+                </a>
+              )}
+              {profile?.contactPhone && (
+                 <a href={`tel:${profile.contactPhone}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  📞 {profile.contactPhone}
+                </a>
+              )}
+              <div className="flex gap-2 mt-4">
                 {profile?.social_links?.instagram && (
-                  <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">Instagram</a>
+                  <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer" 
+                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772 4.902 4.902 0 011.772-1.153c.636-.247 1.363-.416 2.427-.465C9.673 2.013 10.03 2 12.48 2h-.165zm3.77 4.53a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" clipRule="evenodd" />
+                    </svg>
+                  </a>
                 )}
                 {profile?.social_links?.x && (
-                  <a href={profile.social_links.x} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">X</a>
+                  <a href={profile.social_links.x} target="_blank" rel="noopener noreferrer" 
+                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
                 )}
                 {profile?.social_links?.linkedin && (
-                  <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm">LinkedIn</a>
+                  <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer" 
+                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </a>
+                )}
+                {profile?.social_links?.whatsapp && (
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" 
+                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path fillRule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0 20.117 20.117 0 003.553-1.093 20.068 20.068 0 005.596-4.084 12.633 12.633 0 002.091-7.175.75.75 0 00-.722-.516 11.209 11.209 0 01-7.877-3.08zM12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" clipRule="evenodd" />
+                    </svg>
+                  </a>
                 )}
               </div>
             </div>
@@ -264,7 +414,14 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               {activeListing.images.length > 0 && (
                 <div className="relative">
-                  <img src={activeListing.images[carouselIdx]} alt="" className="w-full h-72 object-cover rounded-t-2xl" />
+                  <Image
+                    src={activeListing.images[carouselIdx]}
+                    alt=""
+                    width={512}
+                    height={288}
+                    className="w-full h-72 object-cover rounded-t-2xl"
+                    priority={false}
+                  />
                   {activeListing.images.length > 1 && (
                     <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
                       {activeListing.images.map((_, i) => (

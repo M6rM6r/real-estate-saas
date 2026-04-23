@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -44,7 +45,14 @@ export default function ListingsSection({ listings }: ListingsSectionProps) {
               onCheckedChange={() => toggleSelect(listing.id)}
               className="mb-2"
             />
-            <img src={listing.images[0]} alt={listing.title} className="w-full h-48 object-cover mb-2" />
+            <Image
+              src={listing.images[0]}
+              alt={listing.title}
+              width={400}
+              height={192}
+              className="w-full h-48 object-cover mb-2"
+              priority={false}
+            />
             <h3 className="font-bold">{listing.title}</h3>
             <p>{listing.location}</p>
             <p className="font-bold">${listing.price}</p>
@@ -60,7 +68,14 @@ export default function ListingsSection({ listings }: ListingsSectionProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {selectedListings.map(listing => (
               <div key={listing.id} className="border p-4 rounded">
-                <img src={listing.images[0]} alt={listing.title} className="w-full h-32 object-cover mb-2" />
+                <Image
+                  src={listing.images[0]}
+                  alt={listing.title}
+                  width={300}
+                  height={128}
+                  className="w-full h-32 object-cover mb-2"
+                  priority={false}
+                />
                 <h3 className="font-bold">{listing.title}</h3>
                 <p>{listing.location}</p>
                 <p className="font-bold">${listing.price}</p>

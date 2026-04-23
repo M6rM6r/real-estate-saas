@@ -1,11 +1,14 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
   const { id } = params
   let body: { name?: string; slug?: string; status?: string }
   try {
@@ -36,9 +39,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
   const { id } = params
 
   // Delete all subcollection docs

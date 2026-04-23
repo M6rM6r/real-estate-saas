@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import dynamic from 'next/dynamic'
+import { authHeaders } from '@/lib/firebase-client-auth'
 
 type Analytics = {
   pageViews: { date: string; views: number }[]
@@ -10,13 +11,27 @@ type Analytics = {
   totalLeads: number
 }
 
+// Dynamically import chart components to reduce initial bundle size
+const LineChart = dynamic(() => import('recharts').then(mod => ({ default: mod.LineChart })), { ssr: false })
+const Line = dynamic(() => import('recharts').then(mod => ({ default: mod.Line })), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.XAxis })), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.YAxis })), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(mod => ({ default: mod.CartesianGrid })), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then(mod => ({ default: mod.Tooltip })), { ssr: false })
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), { ssr: false })
+const BarChart = dynamic(() => import('recharts').then(mod => ({ default: mod.BarChart })), { ssr: false })
+const Bar = dynamic(() => import('recharts').then(mod => ({ default: mod.Bar })), { ssr: false })
+
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
 
   useEffect(() => {
-    fetch('/api/dashboard/analytics')
-      .then(res => res.json())
-      .then(setAnalytics)
+    authHeaders().then(hdrs => {
+      if (!hdrs) return
+      fetch('/api/dashboard/analytics', { headers: hdrs })
+        .then(res => res.json())
+        .then(setAnalytics)
+    })
   }, [])
 
   if (!analytics) return <div>Loading...</div>

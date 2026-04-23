@@ -27,12 +27,17 @@ export async function POST(request: NextRequest) {
   const validPassword = process.env.ADMIN_PASSWORD ?? ''
 
   if (!timingSafeEqual(email, validEmail) || !timingSafeEqual(password, validPassword)) {
-    await firestore.collection('admin_logs').add({
-      action: 'admin_login_failed',
-      performedBy: email || 'unknown',
-      metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' },
-      createdAt: new Date(),
-    })
+    // Skip Firestore logging in demo mode
+    if (process.env.DEMO_MODE !== 'true') {
+      try {
+        await firestore.collection('admin_logs').add({
+          action: 'admin_login_failed',
+          performedBy: email || 'unknown',
+          metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' },
+          createdAt: new Date(),
+        })
+      } catch { /* ignore Firestore errors */ }
+    }
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
@@ -42,11 +47,16 @@ export async function POST(request: NextRequest) {
     .setExpirationTime('8h')
     .sign(ADMIN_JWT_SECRET)
 
-  await firestore.collection('admin_logs').add({
-    action: 'admin_login_success',
-    performedBy: email,
-    createdAt: new Date(),
-  })
+  // Skip Firestore logging in demo mode
+  if (process.env.DEMO_MODE !== 'true') {
+    try {
+      await firestore.collection('admin_logs').add({
+        action: 'admin_login_success',
+        performedBy: email,
+        createdAt: new Date(),
+      })
+    } catch { /* ignore Firestore errors */ }
+  }
 
   const response = NextResponse.json({ success: true })
   response.cookies.set('admin_session', token, {

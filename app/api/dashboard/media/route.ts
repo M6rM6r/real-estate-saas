@@ -6,8 +6,15 @@ import { adminDb } from '@/lib/firebase-admin'
 export async function GET(request: NextRequest) {
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const snap = await adminDb.collection('media').where('tenantId', '==', session.tenantId).orderBy('sort_order', 'asc').get()
-  return NextResponse.json(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+  const response = NextResponse.json(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+
+  // Cache for 10 minutes at the browser level, allow stale-while-revalidate
+  response.headers.set('Cache-Control', 'private, max-age=600, stale-while-revalidate=120')
+
+  return response
 }
 
 export async function POST(request: NextRequest) {
@@ -55,5 +62,17 @@ export async function PATCH(request: NextRequest) {
   })
 
   await batch.commit()
+  return NextResponse.json({ success: true })
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await getFirebaseSession(request)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+  await adminDb.collection('media').doc(id).delete()
   return NextResponse.json({ success: true })
 }

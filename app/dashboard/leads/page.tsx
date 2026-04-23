@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/firebase-client-auth'
 
 type Lead = {
   id: string
@@ -11,7 +11,7 @@ type Lead = {
   message: string | null
   status: 'new' | 'contacted' | 'closed'
   listing_id: string | null
-  created_at: string
+  createdAt: string | { seconds: number }
 }
 
 const STATUS_COLORS = {
@@ -25,10 +25,10 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const hdrs = await authHeaders()
+    if (!hdrs) return
     const res = await fetch('/api/dashboard/leads', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: hdrs,
     })
     const json = await res.json()
     setLeads(json ?? [])
@@ -38,11 +38,11 @@ export default function LeadsPage() {
   useEffect(() => { load() }, [load])
 
   const updateStatus = async (id: string, status: Lead['status']) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const hdrs = await authHeaders()
+    if (!hdrs) return
     await fetch(`/api/dashboard/leads/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      headers: { 'Content-Type': 'application/json', ...hdrs },
       body: JSON.stringify({ status }),
     })
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l))
@@ -86,7 +86,7 @@ export default function LeadsPage() {
                   <td className="px-4 py-3 text-gray-500 max-w-xs">
                     <span className="line-clamp-2">{lead.message ?? '—'}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(lead.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{typeof lead.createdAt === 'object' && lead.createdAt !== null && 'seconds' in lead.createdAt ? new Date((lead.createdAt as {seconds: number}).seconds * 1000).toLocaleDateString() : new Date(lead.createdAt as string).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <select
                       value={lead.status}
