@@ -26,6 +26,19 @@ export default function SettingsPage() {
   const [logoUrl, setLogoUrl] = useState('');
 
   useEffect(() => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      const demoProfile: ProfileResponse = {
+        profile: { contact_email: 'hello@luxuryhomesdubai.ae', logo_url: '', bio: '', contact_phone: '+971 4 000 0000', contact_address: 'Dubai Marina, Dubai, UAE' } as any,
+        tenant: { name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', primary_color: '#1d4ed8' } as any,
+      };
+      setData(demoProfile);
+      setName(demoProfile.tenant.name);
+      setEmail(demoProfile.profile.contact_email || '');
+      setLogoUrl(demoProfile.profile.logo_url || '');
+      setLoading(false);
+      return;
+    }
     authFetch<ProfileResponse>('/api/dashboard/profile')
       .then((res) => {
         setData(res);
