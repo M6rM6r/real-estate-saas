@@ -127,9 +127,22 @@ export default function PageBuilderPage() {
   const slug = data?.tenant?.slug || '';
   const configuredBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
   const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-  const baseUrl = configuredBaseUrl || runtimeOrigin;
+
+  let isConfiguredBaseUrlValid = false;
+  if (configuredBaseUrl) {
+    try {
+      const parsed = new URL(configuredBaseUrl);
+      isConfiguredBaseUrlValid = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      isConfiguredBaseUrlValid = false;
+    }
+  }
+
+  const baseUrl = isConfiguredBaseUrlValid ? configuredBaseUrl : runtimeOrigin;
   const publicUrl = slug ? `${baseUrl}/${slug}` : baseUrl;
   const publicPath = slug ? `/${slug}` : '/';
+  const shouldShowInvalidUrlWarning = Boolean(configuredBaseUrl) && !isConfiguredBaseUrlValid;
+  const shouldShowMissingUrlInfo = !configuredBaseUrl;
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
@@ -145,6 +158,18 @@ export default function PageBuilderPage() {
         <div className="min-w-0">
           <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">رابط صفحتك العامة</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
+          {shouldShowInvalidUrlWarning && (
+            <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              قيمة NEXT_PUBLIC_APP_URL غير صالحة — سيتم استخدام رابط البيئة الحالية.
+            </p>
+          )}
+          {shouldShowMissingUrlInfo && (
+            <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              لم يتم ضبط NEXT_PUBLIC_APP_URL — يفضّل إضافتها في بيئة التشغيل.
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {dirty && (
