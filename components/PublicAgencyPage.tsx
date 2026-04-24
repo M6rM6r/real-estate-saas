@@ -394,8 +394,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {news.map(item => (
                   <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm shrink-0 w-80">
-                    {item.images[0] && <Image
-                      src={item.images[0]}
+                    {(item.image_url || item.images?.[0]) && <Image
+                      src={item.image_url || item.images[0]}
                       alt={item.title}
                       width={320}
                       height={176}
