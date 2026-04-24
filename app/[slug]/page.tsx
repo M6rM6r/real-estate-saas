@@ -1,18 +1,42 @@
 import { adminDb } from '@/lib/firebase-admin'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
 
 export const revalidate = 60
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const serialize = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj?.toDate === 'function') return obj.toDate().toISOString()
+  if (Array.isArray(obj)) return obj.map(serialize)
+  if (typeof obj === 'object' && obj.constructor !== Object) return JSON.parse(JSON.stringify(obj))
+  if (typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, serialize(v)]))
+  }
+  return obj
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
   const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
   if (tenantsSnap.empty) return { title: 'Not Found' }
   const tenant = { id: tenantsSnap.docs[0].id, ...tenantsSnap.docs[0].data() } as { id: string; name: string; slug: string }
-  const profilesSnap = await adminDb.collection('profiles').where('tenantId', '==', tenant.id).limit(1).get()
-  const profile = profilesSnap.empty ? null : profilesSnap.docs[0].data()
+  const profileDoc = await adminDb
+    .collection('tenants')
+    .doc(tenant.id)
+    .collection('profiles')
+    .doc(tenant.id)
+    .get()
+  const fallbackProfilesSnap = profileDoc.exists
+    ? null
+    : await adminDb.collection('profiles').where('tenantId', '==', tenant.id).limit(1).get()
+  const profile = profileDoc.exists
+    ? profileDoc.data()
+    : fallbackProfilesSnap?.empty
+      ? null
+      : fallbackProfilesSnap?.docs[0].data()
 
   return {
     title: `${tenant.name} — Real Estate`,
@@ -32,19 +56,29 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   if (tenantsSnap.empty) notFound()
 
   const tenantDoc = tenantsSnap.docs[0]
-  const tenant = { id: tenantDoc.id, ...tenantDoc.data() } as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }
+  const tenant = serialize({ id: tenantDoc.id, ...tenantDoc.data() }) as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }
   const tenantId = tenantDoc.id
 
-  const [profilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await Promise.all([
+  const [profileDoc, fallbackProfilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await Promise.all([
+    adminDb.collection('tenants').doc(tenantId).collection('profiles').doc(tenantId).get(),
     adminDb.collection('profiles').where('tenantId', '==', tenantId).limit(1).get(),
-    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'listing').where('published', '==', true).orderBy('createdAt', 'desc').limit(9).get(),
-    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'news').where('published', '==', true).orderBy('createdAt', 'desc').limit(6).get(),
-    adminDb.collection('media').where('tenantId', '==', tenantId).orderBy('sort_order').limit(12).get(),
+    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'listing').where('published', '==', true).limit(50).get(),
+    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'news').where('published', '==', true).limit(20).get(),
+    adminDb.collection('media').where('tenantId', '==', tenantId).limit(12).get(),
     adminDb.collection('users').where('tenantId', '==', tenantId).get(),
   ])
 
-  const listingsData = listingsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[]
-  const profileData = profilesSnap.empty ? null : profilesSnap.docs[0].data() as any
+  const sortByDate = (docs: any[]) =>
+    [...docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))
+
+  const toDoc = (d: any) => serialize({ id: d.id, ...d.data() })
+
+  const listingsData = sortByDate(listingsSnap.docs).slice(0, 9).map(toDoc)
+  const profileData = profileDoc.exists
+    ? serialize(profileDoc.data())
+    : fallbackProfilesSnap.empty
+      ? null
+      : serialize(fallbackProfilesSnap.docs[0].data())
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -68,9 +102,9 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
         tenant={tenant}
         profile={profileData}
         listings={listingsData}
-        news={newsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any}
-        gallery={gallerySnap.docs.map(d => ({ id: d.id, ...d.data() })) as any}
-        team={usersSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any}
+        news={sortByDate(newsSnap.docs).slice(0, 6).map(toDoc)}
+        gallery={gallerySnap.docs.sort((a, b) => (a.data().sort_order ?? 0) - (b.data().sort_order ?? 0)).map(toDoc)}
+        team={usersSnap.docs.map(toDoc)}
       />
     </>
   )

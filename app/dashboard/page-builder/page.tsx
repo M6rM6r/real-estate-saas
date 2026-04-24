@@ -56,6 +56,41 @@ const demoListings = [
   { id: '3', title: 'أرض للاستثمار العقاري', price: 800000, location: 'Business Bay', bedrooms: 0, bathrooms: 0, area_sqm: 1000, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg'] },
 ];
 
+const DAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const DAY_AR: Record<(typeof DAY_ORDER)[number], string> = {
+  sun: 'الأحد',
+  mon: 'الإثنين',
+  tue: 'الثلاثاء',
+  wed: 'الأربعاء',
+  thu: 'الخميس',
+  fri: 'الجمعة',
+  sat: 'السبت',
+};
+
+const WORKING_HOURS_DEFAULT: NonNullable<Profile['working_hours']> = {
+  sun: { enabled: true, open: '09:00', close: '17:00' },
+  mon: { enabled: true, open: '09:00', close: '17:00' },
+  tue: { enabled: true, open: '09:00', close: '17:00' },
+  wed: { enabled: true, open: '09:00', close: '17:00' },
+  thu: { enabled: true, open: '09:00', close: '17:00' },
+  fri: { enabled: false, open: '09:00', close: '17:00' },
+  sat: { enabled: false, open: '09:00', close: '17:00' },
+};
+
+const toMinutes = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+};
+
+const isValidUrl = (value: string) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export default function PageBuilderPage() {
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +111,16 @@ export default function PageBuilderPage() {
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
 
+  const profileCompletionCount = [
+    agencyName,
+    profile.tagline,
+    profile.bio,
+    profile.logo_url,
+    profile.contact_phone,
+    profile.contact_email,
+  ].filter(Boolean).length;
+  const profileCompletionPct = Math.round((profileCompletionCount / 6) * 100);
+
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
     if (isDemo) {
@@ -94,7 +139,12 @@ export default function PageBuilderPage() {
       authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
     ]).then(([profileRes, listingsRes]) => {
         setData(profileRes);
-        if (profileRes.profile) setProfile(profileRes.profile);
+        if (profileRes.profile) {
+          setProfile({
+            ...profileRes.profile,
+            working_hours: { ...WORKING_HOURS_DEFAULT, ...(profileRes.profile.working_hours ?? {}) },
+          });
+        }
         setPrimaryColor(profileRes.tenant?.primary_color || '#2563eb');
         setAgencyName(profileRes.tenant?.name || '');
         setSelectedTheme(profileRes.tenant?.theme || 'modern');
@@ -103,6 +153,16 @@ export default function PageBuilderPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
 
   const markDirty = () => {
     setDirty(true);
@@ -195,6 +255,40 @@ export default function PageBuilderPage() {
   };
 
   const handleSave = async () => {
+    const email = (profile.contact_email || '').trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSaveStatus('error');
+      setSaveError('صيغة البريد الإلكتروني غير صحيحة');
+      return;
+    }
+
+    const urlCandidates: Array<{ label: string; value?: string }> = [
+      { label: 'رابط الشعار', value: profile.logo_url || '' },
+      { label: 'رابط صورة الغلاف', value: profile.cover_url || '' },
+      { label: 'Instagram', value: profile.social_links?.instagram || '' },
+      { label: 'X (Twitter)', value: profile.social_links?.x || '' },
+      { label: 'LinkedIn', value: profile.social_links?.linkedin || '' },
+      { label: 'WhatsApp', value: profile.social_links?.whatsapp || '' },
+    ];
+    for (const candidate of urlCandidates) {
+      const v = candidate.value?.trim();
+      if (v && !isValidUrl(v)) {
+        setSaveStatus('error');
+        setSaveError(`${candidate.label}: الرجاء إدخال رابط صحيح يبدأ بـ http أو https`);
+        return;
+      }
+    }
+
+    for (const day of DAY_ORDER) {
+      const h = profile.working_hours?.[day];
+      if (!h?.enabled) continue;
+      if (!h.open || !h.close || toMinutes(h.open) >= toMinutes(h.close)) {
+        setSaveStatus('error');
+        setSaveError(`ساعات العمل غير صحيحة ليوم ${DAY_AR[day]}`);
+        return;
+      }
+    }
+
     setSaveStatus('saving');
     setSaveError('');
     try {
@@ -214,6 +308,19 @@ export default function PageBuilderPage() {
       setSaveError(e instanceof Error ? e.message : 'Save failed. Please try again.');
     }
   };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        if (saveStatus !== 'saving' && dirty) {
+          void handleSave();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [dirty, saveStatus, handleSave]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -610,7 +717,10 @@ export default function PageBuilderPage() {
                           <span className={`text-xs px-2 py-0.5 rounded-full ${ listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400' }`}>
                             {listing.listing_status === 'available' ? 'متاح' : listing.listing_status === 'sold' ? 'مباع' : 'مؤجر'}
                           </span>
-          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+                          {listing.published === false && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">مسودة</span>
+                          )}
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
@@ -653,8 +763,19 @@ export default function PageBuilderPage() {
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   <Clock className="h-4 w-4 text-blue-400" /> ساعات العمل
                 </p>
-                {(['sun','mon','tue','wed','thu','fri','sat'] as const).map((day) => {
-                  const DAY_AR: Record<string, string> = { sun: 'الأحد', mon: 'الإثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس', fri: 'الجمعة', sat: 'السبت' };
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-slate-500">أيام معطلة يمكن تعطيلها، والأيام المفعلة يجب أن تحتوي وقت فتح/إغلاق صحيح.</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-slate-300 hover:text-white"
+                    onClick={() => updateProfile({ working_hours: WORKING_HOURS_DEFAULT })}
+                  >
+                    إعادة الضبط
+                  </Button>
+                </div>
+                {DAY_ORDER.map((day) => {
                   const h = profile.working_hours?.[day] ?? { enabled: false, open: '09:00', close: '17:00' };
                   const setDay = (patch: Partial<{ enabled: boolean; open: string; close: string }>) => {
                     updateProfile({ working_hours: { ...(profile.working_hours ?? {}), [day]: { ...h, ...patch } } });
@@ -724,15 +845,18 @@ export default function PageBuilderPage() {
           </Tabs>
 
           {/* Save button + status */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               onClick={handleSave}
-              disabled={saveStatus === 'saving'}
+              disabled={saveStatus === 'saving' || !dirty}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
             >
               {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
               {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
             </Button>
+
+            <span className="text-xs text-slate-500">اختصار الحفظ: Ctrl/Cmd + S</span>
+            <span className="text-xs text-slate-400">اكتمال الملف: {profileCompletionPct}%</span>
 
             {saveStatus === 'saved' && (
               <span className="flex items-center gap-1.5 text-sm text-green-400">

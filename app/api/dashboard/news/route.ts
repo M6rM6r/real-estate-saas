@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const snap = await adminDb.collection('posts')
     .where('tenantId', '==', session.tenantId).where('type', '==', 'news')
-    .orderBy('createdAt', 'desc').get()
-  return NextResponse.json(snap.docs.map(d => {
+    .get()
+  const docs = [...snap.docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))
+  return NextResponse.json(docs.map(d => {
     const { createdAt, ...rest } = d.data()
     return { id: d.id, ...rest, created_at: createdAt?.toDate?.()?.toISOString() ?? null }
   }))

@@ -4,20 +4,39 @@ import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { z } from 'zod'
 
+const emptyToNull = (v: unknown) => {
+  if (typeof v !== 'string') return v
+  const t = v.trim()
+  return t === '' ? null : t
+}
+
+const optionalUrlField = z.preprocess(
+  emptyToNull,
+  z.string().url().max(500).nullable().optional(),
+)
+
 const ProfileDataSchema = z.object({
-  logo_url: z.string().url().max(500).optional().nullable(),
-  cover_url: z.string().url().max(500).optional().nullable(),
-  bio: z.string().max(2000).optional().nullable(),
-  tagline: z.string().max(200).optional().nullable(),
-  contact_email: z.string().email().max(200).optional().nullable(),
-  contact_phone: z.string().max(30).optional().nullable(),
-  contact_address: z.string().max(300).optional().nullable(),
+  logo_url: optionalUrlField,
+  cover_url: optionalUrlField,
+  bio: z.preprocess(emptyToNull, z.string().max(2000).nullable().optional()),
+  tagline: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+  licence_no: z.preprocess(emptyToNull, z.string().max(100).nullable().optional()),
+  contact_email: z.preprocess(emptyToNull, z.string().email().max(200).nullable().optional()),
+  contact_phone: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
+  contact_address: z.preprocess(emptyToNull, z.string().max(300).nullable().optional()),
   social_links: z.object({
-    instagram: z.string().max(200).optional(),
-    x: z.string().max(200).optional(),
-    linkedin: z.string().max(200).optional(),
-    whatsapp: z.string().max(30).optional(),
-  }).optional(),
+    instagram: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    x: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    linkedin: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    whatsapp: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
+  }).optional().nullable(),
+  working_hours: z.record(
+    z.object({
+      enabled: z.boolean(),
+      open: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+      close: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+    }),
+  ).optional().nullable(),
 }).optional()
 
 const TenantDataSchema = z.object({
@@ -63,7 +82,21 @@ export async function PATCH(request: NextRequest) {
   let body: z.infer<typeof PatchSchema>
   try {
     body = PatchSchema.parse(await request.json())
-  } catch {
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const first = error.issues[0]
+      const path = first?.path?.join('.') || 'payload'
+      return NextResponse.json(
+        {
+          error: `Invalid input at ${path}`,
+          details: error.issues.map((i) => ({
+            path: i.path.join('.'),
+            message: i.message,
+          })),
+        },
+        { status: 400 },
+      )
+    }
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
