@@ -3,16 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart3, Home, Users, Image, Megaphone, Newspaper, LayoutTemplate, Settings, LogOut, Building2, Menu, X } from 'lucide-react';
+import { BarChart3, LayoutTemplate, Settings, LogOut, Building2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: BarChart3 },
-  { href: '/dashboard/listings', label: 'Listings', icon: Home },
-  { href: '/dashboard/leads', label: 'Leads', icon: Users },
-  { href: '/dashboard/gallery', label: 'Gallery', icon: Image },
-  { href: '/dashboard/announcements', label: 'Announcements', icon: Megaphone },
-  { href: '/dashboard/news', label: 'News', icon: Newspaper },
   { href: '/dashboard/page-builder', label: 'Page Builder', icon: LayoutTemplate },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
