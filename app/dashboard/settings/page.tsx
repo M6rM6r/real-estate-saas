@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
@@ -34,6 +35,10 @@ export default function SettingsPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
   }, []);
 
   const handleSave = async () => {
@@ -68,7 +73,7 @@ export default function SettingsPage() {
   }
 
   const slug = data?.tenant?.slug;
-  const publicUrl = slug ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${slug}` : null;
+  const publicUrl = slug && origin ? `${origin}/${slug}` : null;
 
   const handleCopy = () => {
     if (!publicUrl) return;

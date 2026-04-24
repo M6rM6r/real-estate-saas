@@ -9,6 +9,14 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'bolt.new',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.bolt.new',
+      },
+      {
+        protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
       },
       {
