@@ -41,6 +41,8 @@ export default function LoginPage() {
 
   const handleDemo = () => {
     sessionStorage.setItem('demo_auth', 'true');
+    // Set a short-lived cookie so the middleware lets demo users through
+    document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
     router.push('/dashboard');
   };
 

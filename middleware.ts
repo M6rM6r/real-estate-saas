@@ -25,10 +25,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Agency dashboard routes ─────────────────────────────
-  // Firebase stores the ID token in a cookie we set ourselves called 'fb_session'
+  // Allow both real Firebase sessions and demo sessions
   if (pathname.startsWith('/dashboard')) {
     const fbSession = request.cookies.get('fb_session')?.value
-    if (!fbSession) {
+    const demoSession = request.cookies.get('demo_session')?.value
+    if (!fbSession && !demoSession) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }

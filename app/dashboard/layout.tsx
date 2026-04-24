@@ -47,6 +47,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = useCallback(async () => {
     sessionStorage.removeItem('demo_auth');
+    // Clear the demo session cookie
+    document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
     if (!isDemo) {
       const { auth } = await import('@/lib/firebase');
       await fetch('/api/auth/session', { method: 'DELETE' });
