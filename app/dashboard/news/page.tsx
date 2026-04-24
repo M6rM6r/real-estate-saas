@@ -11,13 +11,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Loader as Loader2, X, Newspaper } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader as Loader2, X, Newspaper, Search } from 'lucide-react';
 
 const demoNews: Post[] = [
   { id: '1', tenant_id: 'demo', type: 'news', title: 'Dubai Real Estate Market Hits Record High in Q1 2026', body: 'The Dubai property market recorded AED 124 billion in transactions during Q1 2026, a 23% increase year-over-year.', published: true, images: [], created_at: '2026-04-18T10:00:00Z' },
@@ -40,6 +47,8 @@ export default function NewsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
   const fetchData = () => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
@@ -133,6 +142,15 @@ export default function NewsPage() {
     setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
   };
 
+  const filteredItems = items.filter((item) => {
+    const statusMatch =
+      filter === 'all' ? true : filter === 'published' ? item.published : !item.published;
+    const queryMatch = query.trim()
+      ? `${item.title} ${item.body || ''}`.toLowerCase().includes(query.toLowerCase())
+      : true;
+    return statusMatch && queryMatch;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -143,28 +161,56 @@ export default function NewsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">News</h1>
-        <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" /> New Article
-        </Button>
+        <p className="text-sm text-gray-400">Create market updates and agency announcements for your public page.</p>
       </div>
 
-      {items.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">
-          <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-          No news articles yet.
+      <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0a0f]/80 border border-gray-800 rounded-xl p-3">
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search title or content"
+              className="pl-9 bg-[#12121a] border-gray-700 text-white"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={filter} onValueChange={(v) => setFilter(v as 'all' | 'published' | 'draft')}>
+              <SelectTrigger className="w-40 bg-[#12121a] border-gray-700 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1a2e] border-gray-700">
+                <SelectItem value="all">All Articles</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Drafts</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" /> New Article
+            </Button>
+          </div>
         </div>
+      </div>
+
+      {filteredItems.length === 0 ? (
+        <Card className="bg-[#12121a] border-gray-800 py-16 text-center">
+          <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-600" />
+          <p className="text-gray-300 font-medium">No news articles found.</p>
+          <p className="text-gray-500 text-sm mt-2">Try clearing your search/filter, or create a new article.</p>
+        </Card>
       ) : (
         <div className="space-y-3">
-          {items.map((item) => (
-            <Card key={item.id} className="bg-[#12121a] border-gray-800">
+          {filteredItems.map((item) => (
+            <Card key={item.id} className="bg-[#12121a] border-gray-800 hover:border-gray-700 transition-colors">
               <CardContent className="p-4 flex items-start gap-4">
                 {item.images?.[0] && (
                   <img
                     src={item.images[0]}
                     alt=""
-                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                    className="w-20 h-20 rounded object-cover flex-shrink-0"
                   />
                 )}
                 <div className="flex-1 min-w-0">

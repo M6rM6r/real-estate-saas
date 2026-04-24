@@ -86,48 +86,58 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Gallery</h1>
-        <div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleUpload}
-            className="hidden"
-          />
-          <Button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {uploading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            {uploading ? 'Uploading...' : 'Upload Images'}
-          </Button>
+        <p className="text-sm text-gray-400">Manage showcase images used across your public agency page.</p>
+      </div>
+
+      <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0a0f]/80 border border-gray-800 rounded-xl p-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
+            {media.length} image{media.length === 1 ? '' : 's'}
+          </span>
+          <div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleUpload}
+              className="hidden"
+            />
+            <Button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4 mr-2" />
+              )}
+              {uploading ? 'Uploading...' : 'Upload Images'}
+            </Button>
+          </div>
         </div>
       </div>
 
       {media.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">
+        <div className="text-center text-gray-500 py-20 border border-dashed border-gray-700 rounded-2xl bg-[#12121a]">
           <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-          No images yet. Upload your first one!
+          <p className="text-gray-300 font-medium">No images yet.</p>
+          <p className="text-gray-500 text-sm mt-2">Upload your first set to build an attractive gallery.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {media.map((item) => (
             <div
               key={item.id}
-              className="relative group aspect-square rounded-lg overflow-hidden bg-gray-900 border border-gray-800"
+              className="relative group aspect-square rounded-lg overflow-hidden bg-gray-900 border border-gray-800 hover:border-gray-600 transition-all duration-200"
             >
               <img
                 src={item.url}
                 alt={item.label || 'Gallery image'}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <Button
