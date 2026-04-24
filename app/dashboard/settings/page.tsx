@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader as Loader2, Save } from 'lucide-react';
+import { Loader as Loader2, Save, ExternalLink, Copy, Check } from 'lucide-react';
 
 type ProfileResponse = {
   profile: Profile;
@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
@@ -66,9 +67,41 @@ export default function SettingsPage() {
     );
   }
 
+  const slug = data?.tenant?.slug;
+  const publicUrl = slug ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${slug}` : null;
+
+  const handleCopy = () => {
+    if (!publicUrl) return;
+    navigator.clipboard.writeText(publicUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold">Settings</h1>
+
+      {publicUrl && (
+        <Card className="bg-[#12121a] border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-lg">Your Public Page</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-400 mb-3">Share this link with your clients — it shows your listings, contact info, and more.</p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-[#1a1a2e] border border-gray-700 rounded-md px-3 py-2 text-sm text-blue-400 font-mono truncate">
+                {publicUrl}
+              </div>
+              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={handleCopy}>
+                {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={() => window.open(publicUrl, '_blank')}>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="bg-[#12121a] border-gray-800">
         <CardHeader>
