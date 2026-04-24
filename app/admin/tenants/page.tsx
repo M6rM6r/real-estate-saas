@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Loader as Loader2, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Users, Search, ExternalLink, AlertCircle } from 'lucide-react';
 
 type Tenant = {
   id: string;
@@ -43,19 +42,30 @@ function slugify(s: string) {
 export default function AdminTenantsPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [status, setStatus] = useState<'active' | 'suspended'>('active');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const fetchData = () => {
+    setError(null);
+    setLoading(true);
     fetch('/api/admin/tenants')
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error ?? `Error ${r.status}`);
+        }
+        return r.json() as Promise<Tenant[]>;
+      })
       .then(setTenants)
-      .catch(() => {})
+      .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
@@ -65,6 +75,7 @@ export default function AdminTenantsPage() {
     setEditId(null);
     setForm(emptyForm);
     setStatus('active');
+    setSaveError(null);
     setModalOpen(true);
   };
 
@@ -72,20 +83,23 @@ export default function AdminTenantsPage() {
     setEditId(t.id);
     setForm({ name: t.name, slug: t.slug, email: '', tempPassword: '' });
     setStatus(t.status);
+    setSaveError(null);
     setModalOpen(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
+      let res: Response;
       if (editId) {
-        await fetch(`/api/admin/tenants/${editId}`, {
+        res = await fetch(`/api/admin/tenants/${editId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: form.name, slug: form.slug, status }),
         });
       } else {
-        await fetch('/api/admin/tenants', {
+        res = await fetch('/api/admin/tenants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -96,10 +110,15 @@ export default function AdminTenantsPage() {
           }),
         });
       }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setSaveError(data.error ?? `Request failed (${res.status})`);
+        return;
+      }
       setModalOpen(false);
       fetchData();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
+      setSaveError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);
     }
@@ -110,113 +129,183 @@ export default function AdminTenantsPage() {
     setDeleting(true);
     try {
       await fetch(`/api/admin/tenants/${deleteId}`, { method: 'DELETE' });
-      setTenants(tenants.filter((t) => t.id !== deleteId));
+      setTenants((prev) => prev.filter((t) => t.id !== deleteId));
       setDeleteId(null);
     } catch {
+      // ignore
     } finally {
       setDeleting(false);
     }
   };
 
+  const filtered = tenants.filter(
+    (t) =>
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.slug.toLowerCase().includes(search.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-[#00ff41] border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-wider">{'>'} TENANTS</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Tenants</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            {tenants.length} {tenants.length === 1 ? 'agency' : 'agencies'} registered
+          </p>
+        </div>
         <Button
           onClick={openCreate}
-          className="bg-[#00ff41] hover:bg-[#00ff41]/80 text-[#0c0c0c] font-bold font-mono"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
         >
-          <Plus className="h-4 w-4 mr-2" /> CREATE_TENANT
+          <Plus className="h-4 w-4 mr-2" /> New Tenant
         </Button>
       </div>
 
-      {tenants.length === 0 ? (
-        <div className="text-center text-[#00ff41]/40 py-20">
-          <Users className="h-12 w-12 mx-auto mb-4 text-[#00ff41]/20" />
-          No tenants found.
-        </div>
-      ) : (
-        <div className="overflow-x-auto border border-[#00ff41]/20 rounded-lg">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#00ff41]/20 bg-[#111]">
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Name</th>
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Slug</th>
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Status</th>
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Agents</th>
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Posts</th>
-                <th className="text-left px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Joined</th>
-                <th className="text-right px-4 py-3 text-[#00ff41]/60 font-bold text-xs uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tenants.map((t) => (
-                <tr key={t.id} className="border-b border-[#00ff41]/10 hover:bg-[#00ff41]/5">
-                  <td className="px-4 py-3 text-[#00ff41] font-medium">{t.name}</td>
-                  <td className="px-4 py-3 text-[#00ff41]/60 font-mono text-xs">{t.slug}</td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      className={`text-xs font-bold uppercase ${
-                        t.status === 'active'
-                          ? 'bg-green-400/20 text-green-400'
-                          : 'bg-red-400/20 text-red-400'
-                      }`}
-                    >
-                      {t.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-[#00ff41]/60">{t.agentCount ?? 0}</td>
-                  <td className="px-4 py-3 text-[#00ff41]/60">{t.postCount ?? 0}</td>
-                  <td className="px-4 py-3 text-[#00ff41]/40 text-xs">
-                    {new Date(t.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEdit(t)}
-                        className="text-[#00ff41]/60 hover:text-[#00ff41] hover:bg-[#00ff41]/10"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(t.id)}
-                        className="text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Error banner */}
+      {error && (
+        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {error}
+          <button onClick={fetchData} className="ml-auto underline text-xs hover:text-red-300">
+            Retry
+          </button>
         </div>
       )}
 
-      {/* Create/Edit Modal */}
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Input
+          placeholder="Search tenants..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500"
+        />
+      </div>
+
+      {/* Table */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+          <Users className="h-12 w-12 mb-4 text-slate-700" />
+          <p className="text-sm">
+            {search
+              ? 'No tenants match your search.'
+              : 'No tenants yet. Create one to get started.'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800">
+                  {['Agency', 'Slug', 'Status', 'Agents', 'Posts', 'Joined', 'Actions'].map((h) => (
+                    <th
+                      key={h}
+                      className={`px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide ${h === 'Actions' ? 'text-right' : 'text-left'}`}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((t) => (
+                  <tr
+                    key={t.id}
+                    className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {t.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-white font-medium">{t.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <code className="text-slate-400 text-xs bg-slate-800 px-2 py-0.5 rounded">
+                        {t.slug}
+                      </code>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          t.status === 'active'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : 'bg-amber-500/10 text-amber-400'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            t.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'
+                          }`}
+                        />
+                        {t.status === 'active' ? 'Active' : 'Suspended'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">{t.agentCount ?? 0}</td>
+                    <td className="px-6 py-4 text-slate-400">{t.postCount ?? 0}</td>
+                    <td className="px-6 py-4 text-slate-500 text-xs">
+                      {t.created_at ? new Date(t.created_at).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end items-center gap-1">
+                        <a
+                          href={`/${t.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-400/10 transition-colors"
+                          title="View public page"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                        <button
+                          onClick={() => openEdit(t)}
+                          className="p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(t.id)}
+                          className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Create / Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="bg-[#111] border-[#00ff41]/30 text-[#00ff41] font-mono">
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#00ff41]">
-              {editId ? '> EDIT_TENANT' : '> CREATE_TENANT'}
+            <DialogTitle className="text-white">
+              {editId ? 'Edit Tenant' : 'Create New Tenant'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label className="text-[#00ff41]/80 text-xs uppercase">Name</Label>
+            <div className="space-y-1.5">
+              <Label className="text-slate-300 text-sm">Agency Name</Label>
               <Input
+                placeholder="e.g. Prime Realty"
                 value={form.name}
                 onChange={(e) => {
                   const name = e.target.value;
@@ -226,51 +315,67 @@ export default function AdminTenantsPage() {
                     slug: editId ? form.slug : slugify(name),
                   });
                 }}
-                className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+                className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-[#00ff41]/80 text-xs uppercase">Slug</Label>
+            <div className="space-y-1.5">
+              <Label className="text-slate-300 text-sm">URL Slug</Label>
               <Input
+                placeholder="e.g. prime-realty"
                 value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+                className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500"
               />
+              {form.slug && (
+                <p className="text-xs text-slate-500">Public page: /{form.slug}</p>
+              )}
             </div>
             {!editId && (
               <>
-                <div className="space-y-2">
-                  <Label className="text-[#00ff41]/80 text-xs uppercase">Email</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-slate-300 text-sm">Admin Email</Label>
                   <Input
                     type="email"
+                    placeholder="admin@agency.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+                    className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-[#00ff41]/80 text-xs uppercase">Temp Password</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-slate-300 text-sm">Temporary Password</Label>
                   <Input
                     type="text"
+                    placeholder="Min 8 characters"
                     value={form.tempPassword}
                     onChange={(e) => setForm({ ...form, tempPassword: e.target.value })}
-                    className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41] placeholder:text-[#00ff41]/30"
+                    className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500"
                   />
                 </div>
               </>
             )}
             {editId && (
-              <div className="space-y-2">
-                <Label className="text-[#00ff41]/80 text-xs uppercase">Status</Label>
-                <Select value={status} onValueChange={(v) => setStatus(v as 'active' | 'suspended')}>
-                  <SelectTrigger className="bg-[#0c0c0c] border-[#00ff41]/30 text-[#00ff41]">
+              <div className="space-y-1.5">
+                <Label className="text-slate-300 text-sm">Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v as 'active' | 'suspended')}
+                >
+                  <SelectTrigger className="bg-slate-950 border-slate-700 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#111] border-[#00ff41]/30">
+                  <SelectContent className="bg-slate-900 border-slate-700 text-white">
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            )}
+
+            {saveError && (
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-3 py-2 text-sm">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {saveError}
               </div>
             )}
           </div>
@@ -278,17 +383,22 @@ export default function AdminTenantsPage() {
             <Button
               variant="ghost"
               onClick={() => setModalOpen(false)}
-              className="text-[#00ff41]/60"
+              className="text-slate-400 hover:text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
-              disabled={saving || !form.name || !form.slug}
-              className="bg-[#00ff41] hover:bg-[#00ff41]/80 text-[#0c0c0c] font-bold"
+              disabled={
+                saving ||
+                !form.name ||
+                !form.slug ||
+                (!editId && (!form.email || !form.tempPassword))
+              }
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editId ? 'UPDATE' : 'CREATE'}
+              {editId ? 'Save Changes' : 'Create Tenant'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -296,28 +406,28 @@ export default function AdminTenantsPage() {
 
       {/* Delete Confirm */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent className="bg-[#111] border-[#00ff41]/30 text-[#00ff41] font-mono">
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-red-400">{'>'} DELETE_TENANT</DialogTitle>
+            <DialogTitle className="text-white">Delete Tenant?</DialogTitle>
           </DialogHeader>
-          <p className="text-[#00ff41]/60 text-sm">
+          <p className="text-slate-400 text-sm">
             This will permanently delete the tenant and all associated data. This cannot be undone.
           </p>
           <DialogFooter>
             <Button
               variant="ghost"
               onClick={() => setDeleteId(null)}
-              className="text-[#00ff41]/60"
+              className="text-slate-400 hover:text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              className="bg-red-600 hover:bg-red-700 text-white font-medium"
             >
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              DELETE
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
