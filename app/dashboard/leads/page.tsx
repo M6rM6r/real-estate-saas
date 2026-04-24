@@ -5,6 +5,7 @@ import { authFetch } from '@/lib/api';
 import type { Lead, LeadStatus } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Users, Phone, Clock } from 'lucide-react';
+import { Users, Phone, Clock, Search } from 'lucide-react';
 import { LeadStatsCards } from '@/components/LeadStatsCards';
 
 const demoLeads: Lead[] = [
@@ -33,6 +34,7 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
@@ -62,7 +64,10 @@ export default function LeadsPage() {
     } catch {}
   };
 
-  const filtered = filter === 'all' ? leads : leads.filter((l) => l.status === filter);
+  const filteredByStatus = filter === 'all' ? leads : leads.filter((l) => l.status === filter);
+  const filtered = query.trim()
+    ? filteredByStatus.filter((l) => `${l.name} ${l.phone} ${l.message ?? ''}`.toLowerCase().includes(query.toLowerCase()))
+    : filteredByStatus;
 
   if (loading) {
     return (
@@ -74,19 +79,62 @@ export default function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Leads</h1>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-40 bg-[#12121a] border-gray-700 text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-[#1a1a2e] border-gray-700">
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="contacted">Contacted</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
-          </SelectContent>
-        </Select>
+        <p className="text-sm text-gray-400">Review inquiries, update statuses, and track response performance.</p>
+      </div>
+
+      <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0a0f]/80 border border-gray-800 rounded-xl p-3">
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, phone, or message"
+              className="pl-9 bg-[#12121a] border-gray-700 text-white"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-40 bg-[#12121a] border-gray-700 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1a2e] border-gray-700">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'all' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+          >
+            All ({leads.length})
+          </button>
+          <button
+            onClick={() => setFilter('new')}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'new' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+          >
+            New ({leads.filter((l) => l.status === 'new').length})
+          </button>
+          <button
+            onClick={() => setFilter('contacted')}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'contacted' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+          >
+            Contacted ({leads.filter((l) => l.status === 'contacted').length})
+          </button>
+          <button
+            onClick={() => setFilter('closed')}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'closed' ? 'bg-green-500/20 text-green-300 border-green-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+          >
+            Closed ({leads.filter((l) => l.status === 'closed').length})
+          </button>
+        </div>
       </div>
 
       <LeadStatsCards
@@ -100,7 +148,10 @@ export default function LeadsPage() {
       />
 
       {filtered.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">No leads found.</div>
+        <Card className="bg-[#12121a] border-gray-800 py-16 text-center">
+          <p className="text-gray-300 font-medium">No leads found</p>
+          <p className="text-gray-500 text-sm mt-2">Try changing filters or clearing your search query.</p>
+        </Card>
       ) : (
         <Card className="bg-[#12121a] border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
@@ -116,7 +167,7 @@ export default function LeadsPage() {
               </thead>
               <tbody>
                 {filtered.map((lead) => (
-                  <tr key={lead.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                  <tr key={lead.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                     <td className="px-4 py-3 text-white font-medium">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-gray-500" />

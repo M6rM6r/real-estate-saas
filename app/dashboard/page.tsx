@@ -66,13 +66,20 @@ export default function DashboardOverview() {
     date: pv.date,
     views: pv.views,
   }));
+  const latestViews = chartData.length > 0 ? chartData[chartData.length - 1].views : 0;
+  const previousViews = chartData.length > 1 ? chartData[chartData.length - 2].views : latestViews;
+  const viewsTrend = previousViews > 0 ? Math.round(((latestViews - previousViews) / previousViews) * 100) : 0;
+  const conversionRate = data.totalViews > 0 ? Math.round((data.totalLeads / data.totalViews) * 100) : 0;
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Overview</h1>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold">Overview</h1>
+        <p className="text-sm text-gray-400">Track audience growth and lead performance at a glance.</p>
+      </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Card className="bg-[#12121a] border-gray-800">
+      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-blue-500/30 transition-all duration-200 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">
               Total Page Views
@@ -81,9 +88,12 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{data.totalViews.toLocaleString()}</p>
+            <p className={`mt-2 text-xs ${viewsTrend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {viewsTrend >= 0 ? '+' : ''}{viewsTrend}% vs last period
+            </p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-gray-800">
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-green-500/30 transition-all duration-200 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">
               Total Leads
@@ -92,20 +102,38 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{data.totalLeads.toLocaleString()}</p>
+            <p className="mt-2 text-xs text-gray-400">Qualified inquiries from all channels</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-violet-500/30 transition-all duration-200 hover:-translate-y-0.5 sm:col-span-2 xl:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">
+              View → Lead Conversion
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-violet-400" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{conversionRate}%</p>
+            <p className="mt-2 text-xs text-gray-400">Based on total views and captured leads</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="bg-[#12121a] border-gray-800">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+      <Card className="bg-[#12121a] border-gray-800 shadow-lg shadow-black/20">
+        <CardHeader className="border-b border-gray-800/60">
+          <CardTitle className="flex items-center justify-between gap-2 text-base">
+            <span className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-400" />
             Page Views Over Time
+            </span>
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-500/15 text-blue-300">
+              Last {chartData.length} intervals
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {chartData.length > 0 ? (
-            <div className="h-72">
+            <div className="h-72 pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
@@ -128,7 +156,7 @@ export default function DashboardOverview() {
                     type="monotone"
                     dataKey="views"
                     stroke="#3b82f6"
-                    strokeWidth={2}
+                    strokeWidth={3}
                     dot={{ fill: '#3b82f6', r: 4 }}
                     activeDot={{ r: 6 }}
                   />
