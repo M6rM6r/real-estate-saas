@@ -108,8 +108,7 @@ export default function PageBuilderPage() {
   };
 
   const copyLink = () => {
-    const url = `${window.location.origin}/${data?.tenant?.slug || ''}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -125,7 +124,11 @@ export default function PageBuilderPage() {
     );
   }
 
-  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${data?.tenant?.slug || ''}`;
+  const slug = data?.tenant?.slug || '';
+  const configuredBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
+  const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const baseUrl = configuredBaseUrl || runtimeOrigin;
+  const publicUrl = slug ? `${baseUrl}/${slug}` : baseUrl;
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
