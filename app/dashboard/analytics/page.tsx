@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { authHeaders } from '@/lib/firebase-client-auth'
+import { authFetch } from '@/lib/api'
+import { TrendingUp, Users, Eye, BarChart2 } from 'lucide-react'
 
 type Analytics = {
   pageViews: { date: string; views: number }[]
@@ -11,70 +12,100 @@ type Analytics = {
   totalLeads: number
 }
 
-// Dynamically import chart components to reduce initial bundle size
-const LineChart = dynamic(() => import('recharts').then(mod => ({ default: mod.LineChart })), { ssr: false })
-const Line = dynamic(() => import('recharts').then(mod => ({ default: mod.Line })), { ssr: false })
-const XAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.XAxis })), { ssr: false })
-const YAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.YAxis })), { ssr: false })
-const CartesianGrid = dynamic(() => import('recharts').then(mod => ({ default: mod.CartesianGrid })), { ssr: false })
-const Tooltip = dynamic(() => import('recharts').then(mod => ({ default: mod.Tooltip })), { ssr: false })
-const ResponsiveContainer = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), { ssr: false })
-const BarChart = dynamic(() => import('recharts').then(mod => ({ default: mod.BarChart })), { ssr: false })
-const Bar = dynamic(() => import('recharts').then(mod => ({ default: mod.Bar })), { ssr: false })
+const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false })
+const Line = dynamic(() => import('recharts').then(m => ({ default: m.Line })), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(m => ({ default: m.XAxis })), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(m => ({ default: m.YAxis })), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(m => ({ default: m.CartesianGrid })), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then(m => ({ default: m.Tooltip })), { ssr: false })
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false })
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    authHeaders().then(hdrs => {
-      if (!hdrs) return
-      fetch('/api/dashboard/analytics', { headers: hdrs })
-        .then(res => res.json())
-        .then(setAnalytics)
-    })
+    authFetch<Analytics>('/api/dashboard/analytics')
+      .then(setAnalytics)
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  if (!analytics) return <div>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error || !analytics) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
+        {error || 'فشل تحميل الإحصائيات'}
+      </div>
+    )
+  }
+
+  const hasViews = analytics.pageViews.length > 0
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-8">Analytics</h1>
+    <div className="space-y-6 pb-10">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl font-bold text-white">الإحصائيات</h1>
+        <p className="text-sm text-slate-400 mt-0.5">نظرة عامة على أداء صفحتك</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold">Total Page Views</h3>
-          <p className="text-3xl font-bold">{analytics.totalViews}</p>
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+            <Eye className="h-5 w-5 text-blue-400" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي المشاهدات</p>
+            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalViews.toLocaleString()}</p>
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold">Total Leads</h3>
-          <p className="text-3xl font-bold">{analytics.totalLeads}</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي العملاء المحتملين</p>
+            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalLeads.toLocaleString()}</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h3 className="text-lg font-semibold mb-4">Page Views Over Time</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={analytics.pageViews}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="views" stroke="#8884d8" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Top Listings by Views</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={analytics.listingViews}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="listing" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="views" fill="#82ca9d" />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Page views chart */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="h-4 w-4 text-blue-400" />
+          <p className="text-sm font-semibold text-white">المشاهدات بمرور الوقت</p>
+        </div>
+        {hasViews ? (
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={analytics.pageViews} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, color: '#e2e8f0' }}
+                labelStyle={{ color: '#94a3b8' }}
+              />
+              <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#3b82f6' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-40 text-slate-600">
+            <BarChart2 className="h-8 w-8 mb-2 opacity-40" />
+            <p className="text-sm">لا توجد بيانات مشاهدات بعد</p>
+            <p className="text-xs text-slate-700 mt-1">ستظهر البيانات بعد أن يزور الزوار صفحتك العامة</p>
+          </div>
+        )}
       </div>
     </div>
   )

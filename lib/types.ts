@@ -35,6 +35,7 @@ export type Profile = {
     linkedin?: string;
     whatsapp?: string;
   };
+  working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
 };
 
 export type ListingStatus = 'available' | 'sold' | 'rented';

@@ -13,7 +13,7 @@ import {
   Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin,
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
-  CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize,
+  CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
 } from 'lucide-react';
 
 type ProfileResponse = {
@@ -34,6 +34,15 @@ const EMPTY_PROFILE: Profile = {
   contact_phone: '',
   contact_address: '',
   social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
+  working_hours: {
+    sun: { enabled: true,  open: '09:00', close: '17:00' },
+    mon: { enabled: true,  open: '09:00', close: '17:00' },
+    tue: { enabled: true,  open: '09:00', close: '17:00' },
+    wed: { enabled: true,  open: '09:00', close: '17:00' },
+    thu: { enabled: true,  open: '09:00', close: '17:00' },
+    fri: { enabled: false, open: '09:00', close: '17:00' },
+    sat: { enabled: false, open: '09:00', close: '17:00' },
+  },
 };
 
 const COLOR_PRESETS = [
@@ -65,6 +74,7 @@ export default function PageBuilderPage() {
   const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
+  const [listingPublished, setListingPublished] = useState(true);
 
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
@@ -117,6 +127,7 @@ export default function PageBuilderPage() {
     setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
     setEditingListing(null);
     setListingError('');
+    setListingPublished(true);
   };
 
   const addListing = async () => {
@@ -131,7 +142,7 @@ export default function PageBuilderPage() {
       area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : null,
       images: listingForm.image ? [listingForm.image] : [],
       listing_status: listingForm.status as 'available' | 'sold' | 'rented',
-      published: true,
+      published: listingPublished,
     };
     if (isDemo) {
       const entry = { id: Date.now().toString(), ...payload };
@@ -545,6 +556,19 @@ export default function PageBuilderPage() {
                         <option value="rented">مؤجر</option>
                       </select>
                     </div>
+                    <div className="flex items-center justify-between py-1">
+                      <div>
+                        <p className="text-sm text-white">نشر على الصفحة العامة</p>
+                        <p className="text-xs text-slate-500">إيقاف هذا يجعل العقار مسودة فقط</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setListingPublished(!listingPublished)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${ listingPublished ? 'bg-blue-600' : 'bg-slate-700' }`}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ listingPublished ? 'translate-x-4' : 'translate-x-1' }`} />
+                      </button>
+                    </div>
                     {listingError && (
                       <p className="text-xs text-red-400 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />{listingError}
@@ -586,7 +610,7 @@ export default function PageBuilderPage() {
                           <span className={`text-xs px-2 py-0.5 rounded-full ${ listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400' }`}>
                             {listing.listing_status === 'available' ? 'متاح' : listing.listing_status === 'sold' ? 'مباع' : 'مؤجر'}
                           </span>
-                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
@@ -623,9 +647,52 @@ export default function PageBuilderPage() {
                   </div>
                 ))}
               </div>
-            </TabsContent>
 
-            {/* SOCIAL */}
+              {/* Working hours */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Clock className="h-4 w-4 text-blue-400" /> ساعات العمل
+                </p>
+                {(['sun','mon','tue','wed','thu','fri','sat'] as const).map((day) => {
+                  const DAY_AR: Record<string, string> = { sun: 'الأحد', mon: 'الإثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس', fri: 'الجمعة', sat: 'السبت' };
+                  const h = profile.working_hours?.[day] ?? { enabled: false, open: '09:00', close: '17:00' };
+                  const setDay = (patch: Partial<{ enabled: boolean; open: string; close: string }>) => {
+                    updateProfile({ working_hours: { ...(profile.working_hours ?? {}), [day]: { ...h, ...patch } } });
+                  };
+                  return (
+                    <div key={day} className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setDay({ enabled: !h.enabled })}
+                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ h.enabled ? 'bg-blue-600' : 'bg-slate-700' }`}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ h.enabled ? 'translate-x-4' : 'translate-x-1' }`} />
+                      </button>
+                      <span className={`w-16 text-sm ${h.enabled ? 'text-white' : 'text-slate-500'}`}>{DAY_AR[day]}</span>
+                      {h.enabled ? (
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <input
+                            type="time"
+                            value={h.open}
+                            onChange={(e) => setDay({ open: e.target.value })}
+                            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-md px-2 py-1 text-xs"
+                          />
+                          <span className="text-slate-500 text-xs">–</span>
+                          <input
+                            type="time"
+                            value={h.close}
+                            onChange={(e) => setDay({ close: e.target.value })}
+                            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-md px-2 py-1 text-xs"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-600 flex-1">مغلق</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
             <TabsContent value="social" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
