@@ -63,6 +63,8 @@ export default function PageBuilderPage() {
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
+  const [listingSaving, setListingSaving] = useState(false);
+  const [listingError, setListingError] = useState('');
 
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
@@ -77,13 +79,16 @@ export default function PageBuilderPage() {
       setLoading(false);
       return;
     }
-    authFetch<ProfileResponse>('/api/dashboard/profile')
-      .then((res) => {
-        setData(res);
-        if (res.profile) setProfile(res.profile);
-        setPrimaryColor(res.tenant?.primary_color || '#2563eb');
-        setAgencyName(res.tenant?.name || '');
-        setSelectedTheme(res.tenant?.theme || 'modern');
+    Promise.all([
+      authFetch<ProfileResponse>('/api/dashboard/profile'),
+      authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
+    ]).then(([profileRes, listingsRes]) => {
+        setData(profileRes);
+        if (profileRes.profile) setProfile(profileRes.profile);
+        setPrimaryColor(profileRes.tenant?.primary_color || '#2563eb');
+        setAgencyName(profileRes.tenant?.name || '');
+        setSelectedTheme(profileRes.tenant?.theme || 'modern');
+        setListings(listingsRes.data ?? []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -111,32 +116,71 @@ export default function PageBuilderPage() {
   const resetListingForm = () => {
     setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
     setEditingListing(null);
+    setListingError('');
   };
 
-  const addListing = () => {
+  const addListing = async () => {
     if (!listingForm.title || !listingForm.price) return;
-    const newListing = {
-      id: Date.now().toString(),
+    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+    const payload = {
       title: listingForm.title,
       price: parseInt(listingForm.price),
-      location: listingForm.location,
-      bedrooms: listingForm.bedrooms ? parseInt(listingForm.bedrooms) : 0,
-      bathrooms: listingForm.bathrooms ? parseInt(listingForm.bathrooms) : 0,
-      area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : 0,
+      location: listingForm.location || null,
+      bedrooms: listingForm.bedrooms ? parseInt(listingForm.bedrooms) : null,
+      bathrooms: listingForm.bathrooms ? parseInt(listingForm.bathrooms) : null,
+      area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : null,
       images: listingForm.image ? [listingForm.image] : [],
-      listing_status: listingForm.status,
+      listing_status: listingForm.status as 'available' | 'sold' | 'rented',
+      published: true,
     };
-    if (editingListing) {
-      setListings((prev) => prev.map((l) => l.id === editingListing.id ? { ...newListing, id: editingListing.id } : l));
-    } else {
-      setListings((prev) => [...prev, newListing]);
+    if (isDemo) {
+      const entry = { id: Date.now().toString(), ...payload };
+      if (editingListing) {
+        setListings((prev) => prev.map((l) => l.id === editingListing.id ? { ...entry, id: editingListing.id } : l));
+      } else {
+        setListings((prev) => [entry, ...prev]);
+      }
+      resetListingForm();
+      setShowListingForm(false);
+      return;
     }
-    resetListingForm();
-    setShowListingForm(false);
+    setListingSaving(true);
+    setListingError('');
+    try {
+      if (editingListing) {
+        const updated = await authFetch<any>(`/api/dashboard/listings/${editingListing.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+        setListings((prev) => prev.map((l) => l.id === editingListing.id ? { ...l, ...updated, images: payload.images, listing_status: payload.listing_status } : l));
+      } else {
+        const created = await authFetch<any>('/api/dashboard/listings', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        setListings((prev) => [{ ...created, images: payload.images, listing_status: payload.listing_status }, ...prev]);
+      }
+      resetListingForm();
+      setShowListingForm(false);
+    } catch (e) {
+      setListingError(e instanceof Error ? e.message : 'حدث خطأ، حاول مجدداً');
+    } finally {
+      setListingSaving(false);
+    }
   };
 
-  const deleteListing = (id: string) => {
+  const deleteListing = async (id: string) => {
+    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
     setListings((prev) => prev.filter((l) => l.id !== id));
+    if (!isDemo) {
+      try {
+        await authFetch(`/api/dashboard/listings/${id}`, { method: 'DELETE' });
+      } catch {
+        authFetch<{ data: any[] }>('/api/dashboard/listings')
+          .then((r) => setListings(r.data ?? []))
+          .catch(() => {});
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -501,8 +545,16 @@ export default function PageBuilderPage() {
                         <option value="rented">مؤجر</option>
                       </select>
                     </div>
+                    {listingError && (
+                      <p className="text-xs text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />{listingError}
+                      </p>
+                    )}
                     <div className="flex gap-2 pt-1">
-                      <Button onClick={addListing} size="sm" className="bg-blue-600 hover:bg-blue-700">{editingListing ? 'تحديث' : 'إضافة'}</Button>
+                      <Button onClick={addListing} disabled={listingSaving} size="sm" className="bg-blue-600 hover:bg-blue-700 gap-1.5">
+                        {listingSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        {editingListing ? 'تحديث' : 'إضافة'}
+                      </Button>
                       <Button onClick={() => { setShowListingForm(false); resetListingForm(); }} size="sm" variant="outline" className="border-slate-600 text-slate-300">إلغاء</Button>
                     </div>
                   </div>
