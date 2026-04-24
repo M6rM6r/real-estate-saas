@@ -38,8 +38,8 @@ export default function PageBuilderPage() {
     authFetch<ProfileResponse>('/api/dashboard/profile')
       .then((res) => {
         setData(res);
-        setProfile(res.profile);
-        setPrimaryColor(res.tenant.primary_color || '#2563eb');
+        if (res.profile) setProfile(res.profile);
+        setPrimaryColor(res.tenant?.primary_color || '#2563eb');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
