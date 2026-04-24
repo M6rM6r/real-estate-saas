@@ -160,6 +160,15 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
     return () => window.removeEventListener('scroll', onScroll)
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('revealed') }),
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [listings, news]);
+
 
 
   const publishedListings = listings.filter((l) => l.published !== false)
@@ -178,6 +187,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         .btn-primary { background: var(--primary); }
         .text-primary { color: var(--primary); }
         .border-primary { border-color: var(--primary); }
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+        .revealed { opacity: 1; transform: translateY(0); }
       `}</style>
 
       <div className="min-h-screen bg-white text-gray-900" dir="rtl">
@@ -213,7 +224,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})` } : {}}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/70" />
-          <div className="relative z-10 text-center text-white px-4">
+          <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-8 py-10 shadow-2xl">
             {profile?.logo_url && (
               <Image
                 src={profile.logo_url}
@@ -244,12 +256,13 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 أرسل استفساراً
               </button>
             </div>
+            </div>
           </div>
         </section>)}
 
         {/* Featured Listings */}
         {sections.featured && featuredListings.length > 0 && (
-          <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
+          <section className="reveal py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-3xl font-bold mb-6">العقارات المميزة</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map(l => (
@@ -289,7 +302,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Listings menu */}
         {sections.listings && publishedListings.length > 0 && (
-          <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
+          <section className="reveal py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-3xl font-bold mb-6">قائمة العقارات</h2>
 
             {pageConfig.show_listing_search && (
@@ -375,7 +388,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section className="py-16 bg-gray-50">
+          <section className="reveal py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-8">آخر الأخبار</h2>
               <div className="flex gap-6 overflow-x-auto pb-4">
@@ -404,7 +417,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* About */}
-        {sections.about && (<section className="py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
+        {sections.about && (<section className="reveal py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">من نحن</h2>
           {profile?.bio && <p className="text-gray-600 leading-relaxed text-lg">{profile.bio}</p>}
           {profile?.licence_no && (

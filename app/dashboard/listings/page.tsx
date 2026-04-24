@@ -220,9 +220,9 @@ export default function ListingsPage() {
           {listings.map((listing) => (
             <Card
               key={listing.id}
-              className="bg-[#12121a] border-gray-800 overflow-hidden"
+              className="bg-[#12121a] border-gray-800 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
             >
-              <div className="relative h-40 bg-gray-900">
+              <div className="relative h-52 bg-gray-900">
                 {listing.images?.[0] ? (
                   <img
                     src={listing.images[0]}
@@ -234,6 +234,7 @@ export default function ListingsPage() {
                     <MapPin className="h-8 w-8 text-gray-700" />
                   </div>
                 )}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                 {listing.listing_status && (
                   <Badge
                     className={`absolute top-2 left-2 ${statusColor(listing.listing_status)}`}
@@ -252,7 +253,7 @@ export default function ListingsPage() {
                   {listing.title}
                 </h3>
                 {listing.price != null && (
-                  <p className="text-blue-400 font-bold text-lg mb-2">
+                  <p className="inline-flex items-center bg-blue-600/15 text-blue-400 font-bold text-base px-2.5 py-0.5 rounded-full mb-2">
                     {listing.price.toLocaleString()} SAR
                   </p>
                 )}

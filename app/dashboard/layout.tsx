@@ -23,12 +23,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isDemo, setIsDemo] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ email: string; displayName: string | null } | null>(null);
 
   useEffect(() => {
     const demoAuth = sessionStorage.getItem('demo_auth');
     if (demoAuth === 'true') {
       setIsDemo(true);
       setAuthed(true);
+      setUserInfo({ email: 'demo@example.com', displayName: 'Demo User' });
       return;
     }
 
@@ -41,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           router.push('/login');
         } else {
           setAuthed(true);
+          setUserInfo({ email: user.email ?? '', displayName: user.displayName });
         }
       });
     })();
@@ -122,7 +125,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-gray-800">
+        <div className="px-3 py-4 border-t border-gray-800 space-y-2">
+          {userInfo && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-800/50">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                {(userInfo.displayName || userInfo.email).charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-white font-medium truncate">{userInfo.displayName || userInfo.email.split('@')[0]}</p>
+                <p className="text-xs text-gray-500 truncate">{userInfo.email}</p>
+              </div>
+            </div>
+          )}
           <Button
             variant="ghost"
             onClick={handleLogout}
