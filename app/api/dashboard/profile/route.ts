@@ -37,6 +37,23 @@ const ProfileDataSchema = z.object({
       close: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
     }),
   ).optional().nullable(),
+  page_sections: z.object({
+    hero: z.boolean().optional(),
+    featured: z.boolean().optional(),
+    listings: z.boolean().optional(),
+    about: z.boolean().optional(),
+    news: z.boolean().optional(),
+    gallery: z.boolean().optional(),
+    team: z.boolean().optional(),
+    footer: z.boolean().optional(),
+  }).optional(),
+  page_config: z.object({
+    hero_headline: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    featured_count: z.number().int().min(3).max(12).optional(),
+    listings_columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
+    show_listing_filters: z.boolean().optional(),
+    show_listing_search: z.boolean().optional(),
+  }).optional(),
 }).optional()
 
 const TenantDataSchema = z.object({

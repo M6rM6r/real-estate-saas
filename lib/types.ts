@@ -36,6 +36,23 @@ export type Profile = {
     whatsapp?: string;
   };
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
+  page_sections?: {
+    hero?: boolean;
+    featured?: boolean;
+    listings?: boolean;
+    about?: boolean;
+    news?: boolean;
+    gallery?: boolean;
+    team?: boolean;
+    footer?: boolean;
+  };
+  page_config?: {
+    hero_headline?: string;
+    featured_count?: number;
+    listings_columns?: 2 | 3 | 4;
+    show_listing_filters?: boolean;
+    show_listing_search?: boolean;
+  };
 };
 
 export type ListingStatus = 'available' | 'sold' | 'rented';

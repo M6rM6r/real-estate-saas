@@ -23,6 +23,25 @@ type ProfileResponse = {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
+  hero: true,
+  featured: true,
+  listings: true,
+  about: true,
+  news: true,
+  gallery: false,
+  team: false,
+  footer: true,
+};
+
+const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
+  hero_headline: 'ابحث عن عقارك المثالي',
+  featured_count: 6,
+  listings_columns: 3,
+  show_listing_filters: true,
+  show_listing_search: true,
+};
+
 const EMPTY_PROFILE: Profile = {
   tenant_id: '',
   logo_url: '',
@@ -43,6 +62,8 @@ const EMPTY_PROFILE: Profile = {
     fri: { enabled: false, open: '09:00', close: '17:00' },
     sat: { enabled: false, open: '09:00', close: '17:00' },
   },
+  page_sections: DEFAULT_PAGE_SECTIONS,
+  page_config: DEFAULT_PAGE_CONFIG,
 };
 
 const COLOR_PRESETS = [
@@ -110,6 +131,7 @@ export default function PageBuilderPage() {
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
+  const [previewSearch, setPreviewSearch] = useState('');
 
   const profileCompletionCount = [
     agencyName,
@@ -126,7 +148,11 @@ export default function PageBuilderPage() {
     if (isDemo) {
       const d = { profile: { tenant_id: 'demo', logo_url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=100', cover_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200', bio: 'وكالة عقارية رائدة متخصصة في العقارات الفاخرة بدبي. بخبرة تمتد أكثر من 15 عامًا، نساعدك على إيجاد منزل أحلامك في أرقى المواقع.', tagline: 'حيث تلتقي الفخامة بالمنزل', contact_email: 'info@luxuryhomesdubai.com', contact_phone: '+971 4 123 4567', contact_address: 'برج A، بزنس باي، دبي، الإمارات', licence_no: 'RE-12345', social_links: { instagram: 'https://instagram.com/luxuryhomesdubai', x: 'https://x.com/luxuryhomesdubai', linkedin: 'https://linkedin.com/company/luxuryhomesdubai', whatsapp: 'https://wa.me/971501234567' } }, tenant: { id: 'demo', slug: 'luxury-homes-dubai', name: 'Luxury Homes Dubai', status: 'active' as const, created_at: '2025-10-15T10:00:00Z', primary_color: '#0ea5e9', theme: 'modern' } };
       setData(d);
-      setProfile(d.profile);
+      setProfile({
+        ...d.profile,
+        page_sections: DEFAULT_PAGE_SECTIONS,
+        page_config: DEFAULT_PAGE_CONFIG,
+      });
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
       setSelectedTheme(d.tenant.theme);
@@ -143,6 +169,8 @@ export default function PageBuilderPage() {
           setProfile({
             ...profileRes.profile,
             working_hours: { ...WORKING_HOURS_DEFAULT, ...(profileRes.profile.working_hours ?? {}) },
+            page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(profileRes.profile.page_sections ?? {}) },
+            page_config: { ...DEFAULT_PAGE_CONFIG, ...(profileRes.profile.page_config ?? {}) },
           });
         }
         setPrimaryColor(profileRes.tenant?.primary_color || '#2563eb');
@@ -179,6 +207,30 @@ export default function PageBuilderPage() {
     setProfile((prev) => ({
       ...prev,
       social_links: { ...prev.social_links, [key]: value },
+    }));
+    markDirty();
+  };
+
+  const toggleSection = (key: keyof NonNullable<Profile['page_sections']>) => {
+    setProfile((prev) => ({
+      ...prev,
+      page_sections: {
+        ...DEFAULT_PAGE_SECTIONS,
+        ...(prev.page_sections ?? {}),
+        [key]: !(prev.page_sections?.[key] ?? DEFAULT_PAGE_SECTIONS[key]),
+      },
+    }));
+    markDirty();
+  };
+
+  const updatePageConfig = (patch: Partial<NonNullable<Profile['page_config']>>) => {
+    setProfile((prev) => ({
+      ...prev,
+      page_config: {
+        ...DEFAULT_PAGE_CONFIG,
+        ...(prev.page_config ?? {}),
+        ...patch,
+      },
     }));
     markDirty();
   };
@@ -358,6 +410,15 @@ export default function PageBuilderPage() {
   const publicPath = slug ? `/${slug}` : '/';
   const shouldShowInvalidUrlWarning = Boolean(configuredBaseUrl) && !isConfiguredBaseUrlValid;
   const shouldShowMissingUrlInfo = !configuredBaseUrl;
+  const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
+  const pageConfig = { ...DEFAULT_PAGE_CONFIG, ...(profile.page_config ?? {}) };
+  const previewListings = listings.filter((listing) => listing.published !== false);
+  const previewFeaturedListings = previewListings.slice(0, pageConfig.featured_count || 6);
+  const previewListingsFiltered = previewSearch.trim()
+    ? previewListings.filter((listing) =>
+      `${listing.title || ''} ${listing.location || ''}`.toLowerCase().includes(previewSearch.toLowerCase()),
+    )
+    : previewListings;
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
@@ -405,8 +466,94 @@ export default function PageBuilderPage() {
         </div>
       </div>
 
-      {/* Main two-column layout */}
-      <div className="grid lg:grid-cols-[1fr_360px] gap-5">
+      {/* Main three-panel layout */}
+      <div className="grid lg:grid-cols-[260px_1fr_360px] gap-5 items-start">
+
+        {/* Left sidebar: sections & quick config */}
+        <div className="space-y-4 lg:sticky lg:top-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-bold text-white">إدارة أقسام الصفحة</p>
+            <p className="text-xs text-slate-500">تحكّم بما يراه عملاؤك مباشرة</p>
+            {([
+              ['hero', 'الهيرو'],
+              ['featured', 'العقارات المميزة'],
+              ['listings', 'كل العقارات'],
+              ['about', 'من نحن'],
+              ['news', 'الأخبار'],
+              ['gallery', 'المعرض'],
+              ['team', 'الفريق'],
+              ['footer', 'التذييل'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleSection(key)}
+                className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white"
+              >
+                <span>{label}</span>
+                <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-bold text-white">إعدادات العرض</p>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">عنوان الهيرو</Label>
+              <Input
+                value={pageConfig.hero_headline || ''}
+                onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white text-sm"
+                placeholder="ابحث عن عقارك المثالي"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">عدد العقارات المميزة</Label>
+              <Input
+                type="number"
+                min={3}
+                max={12}
+                value={pageConfig.featured_count || 6}
+                onChange={(e) => updatePageConfig({ featured_count: Math.min(12, Math.max(3, Number(e.target.value) || 6)) })}
+                className="bg-slate-800 border-slate-700 text-white text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-400">أعمدة شبكة العقارات</Label>
+              <select
+                value={pageConfig.listings_columns || 3}
+                onChange={(e) => updatePageConfig({ listings_columns: Number(e.target.value) as 2 | 3 | 4 })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+              >
+                <option value={2}>2 أعمدة</option>
+                <option value={3}>3 أعمدة</option>
+                <option value={4}>4 أعمدة</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })}
+              className="w-full flex items-center justify-between text-sm text-slate-200"
+            >
+              <span>إظهار الفلاتر</span>
+              <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-4' : 'translate-x-1'}`} />
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })}
+              className="w-full flex items-center justify-between text-sm text-slate-200"
+            >
+              <span>إظهار البحث</span>
+              <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-4' : 'translate-x-1'}`} />
+              </span>
+            </button>
+          </div>
+        </div>
 
         {/* Editor panel */}
         <div className="space-y-5">
@@ -896,28 +1043,71 @@ export default function PageBuilderPage() {
 
             <div className="bg-white overflow-y-auto" style={{ maxHeight: 560 }}>
 
-              <div className="relative h-28 overflow-hidden">
-                {profile.cover_url ? (
-                  <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${primaryColor}cc, ${primaryColor}44)` }} />
-                )}
-                <div className="absolute inset-0 bg-black/40" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
-                  {profile.logo_url && (
-                    <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover mb-1.5 border-2 border-white/30 shadow-lg" />
+              {sections.hero && (
+                <div className="relative h-28 overflow-hidden">
+                  {profile.cover_url ? (
+                    <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${primaryColor}cc, ${primaryColor}44)` }} />
                   )}
-                  <p className="font-bold text-sm leading-tight">
-                    {agencyName || data?.tenant?.name || 'اسم المكتب'}
-                  </p>
-                  {profile.tagline && (
-                    <p className="text-[11px] text-white/75 mt-0.5 line-clamp-1">{profile.tagline}</p>
-                  )}
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
+                    {profile.logo_url && (
+                      <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover mb-1.5 border-2 border-white/30 shadow-lg" />
+                    )}
+                    <p className="font-bold text-sm leading-tight">
+                      {agencyName || data?.tenant?.name || 'اسم المكتب'}
+                    </p>
+                    <p className="text-[11px] text-white/75 mt-0.5 line-clamp-1">{pageConfig.hero_headline || profile.tagline || 'ابحث عن عقارك المثالي'}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="p-3 space-y-3" dir="rtl">
 
+                {sections.featured && previewFeaturedListings.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>العقارات المميزة</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {previewFeaturedListings.slice(0, 4).map((listing) => (
+                        <div key={listing.id} className="border border-gray-200 rounded-lg p-1.5">
+                          <p className="text-[10px] font-semibold text-gray-800 truncate">{listing.title}</p>
+                          <p className="text-[10px] text-gray-500 truncate">{listing.location || 'بدون موقع'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {sections.listings && (
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>قائمة العقارات</p>
+                    {pageConfig.show_listing_search && (
+                      <Input
+                        value={previewSearch}
+                        onChange={(e) => setPreviewSearch(e.target.value)}
+                        className="h-7 text-[10px] mb-2"
+                        placeholder="ابحث بالاسم أو الموقع"
+                      />
+                    )}
+                    {pageConfig.show_listing_filters && (
+                      <div className="flex gap-1 mb-2 text-[10px]">
+                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">الكل</span>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">متاح</span>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">مباع</span>
+                      </div>
+                    )}
+                    <div className={`grid gap-1 ${pageConfig.listings_columns === 2 ? 'grid-cols-2' : pageConfig.listings_columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                      {previewListingsFiltered.slice(0, 8).map((listing) => (
+                        <div key={listing.id} className="border border-gray-200 rounded p-1 text-center">
+                          <p className="text-[9px] text-gray-700 truncate">{listing.title}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {sections.about && (
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>من نحن</p>
                   <p className="text-gray-600 text-[11px] leading-relaxed line-clamp-4">
@@ -929,8 +1119,9 @@ export default function PageBuilderPage() {
                     </p>
                   )}
                 </div>
+                )}
 
-                {(profile.contact_email || profile.contact_phone || profile.contact_address) && (
+                {sections.about && (profile.contact_email || profile.contact_phone || profile.contact_address) && (
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>التواصل</p>
                     <div className="space-y-1">
@@ -956,7 +1147,7 @@ export default function PageBuilderPage() {
                   </div>
                 )}
 
-                {(profile.social_links?.whatsapp || profile.social_links?.instagram || profile.social_links?.x || profile.social_links?.linkedin) && (
+                {sections.footer && (profile.social_links?.whatsapp || profile.social_links?.instagram || profile.social_links?.x || profile.social_links?.linkedin) && (
                   <div className="flex gap-1.5 pt-0.5">
                     {profile.social_links?.whatsapp && (
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
@@ -981,9 +1172,11 @@ export default function PageBuilderPage() {
                   </div>
                 )}
 
-                <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
-                  استعرض عقاراتنا
-                </div>
+                {sections.footer && (
+                  <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
+                    استعرض عقاراتنا
+                  </div>
+                )}
               </div>
             </div>
           </div>

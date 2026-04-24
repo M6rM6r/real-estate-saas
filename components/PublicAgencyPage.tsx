@@ -45,6 +45,23 @@ type Profile = {
     whatsapp?: string
   } | null
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null
+  page_sections?: {
+    hero?: boolean
+    featured?: boolean
+    listings?: boolean
+    about?: boolean
+    news?: boolean
+    gallery?: boolean
+    team?: boolean
+    footer?: boolean
+  } | null
+  page_config?: {
+    hero_headline?: string
+    featured_count?: number
+    listings_columns?: 2 | 3 | 4
+    show_listing_filters?: boolean
+    show_listing_search?: boolean
+  } | null
 } | null
 
 type Post = {
@@ -96,7 +113,29 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
   const [leadLoading, setLeadLoading] = useState(false)
   const [showLeadModal, setShowLeadModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
+
+  const sections = {
+    hero: true,
+    featured: true,
+    listings: true,
+    about: true,
+    news: true,
+    gallery: false,
+    team: false,
+    footer: true,
+    ...(profile?.page_sections ?? {}),
+  }
+
+  const pageConfig = {
+    hero_headline: 'ابحث عن عقارك المثالي',
+    featured_count: 6,
+    listings_columns: 3 as 2 | 3 | 4,
+    show_listing_filters: true,
+    show_listing_search: true,
+    ...(profile?.page_config ?? {}),
+  }
 
   const whatsapp = profile?.social_links?.whatsapp
   const waLink = whatsapp
@@ -139,9 +178,14 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
     setCarouselIdx(0)
   }
 
+  const publishedListings = listings.filter((l) => l.published !== false)
+  const featuredListings = publishedListings.slice(0, pageConfig.featured_count)
   const filteredListings = statusFilter === 'all'
-    ? listings
-    : listings.filter(l => l.listing_status === statusFilter)
+    ? publishedListings
+    : publishedListings.filter(l => l.listing_status === statusFilter)
+  const menuListings = listingSearch.trim()
+    ? filteredListings.filter((l) => `${l.title || ''} ${l.location || ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
+    : filteredListings
 
   return (
     <>
@@ -180,7 +224,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         </nav>
 
         {/* Hero */}
-        <section
+        {sections.hero && (<section
           className="relative h-screen flex items-end justify-center pb-20 bg-gray-900 bg-cover bg-center"
           style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})` } : {}}
         >
@@ -198,7 +242,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             )}
             <h1 className="text-4xl md:text-6xl font-bold mb-3">{tenant.name}</h1>
             {profile?.tagline && <p className="text-xl md:text-2xl text-primary font-medium mb-4">{profile.tagline}</p>}
-            <p className="text-lg text-white/80 mb-6">ابحث عن عقارك المثالي</p>
+            <p className="text-lg text-white/80 mb-6">{pageConfig.hero_headline}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {whatsapp && (
                 <a href={waLink} target="_blank" rel="noopener noreferrer"
@@ -217,35 +261,89 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               </button>
             </div>
           </div>
-        </section>
+        </section>)}
 
-        {/* Listings */}
-        {listings.length > 0 && (
+        {/* Featured Listings */}
+        {sections.featured && featuredListings.length > 0 && (
           <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">عقاراتنا</h2>
-            {/* Filter chips */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {(['all', 'available', 'sold', 'rented'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setStatusFilter(f)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                    statusFilter === f
-                      ? 'text-white border-transparent'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                  }`}
-                  style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : {}}
-                >
-                  {f === 'all' ? 'الكل' : STATUS_LABELS[f]}
+            <h2 className="text-3xl font-bold mb-6">العقارات المميزة</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredListings.map(l => (
+                <button key={l.id} onClick={() => openListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                  <div className="relative">
+                    {l.images[0] ? (
+                      <Image
+                        src={l.images[0]}
+                        alt={l.title}
+                        width={400}
+                        height={208}
+                        className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                        priority={false}
+                      />
+                    ) : (
+                      <div className="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-300 text-sm">لا توجد صورة</div>
+                    )}
+                    {l.listing_status && (
+                      <span
+                        className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
+                        style={{ backgroundColor: STATUS_COLORS[l.listing_status] ?? primary }}
+                      >
+                        {STATUS_LABELS[l.listing_status] ?? l.listing_status}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-1">{l.title}</h3>
+                    {l.price != null && <p className="text-primary font-bold text-lg mb-1">{l.price.toLocaleString('ar-SA')} ر.س</p>}
+                    {l.location && <p className="text-gray-500 text-sm mb-2">📍 {l.location}</p>}
+                  </div>
                 </button>
               ))}
             </div>
+          </section>
+        )}
 
-            {filteredListings.length === 0 ? (
+        {/* Listings menu */}
+        {sections.listings && publishedListings.length > 0 && (
+          <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6">قائمة العقارات</h2>
+
+            {pageConfig.show_listing_search && (
+              <div className="mb-4">
+                <input
+                  value={listingSearch}
+                  onChange={(e) => setListingSearch(e.target.value)}
+                  placeholder="ابحث باسم العقار أو الموقع"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
+                  style={{ ['--tw-ring-color' as any]: `${primary}55` }}
+                />
+              </div>
+            )}
+
+            {pageConfig.show_listing_filters && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {(['all', 'available', 'sold', 'rented'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                      statusFilter === f
+                        ? 'text-white border-transparent'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                    style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : {}}
+                  >
+                    {f === 'all' ? 'الكل' : STATUS_LABELS[f]}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {menuListings.length === 0 ? (
               <p className="text-center text-gray-400 py-12">لا توجد عقارات لهذا التصنيف</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredListings.map(l => (
+              <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
+                {menuListings.map(l => (
                   <button key={l.id} onClick={() => openListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
                     <div className="relative">
                       {l.images[0] ? (
@@ -292,7 +390,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* News */}
-        {news.length > 0 && (
+        {sections.news && news.length > 0 && (
           <section className="py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-8">آخر الأخبار</h2>
@@ -322,16 +420,16 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* About */}
-        <section className="py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
+        {sections.about && (<section className="py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">من نحن</h2>
           {profile?.bio && <p className="text-gray-600 leading-relaxed text-lg">{profile.bio}</p>}
           {profile?.licence_no && (
             <p className="mt-4 text-sm text-gray-400 font-mono">رقم الترخيص: {profile.licence_no}</p>
           )}
-        </section>
+        </section>)}
 
         {/* Team */}
-        {team.length > 0 && (
+        {sections.team && team.length > 0 && (
           <section className="py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-8 text-center">فريقنا</h2>
@@ -367,7 +465,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* Gallery */}
-        {gallery.length > 0 && (
+        {sections.gallery && gallery.length > 0 && (
           <section className="py-16">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold mb-8">معرض الصور</h2>
@@ -401,7 +499,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* Footer */}
-        <footer className="bg-gray-900 text-white py-12 px-4 md:px-8">
+        {sections.footer && (<footer className="bg-gray-900 text-white py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               {profile?.logo_url && (
@@ -487,7 +585,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           <div className="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
             جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}
           </div>
-        </footer>
+        </footer>)}
 
         {/* WhatsApp FAB — bottom-left for RTL */}
         {whatsapp && (
