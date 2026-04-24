@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Profile, Tenant } from '@/lib/types';
+import { PAGE_THEMES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +13,12 @@ import {
   Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin,
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
-  CheckCircle2, Building2, Hash,
+  CheckCircle2, Building2, Hash, Layout,
 } from 'lucide-react';
 
 type ProfileResponse = {
   profile: Profile | null;
-  tenant: (Tenant & { primary_color?: string }) | null;
+  tenant: (Tenant & { primary_color?: string; theme?: string }) | null;
 };
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -50,6 +51,7 @@ export default function PageBuilderPage() {
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
   const [agencyName, setAgencyName] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState<string>('modern');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function PageBuilderPage() {
         if (res.profile) setProfile(res.profile);
         setPrimaryColor(res.tenant?.primary_color || '#2563eb');
         setAgencyName(res.tenant?.name || '');
+        setSelectedTheme(res.tenant?.theme || 'modern');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -91,7 +94,7 @@ export default function PageBuilderPage() {
         method: 'PATCH',
         body: JSON.stringify({
           profile,
-          tenant: { primary_color: primaryColor, name: agencyName || undefined },
+          tenant: { primary_color: primaryColor, name: agencyName || undefined, theme: selectedTheme },
         }),
       });
       setSaveStatus('saved');
@@ -116,7 +119,7 @@ export default function PageBuilderPage() {
       <div className="flex items-center justify-center h-72">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">Loading your page settings...</p>
+          <p className="text-sm text-slate-400">جاري تحميل إعدادات صفحتك...</p>
         </div>
       </div>
     );
@@ -125,28 +128,34 @@ export default function PageBuilderPage() {
   const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${data?.tenant?.slug || ''}`;
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-5 pb-10" dir="rtl">
+
+      {/* Arabic heading */}
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-white">منشئ الصفحة</h1>
+        <p className="text-sm text-slate-400">خصّص صفحتك العامة التي يراها عملاؤك</p>
+      </div>
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-xl p-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">Public Page URL</p>
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">رابط صفحتك العامة</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {dirty && (
             <span className="text-xs text-amber-400 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-              Unsaved changes
+              تغييرات غير محفوظة
             </span>
           )}
           <Button size="sm" variant="ghost" onClick={copyLink} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
             {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'Copied!' : 'Copy Link'}
+            {copied ? 'تم النسخ!' : 'نسخ الرابط'}
           </Button>
           <a href={publicUrl} target="_blank" rel="noopener noreferrer">
             <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
-              <ExternalLink className="h-3.5 w-3.5" /> Open Page
+              <ExternalLink className="h-3.5 w-3.5" /> فتح الصفحة
             </Button>
           </a>
         </div>
@@ -157,13 +166,14 @@ export default function PageBuilderPage() {
 
         {/* Editor panel */}
         <div className="space-y-5">
-          <Tabs defaultValue="branding" className="w-full">
-            <TabsList className="w-full grid grid-cols-4 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+          <Tabs defaultValue="themes" className="w-full">
+            <TabsList className="w-full grid grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
-                { value: 'branding', icon: Palette,       label: 'Branding' },
-                { value: 'content',  icon: FileText,       label: 'Content'  },
-                { value: 'contact',  icon: Phone,          label: 'Contact'  },
-                { value: 'social',   icon: Globe,          label: 'Social'   },
+                { value: 'themes',   icon: Layout,         label: 'التصميم'  },
+                { value: 'branding', icon: Palette,        label: 'الهوية'   },
+                { value: 'content',  icon: FileText,       label: 'المحتوى'  },
+                { value: 'contact',  icon: Phone,          label: 'التواصل' },
+                { value: 'social',   icon: Globe,          label: 'سوشيال'  },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -176,24 +186,55 @@ export default function PageBuilderPage() {
               ))}
             </TabsList>
 
+            {/* THEMES */}
+            <TabsContent value="themes" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
+                <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على صفحتك العامة</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.values(PAGE_THEMES).map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
+                      className={`relative rounded-xl p-3 cursor-pointer transition-all border-2 ${
+                        selectedTheme === theme.id ? 'border-blue-500' : 'border-slate-700 hover:border-slate-500'
+                      } bg-slate-800`}
+                    >
+                      <div className="h-16 rounded-lg mb-2 overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                        <div className="h-3 rounded-t-lg" style={{ backgroundColor: theme.accent }} />
+                        <div className="px-1.5 mt-1.5 space-y-1">
+                          <div className="h-1.5 bg-gray-300 rounded w-3/4" />
+                          <div className="h-1.5 bg-gray-200 rounded w-1/2" />
+                        </div>
+                      </div>
+                      <p className="text-sm font-medium text-white text-center">{theme.label}</p>
+                      {selectedTheme === theme.id && (
+                        <CheckCircle2 className="absolute top-2 left-2 h-4 w-4 text-blue-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
             {/* BRANDING */}
             <TabsContent value="branding" className="mt-4 space-y-4">
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Building2 className="h-4 w-4 text-blue-400" /> Agency Name
+                  <Building2 className="h-4 w-4 text-blue-400" /> اسم المكتب
                 </p>
                 <Input
                   value={agencyName}
                   onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
-                  placeholder="e.g. Horizon Real Estate"
+                  placeholder="مثال: مكتب الأفق للعقارات"
                   className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Palette className="h-4 w-4 text-blue-400" /> Brand Color
+                  <Palette className="h-4 w-4 text-blue-400" /> لون العلامة التجارية
                 </p>
                 <div className="flex flex-wrap gap-2 mb-1">
                   {COLOR_PRESETS.map((c) => (
@@ -226,13 +267,13 @@ export default function PageBuilderPage() {
                     maxLength={7}
                     className="bg-slate-800 border-slate-700 text-white w-28 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
-                  <span className="text-xs text-slate-500">Used for highlights on your public page</span>
+                  <span className="text-xs text-slate-500">يُستخدم كلون رئيسي في صفحتك</span>
                 </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <ImageIcon className="h-4 w-4 text-blue-400" /> Logo
+                  <ImageIcon className="h-4 w-4 text-blue-400" /> الشعار (Logo)
                 </p>
                 <div className="flex gap-3 items-start">
                   <div className="h-14 w-14 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
@@ -249,14 +290,14 @@ export default function PageBuilderPage() {
                       placeholder="https://example.com/logo.png"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
-                    <p className="text-xs text-slate-500">Paste a direct image URL (PNG, JPG, SVG)</p>
+                    <p className="text-xs text-slate-500">الصق رابط الصورة مباشرة (PNG, JPG, SVG)</p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <ImageIcon className="h-4 w-4 text-blue-400" /> Cover Image
+                  <ImageIcon className="h-4 w-4 text-blue-400" /> صورة الغلاف
                 </p>
                 {profile.cover_url && (
                   <div className="w-full h-24 rounded-lg overflow-hidden border border-slate-700">
@@ -269,7 +310,7 @@ export default function PageBuilderPage() {
                   placeholder="https://example.com/cover.jpg"
                   className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
-                <p className="text-xs text-slate-500">Recommended: 1200x400px or wider landscape image</p>
+                <p className="text-xs text-slate-500">مقترح: 1200×400 بكسل أو أوسع</p>
               </div>
             </TabsContent>
 
@@ -277,42 +318,42 @@ export default function PageBuilderPage() {
             <TabsContent value="content" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <FileText className="h-4 w-4 text-blue-400" /> Page Content
+                  <FileText className="h-4 w-4 text-blue-400" /> محتوى الصفحة
                 </p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">Tagline</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">الشعار النصي</Label>
                   <Input
                     value={profile.tagline || ''}
                     onChange={(e) => updateProfile({ tagline: e.target.value })}
-                    placeholder="e.g. Your trusted partner in real estate"
+                    placeholder="مثال: شريكك الموثوق في العقارات"
                     maxLength={200}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
-                  <p className="text-[11px] text-slate-500 text-right">{(profile.tagline || '').length}/200</p>
+                  <p className="text-[11px] text-slate-500 text-left">{(profile.tagline || '').length}/200</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">About / Bio</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">نبذة عن المكتب</Label>
                   <Textarea
                     value={profile.bio || ''}
                     onChange={(e) => updateProfile({ bio: e.target.value })}
-                    placeholder="Tell visitors about your agency..."
+                    placeholder="أخبر الزوار عن مكتبك — خبرتك، قيمك، وما يميزك..."
                     rows={6}
                     maxLength={2000}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
                   />
-                  <p className="text-[11px] text-slate-500 text-right">{(profile.bio || '').length}/2000</p>
+                  <p className="text-[11px] text-slate-500 text-left">{(profile.bio || '').length}/2000</p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1">
-                    <Hash className="h-3 w-3" /> Licence / Registration No.
+                    <Hash className="h-3 w-3" /> رقم الترخيص
                   </Label>
                   <Input
                     value={profile.licence_no || ''}
                     onChange={(e) => updateProfile({ licence_no: e.target.value })}
-                    placeholder="e.g. RE-12345"
+                    placeholder="مثال: RE-12345"
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -323,13 +364,13 @@ export default function PageBuilderPage() {
             <TabsContent value="contact" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Phone className="h-4 w-4 text-blue-400" /> Contact Details
+                  <Phone className="h-4 w-4 text-blue-400" /> بيانات التواصل
                 </p>
 
                 {([
-                  { key: 'contact_email',   icon: Mail,   label: 'Email',   placeholder: 'agency@example.com',   type: 'email' },
-                  { key: 'contact_phone',   icon: Phone,  label: 'Phone',   placeholder: '+966 50 000 0000',     type: 'tel'   },
-                  { key: 'contact_address', icon: MapPin, label: 'Address', placeholder: 'Riyadh, Saudi Arabia', type: 'text'  },
+                  { key: 'contact_email',   icon: Mail,   label: 'البريد الإلكتروني', placeholder: 'agency@example.com',   type: 'email' },
+                  { key: 'contact_phone',   icon: Phone,  label: 'رقم الهاتف',         placeholder: '+966 50 000 0000',     type: 'tel'   },
+                  { key: 'contact_address', icon: MapPin, label: 'العنوان',             placeholder: 'الرياض، المملكة العربية السعودية', type: 'text'  },
                 ] as const).map(({ key, icon: Icon, label, placeholder, type }) => (
                   <div key={key} className="space-y-1.5">
                     <Label className="text-slate-400 text-xs uppercase tracking-wider">{label}</Label>
@@ -337,7 +378,7 @@ export default function PageBuilderPage() {
                       <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
                       <Input
                         type={type}
-                        value={(profile as Record<string, string | undefined>)[key] || ''}
+                        value={(profile as unknown as Record<string, string | undefined>)[key] || ''}
                         onChange={(e) => updateProfile({ [key]: e.target.value })}
                         placeholder={placeholder}
                         className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -352,9 +393,9 @@ export default function PageBuilderPage() {
             <TabsContent value="social" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Globe className="h-4 w-4 text-blue-400" /> Social Media Links
+                  <Globe className="h-4 w-4 text-blue-400" /> روابط التواصل الاجتماعي
                 </p>
-                <p className="text-xs text-slate-500">Paste full profile URLs - they will appear as icons on your public page.</p>
+                <p className="text-xs text-slate-500">الصق روابط ملفاتك الشخصية — ستظهر كأيقونات في صفحتك</p>
 
                 {([
                   { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'https://instagram.com/youragency', color: 'text-pink-400'  },
@@ -387,12 +428,12 @@ export default function PageBuilderPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
             >
               {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
+              {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
             </Button>
 
             {saveStatus === 'saved' && (
               <span className="flex items-center gap-1.5 text-sm text-green-400">
-                <CheckCircle2 className="h-4 w-4" /> Changes saved!
+                <CheckCircle2 className="h-4 w-4" /> تم الحفظ بنجاح!
               </span>
             )}
             {saveStatus === 'error' && (
@@ -408,10 +449,10 @@ export default function PageBuilderPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Live Preview</span>
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">معاينة مباشرة</span>
               <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
-                Updates as you type
+                يتحدث فورياً
               </span>
             </div>
 
@@ -440,7 +481,7 @@ export default function PageBuilderPage() {
                     <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover mb-1.5 border-2 border-white/30 shadow-lg" />
                   )}
                   <p className="font-bold text-sm leading-tight">
-                    {agencyName || data?.tenant?.name || 'Agency Name'}
+                    {agencyName || data?.tenant?.name || 'اسم المكتب'}
                   </p>
                   {profile.tagline && (
                     <p className="text-[11px] text-white/75 mt-0.5 line-clamp-1">{profile.tagline}</p>
@@ -448,23 +489,23 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="p-3 space-y-3">
+              <div className="p-3 space-y-3" dir="rtl">
 
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>About Us</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>من نحن</p>
                   <p className="text-gray-600 text-[11px] leading-relaxed line-clamp-4">
-                    {profile.bio || 'Your bio will appear here...'}
+                    {profile.bio || 'نبذة مكتبك ستظهر هنا...'}
                   </p>
                   {profile.licence_no && (
                     <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-0.5">
-                      <Hash className="h-2.5 w-2.5 inline" /> Lic. {profile.licence_no}
+                      <Hash className="h-2.5 w-2.5 inline" /> رقم الترخيص: {profile.licence_no}
                     </p>
                   )}
                 </div>
 
                 {(profile.contact_email || profile.contact_phone || profile.contact_address) && (
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>Contact</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>التواصل</p>
                     <div className="space-y-1">
                       {profile.contact_phone && (
                         <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
@@ -514,7 +555,7 @@ export default function PageBuilderPage() {
                 )}
 
                 <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
-                  View Our Listings
+                  استعرض عقاراتنا
                 </div>
               </div>
             </div>

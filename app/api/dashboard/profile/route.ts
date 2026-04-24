@@ -23,6 +23,7 @@ const ProfileDataSchema = z.object({
 const TenantDataSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  theme: z.string().max(20).optional(),
 }).optional()
 
 const PatchSchema = z.object({
@@ -82,6 +83,7 @@ export async function PATCH(request: NextRequest) {
   const tenantUpdate: Record<string, unknown> = {}
   if (tenantFields?.name) tenantUpdate.name = tenantFields.name
   if (tenantFields?.primary_color) tenantUpdate.primary_color = tenantFields.primary_color
+  if (tenantFields?.theme) tenantUpdate.theme = tenantFields.theme
   if (Object.keys(tenantUpdate).length > 0) {
     await adminDb.collection('tenants').doc(session.tenantId).update(tenantUpdate)
   }

@@ -1,9 +1,19 @@
+export const PAGE_THEMES = {
+  modern:  { id: 'modern',  label: 'عصري',    labelEn: 'Modern',  bg: '#ffffff', card: '#f8fafc', accent: '#2563eb', dark: false },
+  luxury:  { id: 'luxury',  label: 'فاخر',     labelEn: 'Luxury',  bg: '#0f0f0f', card: '#1a1a1a', accent: '#c9a84c', dark: true  },
+  nature:  { id: 'nature',  label: 'طبيعي',   labelEn: 'Nature',  bg: '#f0fdf4', card: '#ffffff', accent: '#16a34a', dark: false },
+  ocean:   { id: 'ocean',   label: 'بحري',     labelEn: 'Ocean',   bg: '#f0f9ff', card: '#ffffff', accent: '#0891b2', dark: false },
+  desert:  { id: 'desert',  label: 'صحراوي',  labelEn: 'Desert',  bg: '#fffbeb', card: '#ffffff', accent: '#d97706', dark: false },
+} as const;
+export type ThemeId = keyof typeof PAGE_THEMES;
+
 export type Tenant = {
   id: string;
   slug: string;
   name: string;
   status: 'active' | 'suspended';
   primary_color?: string;
+  theme?: string;
   created_at: string;
   features?: Record<string, boolean>;
 };
