@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader as Loader2, Building2, Eye } from 'lucide-react';
+import { Loader as Loader2, Building2, Sparkles, ArrowRight } from 'lucide-react';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,72 +70,85 @@ export default function LoginPage() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4">
-        <Card className="w-full max-w-md bg-[#12121a] border-gray-800">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center mb-4">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
-            <CardTitle className="text-2xl text-white">Agency Login</CardTitle>
-            <CardDescription className="text-gray-400">
-              Sign in to manage your real estate listings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-300">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500"
-                  placeholder="you@agency.com"
-                />
+      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md space-y-6">
+
+          {/* ── Demo CTA — primary face of the app ── */}
+          <div className="relative rounded-2xl overflow-hidden">
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 opacity-90" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+            <div className="relative p-6 text-white">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-xs font-semibold px-2.5 py-1 rounded-full">
+                  <Sparkles className="h-3 w-3" /> Free Preview
+                </span>
+                <span className="text-white/60 text-xs">No account needed</span>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-300">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500"
-                  placeholder="Enter your password"
-                />
-              </div>
-              {error && <p className="text-sm text-red-400">{error}</p>}
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              <h2 className="text-xl font-bold mb-1">Try the Live Demo</h2>
+              <p className="text-white/70 text-sm mb-5 leading-relaxed">
+                Explore the full dashboard — listings, leads, analytics, and your public agency page — with sample data.
+              </p>
+              <button
+                type="button"
+                onClick={handleDemo}
+                className="group flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign In
-              </Button>
-            </form>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-[#12121a] px-3 text-gray-500">or</span>
-              </div>
+                <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+                Enter Demo
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleDemo}
-              className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              Enter Demo Mode
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* ── Sign-in form ── */}
+          <Card className="bg-[#12121a] border-gray-800">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-white">Agency Sign In</CardTitle>
+              <CardDescription className="text-gray-500 text-sm">
+                Already have an account? Sign in below.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-gray-300">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500"
+                    placeholder="you@agency.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-gray-300">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500"
+                    placeholder="Enter your password"
+                  />
+                </div>
+                {error && <p className="text-sm text-red-400">{error}</p>}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Sign In
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+        </div>
       </div>
     </div>
   );
