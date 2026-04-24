@@ -129,6 +129,7 @@ export default function PageBuilderPage() {
   const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
   const baseUrl = configuredBaseUrl || runtimeOrigin;
   const publicUrl = slug ? `${baseUrl}/${slug}` : baseUrl;
+  const publicPath = slug ? `/${slug}` : '/';
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
@@ -156,7 +157,7 @@ export default function PageBuilderPage() {
             {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'تم النسخ!' : 'نسخ الرابط'}
           </Button>
-          <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+          <a href={publicPath} target="_blank" rel="noopener noreferrer">
             <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
               <ExternalLink className="h-3.5 w-3.5" /> فتح الصفحة
             </Button>
