@@ -13,7 +13,7 @@ import {
   Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin,
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
-  CheckCircle2, Building2, Hash, Layout,
+  CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize,
 } from 'lucide-react';
 
 type ProfileResponse = {
@@ -41,6 +41,12 @@ const COLOR_PRESETS = [
   '#059669', '#0891b2', '#db2777', '#475569',
 ];
 
+const demoListings = [
+  { id: '1', title: 'فيلا فاخرة في الخليج', price: 2500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 3, area_sqm: 450, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
+  { id: '2', title: 'شقة حديثة مع إطلالة', price: 1200000, location: 'Downtown Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 200, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
+  { id: '3', title: 'أرض للاستثمار العقاري', price: 800000, location: 'Business Bay', bedrooms: 0, bathrooms: 0, area_sqm: 1000, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg'] },
+];
+
 export default function PageBuilderPage() {
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,8 +59,24 @@ export default function PageBuilderPage() {
   const [agencyName, setAgencyName] = useState('');
   const [selectedTheme, setSelectedTheme] = useState<string>('modern');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [listings, setListings] = useState<any[]>([]);
+  const [showListingForm, setShowListingForm] = useState(false);
+  const [editingListing, setEditingListing] = useState<any>(null);
+  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
 
   useEffect(() => {
+    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      const d = { profile: { tenant_id: 'demo', logo_url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=100', cover_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200', bio: 'وكالة عقارية رائدة متخصصة في العقارات الفاخرة بدبي. بخبرة تمتد أكثر من 15 عامًا، نساعدك على إيجاد منزل أحلامك في أرقى المواقع.', tagline: 'حيث تلتقي الفخامة بالمنزل', contact_email: 'info@luxuryhomesdubai.com', contact_phone: '+971 4 123 4567', contact_address: 'برج A، بزنس باي، دبي، الإمارات', licence_no: 'RE-12345', social_links: { instagram: 'https://instagram.com/luxuryhomesdubai', x: 'https://x.com/luxuryhomesdubai', linkedin: 'https://linkedin.com/company/luxuryhomesdubai', whatsapp: 'https://wa.me/971501234567' } }, tenant: { id: 'demo', slug: 'luxury-homes-dubai', name: 'Luxury Homes Dubai', status: 'active' as const, created_at: '2025-10-15T10:00:00Z', primary_color: '#0ea5e9', theme: 'modern' } };
+      setData(d);
+      setProfile(d.profile);
+      setPrimaryColor(d.tenant.primary_color);
+      setAgencyName(d.tenant.name);
+      setSelectedTheme(d.tenant.theme);
+      setListings(demoListings);
+      setLoading(false);
+      return;
+    }
     authFetch<ProfileResponse>('/api/dashboard/profile')
       .then((res) => {
         setData(res);
@@ -84,6 +106,37 @@ export default function PageBuilderPage() {
       social_links: { ...prev.social_links, [key]: value },
     }));
     markDirty();
+  };
+
+  const resetListingForm = () => {
+    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
+    setEditingListing(null);
+  };
+
+  const addListing = () => {
+    if (!listingForm.title || !listingForm.price) return;
+    const newListing = {
+      id: Date.now().toString(),
+      title: listingForm.title,
+      price: parseInt(listingForm.price),
+      location: listingForm.location,
+      bedrooms: listingForm.bedrooms ? parseInt(listingForm.bedrooms) : 0,
+      bathrooms: listingForm.bathrooms ? parseInt(listingForm.bathrooms) : 0,
+      area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : 0,
+      images: listingForm.image ? [listingForm.image] : [],
+      listing_status: listingForm.status,
+    };
+    if (editingListing) {
+      setListings((prev) => prev.map((l) => l.id === editingListing.id ? { ...newListing, id: editingListing.id } : l));
+    } else {
+      setListings((prev) => [...prev, newListing]);
+    }
+    resetListingForm();
+    setShowListingForm(false);
+  };
+
+  const deleteListing = (id: string) => {
+    setListings((prev) => prev.filter((l) => l.id !== id));
   };
 
   const handleSave = async () => {
@@ -196,11 +249,12 @@ export default function PageBuilderPage() {
         {/* Editor panel */}
         <div className="space-y-5">
           <Tabs defaultValue="themes" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+            <TabsList className="w-full grid grid-cols-6 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
                 { value: 'themes',   icon: Layout,         label: 'التصميم'  },
                 { value: 'branding', icon: Palette,        label: 'الهوية'   },
                 { value: 'content',  icon: FileText,       label: 'المحتوى'  },
+                { value: 'posts',    icon: Building2,      label: 'العقارات' },
                 { value: 'contact',  icon: Phone,          label: 'التواصل' },
                 { value: 'social',   icon: Globe,          label: 'سوشيال'  },
               ] as const).map(({ value, icon: Icon, label }) => (
@@ -386,6 +440,107 @@ export default function PageBuilderPage() {
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+            </TabsContent>
+
+            {/* POSTS */}
+            <TabsContent value="posts" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-white">إدارة العقارات المعروضة</p>
+                    <p className="text-xs text-slate-400 mt-0.5">أضف وعدّل عقاراتك التي تظهر في صفحتك العامة</p>
+                  </div>
+                  <Button
+                    onClick={() => { setShowListingForm(!showListingForm); resetListingForm(); }}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" /> إضافة عقار
+                  </Button>
+                </div>
+
+                {showListingForm && (
+                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+                    <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العقار' : 'إضافة عقار جديد'}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">العنوان *</Label>
+                        <Input value={listingForm.title} onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="فيلا فاخرة..." />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">السعر *</Label>
+                        <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="1000000" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">الموقع</Label>
+                        <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="Dubai Marina" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">الغرف</Label>
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="4" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">الحمامات</Label>
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="3" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">المساحة (م²)</Label>
+                        <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-slate-400 text-xs">رابط الصورة</Label>
+                      <Input value={listingForm.image} onChange={(e) => setListingForm({ ...listingForm, image: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="https://..." />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-slate-400 text-xs">الحالة</Label>
+                      <select value={listingForm.status} onChange={(e) => setListingForm({ ...listingForm, status: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
+                        <option value="available">متاح</option>
+                        <option value="sold">مباع</option>
+                        <option value="rented">مؤجر</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <Button onClick={addListing} size="sm" className="bg-blue-600 hover:bg-blue-700">{editingListing ? 'تحديث' : 'إضافة'}</Button>
+                      <Button onClick={() => { setShowListingForm(false); resetListingForm(); }} size="sm" variant="outline" className="border-slate-600 text-slate-300">إلغاء</Button>
+                    </div>
+                  </div>
+                )}
+
+                {listings.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <Building2 className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">لا توجد عقارات مضافة بعد</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {listings.map((listing) => (
+                      <div key={listing.id} className="bg-slate-800 rounded-lg p-3 border border-slate-700 flex gap-3 items-center">
+                        {listing.images?.[0] && (
+                          <img src={listing.images[0]} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white text-sm truncate">{listing.title}</p>
+                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString()} ر.س</p>
+                          <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
+                            {listing.location && <span>{listing.location}</span>}
+                            {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
+                            {listing.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="h-3 w-3" />{listing.bathrooms}</span>}
+                            {listing.area_sqm > 0 && <span className="flex items-center gap-0.5"><Maximize className="h-3 w-3" />{listing.area_sqm}م²</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${ listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400' }`}>
+                            {listing.listing_status === 'available' ? 'متاح' : listing.listing_status === 'sold' ? 'مباع' : 'مؤجر'}
+                          </span>
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+                          <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </TabsContent>
 
