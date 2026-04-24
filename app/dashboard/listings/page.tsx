@@ -26,6 +26,41 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, MapPin, Bed, Bath, Maximize, Loader as Loader2, X } from 'lucide-react';
 
+const demoListings: Post[] = [
+  {
+    id: '1', tenant_id: 'demo', type: 'listing',
+    title: 'Luxury Villa in Palm Jumeirah', body: 'Stunning 4-bedroom villa with private beach access and panoramic sea views.',
+    price: 12500000, location: 'Palm Jumeirah, Dubai', bedrooms: 4, bathrooms: 5, area_sqm: 450,
+    listing_status: 'available', published: true,
+    images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    created_at: '2026-03-15T10:00:00Z',
+  },
+  {
+    id: '2', tenant_id: 'demo', type: 'listing',
+    title: 'Modern Downtown Apartment', body: 'Sleek 2-bedroom apartment in the heart of Downtown with Burj Khalifa views.',
+    price: 3200000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 120,
+    listing_status: 'available', published: true,
+    images: ['https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    created_at: '2026-03-20T10:00:00Z',
+  },
+  {
+    id: '3', tenant_id: 'demo', type: 'listing',
+    title: 'Beachfront Penthouse', body: 'Exclusive penthouse with rooftop terrace and direct beach access.',
+    price: 8900000, location: 'JBR, Dubai', bedrooms: 3, bathrooms: 4, area_sqm: 280,
+    listing_status: 'sold', published: true,
+    images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    created_at: '2026-02-10T10:00:00Z',
+  },
+  {
+    id: '4', tenant_id: 'demo', type: 'listing',
+    title: 'Cozy Studio in Marina', body: 'Perfect investment studio with high rental yield in Dubai Marina.',
+    price: 950000, location: 'Dubai Marina', bedrooms: 1, bathrooms: 1, area_sqm: 45,
+    listing_status: 'rented', published: true,
+    images: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    created_at: '2026-01-05T10:00:00Z',
+  },
+];
+
 const emptyListing = {
   title: '',
   body: '',
@@ -49,6 +84,12 @@ export default function ListingsPage() {
   const [imageUrl, setImageUrl] = useState('');
 
   const fetchListings = () => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setListings(demoListings);
+      setLoading(false);
+      return;
+    }
     authFetch<{ data: Post[] }>('/api/dashboard/listings')
       .then((res) => setListings(res.data || []))
       .catch(() => {})
@@ -95,7 +136,14 @@ export default function ListingsPage() {
         published: form.published,
         images: form.images,
       };
-      if (editingId) {
+      const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+      if (isDemo) {
+        if (editingId) {
+          setListings(listings.map((l) => (l.id === editingId ? { ...l, ...payload, body: payload.body || '' } : l)));
+        } else {
+          setListings([...listings, { ...payload, body: payload.body || '', id: Date.now().toString(), tenant_id: 'demo', type: 'listing' as const, created_at: new Date().toISOString() } as Post]);
+        }
+      } else if (editingId) {
         await authFetch(`/api/dashboard/posts/${editingId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
@@ -107,7 +155,7 @@ export default function ListingsPage() {
         });
       }
       setModalOpen(false);
-      fetchListings();
+      if (!isDemo) fetchListings();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Save failed');
     } finally {
@@ -117,6 +165,11 @@ export default function ListingsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this listing?')) return;
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setListings(listings.filter((l) => l.id !== id));
+      return;
+    }
     try {
       await authFetch(`/api/dashboard/posts/${id}`, { method: 'DELETE' });
       fetchListings();

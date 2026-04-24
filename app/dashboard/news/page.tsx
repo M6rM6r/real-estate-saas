@@ -19,6 +19,12 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader as Loader2, X, Newspaper } from 'lucide-react';
 
+const demoNews: Post[] = [
+  { id: '1', tenant_id: 'demo', type: 'news', title: 'Dubai Real Estate Market Hits Record High in Q1 2026', body: 'The Dubai property market recorded AED 124 billion in transactions during Q1 2026, a 23% increase year-over-year.', published: true, images: [], created_at: '2026-04-18T10:00:00Z' },
+  { id: '2', tenant_id: 'demo', type: 'news', title: 'New Visa Rules Boost Property Investment', body: 'The UAE cabinet has announced extended golden visa durations for property investors.', published: true, images: [], created_at: '2026-04-12T10:00:00Z' },
+  { id: '3', tenant_id: 'demo', type: 'news', title: 'Sustainable Building Standards Updated', body: 'Dubai Municipality has released updated green building standards effective from June 2026.', published: false, images: [], created_at: '2026-04-05T10:00:00Z' },
+];
+
 const emptyForm = {
   title: '',
   body: '',
@@ -36,6 +42,12 @@ export default function NewsPage() {
   const [imageUrl, setImageUrl] = useState('');
 
   const fetchData = () => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setItems(demoNews);
+      setLoading(false);
+      return;
+    }
     authFetch<Post[]>('/api/dashboard/news')
       .then(setItems)
       .catch(() => {})
@@ -70,7 +82,14 @@ export default function NewsPage() {
         published: form.published,
         images: form.images,
       };
-      if (editingId) {
+      const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+      if (isDemo) {
+        if (editingId) {
+          setItems(items.map((i) => (i.id === editingId ? { ...i, ...payload, body: payload.body || '' } : i)));
+        } else {
+          setItems([...items, { ...payload, body: payload.body || '', id: Date.now().toString(), tenant_id: 'demo', type: 'news' as const, created_at: new Date().toISOString() } as Post]);
+        }
+      } else if (editingId) {
         await authFetch(`/api/dashboard/news/${editingId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
@@ -82,7 +101,7 @@ export default function NewsPage() {
         });
       }
       setModalOpen(false);
-      fetchData();
+      if (!isDemo) fetchData();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Save failed');
     } finally {
@@ -92,6 +111,11 @@ export default function NewsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this news article?')) return;
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setItems(items.filter((i) => i.id !== id));
+      return;
+    }
     try {
       await authFetch(`/api/dashboard/news/${id}`, { method: 'DELETE' });
       fetchData();

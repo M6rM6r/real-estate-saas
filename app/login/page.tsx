@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader as Loader2, Building2 } from 'lucide-react';
+import { Loader as Loader2, Building2, Eye } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,6 +36,11 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDemo = () => {
+    sessionStorage.setItem('demo_auth', 'true');
+    router.push('/dashboard');
   };
 
   return (
@@ -86,6 +91,23 @@ export default function LoginPage() {
               Sign In
             </Button>
           </form>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-700" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-[#12121a] px-3 text-gray-500">or</span>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDemo}
+            className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Enter Demo Mode
+          </Button>
         </CardContent>
       </Card>
     </div>

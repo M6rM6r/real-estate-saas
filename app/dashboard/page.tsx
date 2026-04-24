@@ -15,11 +15,31 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+const demoData: AnalyticsData = {
+  pageViews: [
+    { date: '2025-10', views: 120 },
+    { date: '2025-11', views: 245 },
+    { date: '2025-12', views: 312 },
+    { date: '2026-01', views: 287 },
+    { date: '2026-02', views: 410 },
+    { date: '2026-03', views: 523 },
+    { date: '2026-04', views: 478 },
+  ],
+  totalViews: 2375,
+  totalLeads: 42,
+};
+
 export default function DashboardOverview() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setData(demoData);
+      setLoading(false);
+      return;
+    }
     authFetch<AnalyticsData>('/api/dashboard/analytics')
       .then(setData)
       .catch(() => {})

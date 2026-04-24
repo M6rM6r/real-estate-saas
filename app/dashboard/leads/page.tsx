@@ -14,6 +14,14 @@ import {
 } from '@/components/ui/select';
 import { Users, Phone, Clock } from 'lucide-react';
 
+const demoLeads: Lead[] = [
+  { id: '1', tenant_id: 'demo', name: 'Ahmed Al-Rashid', phone: '+971501234567', message: 'Interested in the Palm Jumeirah villa. Can I schedule a viewing?', status: 'new', created_at: '2026-04-20T14:30:00Z' },
+  { id: '2', tenant_id: 'demo', name: 'Sarah Johnson', phone: '+971559876543', message: 'What is the payment plan for the Downtown apartment?', status: 'contacted', created_at: '2026-04-18T09:15:00Z' },
+  { id: '3', tenant_id: 'demo', name: 'Mohammed Hassan', phone: '+971523456789', message: 'Looking for a 3-bedroom property in Marina area.', status: 'new', created_at: '2026-04-15T16:45:00Z' },
+  { id: '4', tenant_id: 'demo', name: 'Elena Petrova', phone: '+971547891234', message: 'Is the JBR penthouse still available?', status: 'closed', created_at: '2026-04-10T11:20:00Z' },
+  { id: '5', tenant_id: 'demo', name: 'David Chen', phone: '+971567890123', message: 'Need info about rental yields in Dubai Marina.', status: 'contacted', created_at: '2026-04-08T08:00:00Z' },
+];
+
 const statusColor: Record<LeadStatus, string> = {
   new: 'bg-blue-500/20 text-blue-400',
   contacted: 'bg-yellow-500/20 text-yellow-400',
@@ -26,6 +34,12 @@ export default function LeadsPage() {
   const [filter, setFilter] = useState<string>('all');
 
   useEffect(() => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setLeads(demoLeads);
+      setLoading(false);
+      return;
+    }
     authFetch<Lead[]>('/api/dashboard/leads')
       .then(setLeads)
       .catch(() => {})
@@ -33,6 +47,11 @@ export default function LeadsPage() {
   }, []);
 
   const updateStatus = async (id: string, status: LeadStatus) => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      setLeads(leads.map((l) => (l.id === id ? { ...l, status } : l)));
+      return;
+    }
     try {
       await authFetch(`/api/dashboard/leads/${id}`, {
         method: 'PATCH',

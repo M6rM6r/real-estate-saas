@@ -22,8 +22,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
+    const demoAuth = sessionStorage.getItem('demo_auth');
+    if (demoAuth === 'true') {
+      setIsDemo(true);
+      setAuthed(true);
+      return;
+    }
+
     let unsub: (() => void) | undefined;
     (async () => {
       const { auth } = await import('@/lib/firebase');
@@ -40,11 +48,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   const handleLogout = useCallback(async () => {
-    const { auth } = await import('@/lib/firebase');
-    await fetch('/api/auth/session', { method: 'DELETE' });
-    await auth.signOut();
+    sessionStorage.removeItem('demo_auth');
+    if (!isDemo) {
+      const { auth } = await import('@/lib/firebase');
+      await fetch('/api/auth/session', { method: 'DELETE' });
+      await auth.signOut();
+    }
     router.push('/login');
-  }, [router]);
+  }, [router, isDemo]);
 
   if (authed === null) {
     return (
@@ -74,9 +85,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Building2 className="h-4 w-4 text-white" />
           </div>
           <span className="font-semibold text-lg">Dashboard</span>
+          {isDemo && (
+            <span className="ml-auto text-[10px] font-bold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
+              Demo
+            </span>
+          )}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden text-gray-400 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
