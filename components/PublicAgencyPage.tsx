@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
+import { PropertyDetailModal } from './PropertyDetailModal'
+import { FloatContactButtons } from './FloatContactButtons'
+import { InquiryForm } from './InquiryForm'
 
 const STATUS_LABELS: Record<string, string> = {
   available: 'متاح',
@@ -107,11 +110,7 @@ interface Props {
 export default function PublicAgencyPage({ tenant, profile, listings, news, gallery, team }: Props) {
   const primary = tenant.primary_color ?? '#2563eb'
   const [activeListing, setActiveListing] = useState<Post | null>(null)
-  const [carouselIdx, setCarouselIdx] = useState(0)
-  const [leadForm, setLeadForm] = useState({ name: '', phone: '', email: '', message: '' })
-  const [leadSent, setLeadSent] = useState(false)
-  const [leadLoading, setLeadLoading] = useState(false)
-  const [showLeadModal, setShowLeadModal] = useState(false)
+  const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
@@ -161,22 +160,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
     return () => window.removeEventListener('scroll', onScroll)
   }, []);
 
-  const handleLeadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLeadLoading(true)
-    await fetch('/api/leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...leadForm, tenant_id: tenant.id, listing_id: activeListing?.id ?? null }),
-    })
-    setLeadSent(true)
-    setLeadLoading(false)
-  }
 
-  const openListing = (l: Post) => {
-    setActiveListing(l)
-    setCarouselIdx(0)
-  }
 
   const publishedListings = listings.filter((l) => l.published !== false)
   const featuredListings = publishedListings.slice(0, pageConfig.featured_count)
@@ -255,7 +239,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 </a>
               )}
               <button
-                onClick={() => setShowLeadModal(true)}
+                onClick={() => setShowInquiryModal(true)}
                 className="bg-white/20 backdrop-blur text-white border border-white/40 px-8 py-3 rounded-full font-semibold hover:bg-white/30 transition-colors">
                 أرسل استفساراً
               </button>
@@ -269,7 +253,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <h2 className="text-3xl font-bold mb-6">العقارات المميزة</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map(l => (
-                <button key={l.id} onClick={() => openListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                <button key={l.id} onClick={() => setActiveListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
                   <div className="relative">
                     {l.images[0] ? (
                       <Image
@@ -344,7 +328,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {menuListings.map(l => (
-                  <button key={l.id} onClick={() => openListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                  <button key={l.id} onClick={() => setActiveListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
                     <div className="relative">
                       {l.images[0] ? (
                         <Image
@@ -587,114 +571,37 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           </div>
         </footer>)}
 
-        {/* WhatsApp FAB — bottom-left for RTL */}
-        {whatsapp && (
-          <a href={waLink} target="_blank" rel="noopener noreferrer"
-            className="fixed bottom-6 left-6 btn-primary text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-40">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/>
-            </svg>
-          </a>
-        )}
+        {/* Float contact buttons (WhatsApp + Phone) */}
+        <FloatContactButtons
+          whatsapp={profile?.social_links?.whatsapp}
+          phone={profile?.contact_phone ?? undefined}
+          accentColor={primary}
+        />
 
-        {/* Listing Modal */}
+        {/* Property Detail Modal */}
         {activeListing && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              {activeListing.images.length > 0 && (
-                <div className="relative">
-                  <Image
-                    src={activeListing.images[carouselIdx]}
-                    alt=""
-                    width={512}
-                    height={288}
-                    className="w-full h-72 object-cover rounded-t-2xl"
-                    priority={false}
-                  />
-                  {activeListing.images.length > 1 && (
-                    <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-                      {activeListing.images.map((_, i) => (
-                        <button key={i} onClick={() => setCarouselIdx(i)}
-                          className={`w-2 h-2 rounded-full transition-colors ${i === carouselIdx ? 'bg-white' : 'bg-white/50'}`} />
-                      ))}
-                    </div>
-                  )}
-                  {activeListing.images.length > 1 && (
-                    <>
-                      <button onClick={() => setCarouselIdx(i => (i - 1 + activeListing.images.length) % activeListing.images.length)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70">›</button>
-                      <button onClick={() => setCarouselIdx(i => (i + 1) % activeListing.images.length)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70">‹</button>
-                    </>
-                  )}
-                </div>
-              )}
-              <div className="p-6" dir="rtl">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold text-gray-900">{activeListing.title}</h3>
-                  <button onClick={() => setActiveListing(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none mr-4">×</button>
-                </div>
-                {activeListing.price != null && <p className="text-primary text-2xl font-bold mb-2">{activeListing.price.toLocaleString('ar-SA')} ر.س</p>}
-                {activeListing.location && <p className="text-gray-500 mb-3">📍 {activeListing.location}</p>}
-                <div className="flex gap-4 text-sm text-gray-600 mb-4">
-                  {activeListing.bedrooms != null && <span>🛏 {activeListing.bedrooms} غرفة</span>}
-                  {activeListing.bathrooms != null && <span>🚿 {activeListing.bathrooms} حمام</span>}
-                  {activeListing.area_sqm != null && <span>📐 {activeListing.area_sqm} م²</span>}
-                </div>
-                {activeListing.body && <p className="text-gray-600 text-sm leading-relaxed mb-4">{activeListing.body}</p>}
-                <button
-                  onClick={() => { setShowLeadModal(true); setActiveListing(null) }}
-                  className="w-full btn-primary text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
-                  استفسر عن هذا العقار
-                </button>
-              </div>
-            </div>
-          </div>
+          <PropertyDetailModal
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            property={activeListing as any}
+            onClose={() => setActiveListing(null)}
+            slug={tenant.slug}
+            accentColor={primary}
+          />
         )}
 
-        {/* Lead Modal */}
-        {showLeadModal && (
+        {/* Standalone Inquiry Modal */}
+        {showInquiryModal && (
           <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md p-6" dir="rtl">
+            <div className="bg-gray-900 rounded-2xl w-full max-w-md p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">أرسل استفساراً</h3>
-                <button onClick={() => { setShowLeadModal(false); setLeadSent(false) }} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+                <h3 className="text-lg font-bold text-white">أرسل استفساراً</h3>
+                <button onClick={() => setShowInquiryModal(false)} className="text-gray-400 hover:text-gray-300 text-xl">×</button>
               </div>
-              {leadSent ? (
-                <div className="text-center py-8">
-                  <p className="text-3xl mb-3">✅</p>
-                  <p className="font-semibold text-gray-900 text-lg">تم إرسال استفسارك بنجاح!</p>
-                  <p className="text-sm text-gray-500 mt-1">سنتواصل معك قريباً.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleLeadSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل *</label>
-                    <input required placeholder="أدخل اسمك الكامل" value={leadForm.name} onChange={e => setLeadForm(p => ({ ...p, name: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">رقم الجوال *</label>
-                    <input required placeholder="+966 5X XXX XXXX" value={leadForm.phone} onChange={e => setLeadForm(p => ({ ...p, phone: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
-                    <input type="email" placeholder="example@email.com" value={leadForm.email} onChange={e => setLeadForm(p => ({ ...p, email: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">رسالتك</label>
-                    <textarea placeholder="اكتب رسالتك هنا..." rows={3} value={leadForm.message} onChange={e => setLeadForm(p => ({ ...p, message: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none" />
-                  </div>
-                  <button type="submit" disabled={leadLoading}
-                    className="w-full btn-primary text-white py-2.5 rounded-xl font-semibold disabled:opacity-50">
-                    {leadLoading ? 'جاري الإرسال...' : 'إرسال'}
-                  </button>
-                </form>
-              )}
+              <InquiryForm
+                slug={tenant.slug}
+                accentColor={primary}
+                onSuccess={() => setTimeout(() => setShowInquiryModal(false), 2500)}
+              />
             </div>
           </div>
         )}

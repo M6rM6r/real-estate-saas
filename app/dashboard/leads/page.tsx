@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Users, Phone, Clock } from 'lucide-react';
+import { LeadStatsCards } from '@/components/LeadStatsCards';
 
 const demoLeads: Lead[] = [
   { id: '1', tenant_id: 'demo', name: 'Ahmed Al-Rashid', phone: '+971501234567', message: 'Interested in the Palm Jumeirah villa. Can I schedule a viewing?', status: 'new', created_at: '2026-04-20T14:30:00Z' },
@@ -87,6 +88,16 @@ export default function LeadsPage() {
           </SelectContent>
         </Select>
       </div>
+
+      <LeadStatsCards
+        stats={{
+          totalLeads: leads.length,
+          newThisWeek: leads.filter((l) => l.status === 'new').length,
+          conversionRate: leads.length > 0 ? Math.round((leads.filter((l) => l.status === 'closed').length / leads.length) * 100) : 0,
+          avgResponseTime: '< 2h',
+          trend: { leadsChange: 12, rateChange: 5 },
+        }}
+      />
 
       {filtered.length === 0 ? (
         <div className="text-center text-gray-500 py-20">No leads found.</div>
