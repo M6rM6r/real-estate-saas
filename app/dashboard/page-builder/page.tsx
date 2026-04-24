@@ -1,38 +1,56 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Profile, Tenant } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader as Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin, Instagram, Twitter, Linkedin, MessageCircle } from 'lucide-react';
+import {
+  Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin,
+  Instagram, Twitter, Linkedin, MessageCircle, Palette,
+  Image as ImageIcon, FileText, Globe, AlertCircle,
+  CheckCircle2, Building2, Hash,
+} from 'lucide-react';
 
 type ProfileResponse = {
-  profile: Profile;
-  tenant: Tenant & { primary_color: string };
+  profile: Profile | null;
+  tenant: (Tenant & { primary_color?: string }) | null;
 };
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+const EMPTY_PROFILE: Profile = {
+  tenant_id: '',
+  logo_url: '',
+  cover_url: '',
+  bio: '',
+  tagline: '',
+  licence_no: '',
+  contact_email: '',
+  contact_phone: '',
+  contact_address: '',
+  social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
+};
+
+const COLOR_PRESETS = [
+  '#2563eb', '#7c3aed', '#dc2626', '#d97706',
+  '#059669', '#0891b2', '#db2777', '#475569',
+];
 
 export default function PageBuilderPage() {
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [saveError, setSaveError] = useState('');
   const [copied, setCopied] = useState(false);
-  const [profile, setProfile] = useState<Profile>({
-    tenant_id: '',
-    logo_url: '',
-    cover_url: '',
-    bio: '',
-    tagline: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_address: '',
-    social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
-  });
+  const [dirty, setDirty] = useState(false);
+  const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
+  const [agencyName, setAgencyName] = useState('');
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     authFetch<ProfileResponse>('/api/dashboard/profile')
@@ -40,305 +58,467 @@ export default function PageBuilderPage() {
         setData(res);
         if (res.profile) setProfile(res.profile);
         setPrimaryColor(res.tenant?.primary_color || '#2563eb');
+        setAgencyName(res.tenant?.name || '');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  const markDirty = () => {
+    setDirty(true);
+    setSaveStatus('idle');
+    setSaveError('');
+  };
+
+  const updateProfile = (patch: Partial<Profile>) => {
+    setProfile((prev) => ({ ...prev, ...patch }));
+    markDirty();
+  };
+
+  const updateSocial = (key: string, value: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      social_links: { ...prev.social_links, [key]: value },
+    }));
+    markDirty();
+  };
+
   const handleSave = async () => {
-    setSaving(true);
+    setSaveStatus('saving');
+    setSaveError('');
     try {
       await authFetch('/api/dashboard/profile', {
         method: 'PATCH',
         body: JSON.stringify({
           profile,
-          tenant: { primary_color: primaryColor },
+          tenant: { primary_color: primaryColor, name: agencyName || undefined },
         }),
       });
+      setSaveStatus('saved');
+      setDirty(false);
+      if (savedTimer.current) clearTimeout(savedTimer.current);
+      savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
-    } finally {
-      setSaving(false);
+      setSaveStatus('error');
+      setSaveError(e instanceof Error ? e.message : 'Save failed. Please try again.');
     }
   };
 
   const copyLink = () => {
-    const url = `${window.location.origin}/${data?.tenant.slug || ''}`;
+    const url = `${window.location.origin}/${data?.tenant?.slug || ''}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const updateSocial = (key: string, value: string) => {
-    setProfile({
-      ...profile,
-      social_links: { ...profile.social_links, [key]: value },
-    });
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-72">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">Loading your page settings...</p>
+        </div>
       </div>
     );
   }
 
-  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${data?.tenant.slug || ''}`;
+  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${data?.tenant?.slug || ''}`;
 
   return (
-    <div className="space-y-6">
-      {/* Public URL Banner */}
-      <div className="bg-[#12121a] border border-gray-800 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs text-gray-400 mb-1">Your Public Page</p>
+    <div className="space-y-5 pb-10">
+
+      {/* Top bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">Public Page URL</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={copyLink}
-            className="border-gray-700 text-gray-300"
-          >
-            {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-            {copied ? 'Copied' : 'Copy Link'}
+        <div className="flex items-center gap-2 shrink-0">
+          {dirty && (
+            <span className="text-xs text-amber-400 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+              Unsaved changes
+            </span>
+          )}
+          <Button size="sm" variant="ghost" onClick={copyLink} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
+            {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? 'Copied!' : 'Copy Link'}
           </Button>
           <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-700 text-gray-300"
-            >
-              <ExternalLink className="h-4 w-4 mr-1" /> Open Page
+            <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
+              <ExternalLink className="h-3.5 w-3.5" /> Open Page
             </Button>
           </a>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-6">
-        {/* Editor */}
-        <div className="lg:col-span-3">
-          <Tabs defaultValue="branding">
-            <TabsList className="bg-[#12121a] border-gray-800">
-              <TabsTrigger value="branding">Branding</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="contact">Contact</TabsTrigger>
-              <TabsTrigger value="social">Social</TabsTrigger>
+      {/* Main two-column layout */}
+      <div className="grid lg:grid-cols-[1fr_360px] gap-5">
+
+        {/* Editor panel */}
+        <div className="space-y-5">
+          <Tabs defaultValue="branding" className="w-full">
+            <TabsList className="w-full grid grid-cols-4 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+              {([
+                { value: 'branding', icon: Palette,       label: 'Branding' },
+                { value: 'content',  icon: FileText,       label: 'Content'  },
+                { value: 'contact',  icon: Phone,          label: 'Contact'  },
+                { value: 'social',   icon: Globe,          label: 'Social'   },
+              ] as const).map(({ value, icon: Icon, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex items-center gap-1.5 text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 hover:text-white rounded-lg py-2 transition-all"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
-            <TabsContent value="branding" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300">Primary Color</Label>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-10 w-14 rounded border border-gray-700 bg-transparent cursor-pointer"
-                  />
+            {/* BRANDING */}
+            <TabsContent value="branding" className="mt-4 space-y-4">
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Building2 className="h-4 w-4 text-blue-400" /> Agency Name
+                </p>
+                <Input
+                  value={agencyName}
+                  onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
+                  placeholder="e.g. Horizon Real Estate"
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Palette className="h-4 w-4 text-blue-400" /> Brand Color
+                </p>
+                <div className="flex flex-wrap gap-2 mb-1">
+                  {COLOR_PRESETS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => { setPrimaryColor(c); markDirty(); }}
+                      title={c}
+                      className="h-7 w-7 rounded-full border-2 transition-all hover:scale-110"
+                      style={{
+                        backgroundColor: c,
+                        borderColor: primaryColor === c ? 'white' : 'transparent',
+                        boxShadow: primaryColor === c ? `0 0 0 1px ${c}` : 'none',
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative shrink-0">
+                    <input
+                      type="color"
+                      value={primaryColor}
+                      onChange={(e) => { setPrimaryColor(e.target.value); markDirty(); }}
+                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                    />
+                    <div className="h-9 w-14 rounded-lg border-2 border-slate-700 cursor-pointer" style={{ backgroundColor: primaryColor }} />
+                  </div>
                   <Input
                     value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="bg-[#1a1a2e] border-gray-700 text-white w-32"
+                    onChange={(e) => { setPrimaryColor(e.target.value); markDirty(); }}
+                    maxLength={7}
+                    className="bg-slate-800 border-slate-700 text-white w-28 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-slate-500">Used for highlights on your public page</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <ImageIcon className="h-4 w-4 text-blue-400" /> Logo
+                </p>
+                <div className="flex gap-3 items-start">
+                  <div className="h-14 w-14 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
+                    {profile.logo_url ? (
+                      <img src={profile.logo_url} alt="Logo preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="h-5 w-5 text-slate-600" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <Input
+                      value={profile.logo_url || ''}
+                      onChange={(e) => updateProfile({ logo_url: e.target.value })}
+                      placeholder="https://example.com/logo.png"
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-slate-500">Paste a direct image URL (PNG, JPG, SVG)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <ImageIcon className="h-4 w-4 text-blue-400" /> Cover Image
+                </p>
+                {profile.cover_url && (
+                  <div className="w-full h-24 rounded-lg overflow-hidden border border-slate-700">
+                    <img src={profile.cover_url} alt="Cover preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <Input
+                  value={profile.cover_url || ''}
+                  onChange={(e) => updateProfile({ cover_url: e.target.value })}
+                  placeholder="https://example.com/cover.jpg"
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+                <p className="text-xs text-slate-500">Recommended: 1200x400px or wider landscape image</p>
+              </div>
+            </TabsContent>
+
+            {/* CONTENT */}
+            <TabsContent value="content" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <FileText className="h-4 w-4 text-blue-400" /> Page Content
+                </p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">Tagline</Label>
+                  <Input
+                    value={profile.tagline || ''}
+                    onChange={(e) => updateProfile({ tagline: e.target.value })}
+                    placeholder="e.g. Your trusted partner in real estate"
+                    maxLength={200}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500 text-right">{(profile.tagline || '').length}/200</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">About / Bio</Label>
+                  <Textarea
+                    value={profile.bio || ''}
+                    onChange={(e) => updateProfile({ bio: e.target.value })}
+                    placeholder="Tell visitors about your agency..."
+                    rows={6}
+                    maxLength={2000}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  />
+                  <p className="text-[11px] text-slate-500 text-right">{(profile.bio || '').length}/2000</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1">
+                    <Hash className="h-3 w-3" /> Licence / Registration No.
+                  </Label>
+                  <Input
+                    value={profile.licence_no || ''}
+                    onChange={(e) => updateProfile({ licence_no: e.target.value })}
+                    placeholder="e.g. RE-12345"
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Logo URL</Label>
-                <Input
-                  value={profile.logo_url || ''}
-                  onChange={(e) => setProfile({ ...profile, logo_url: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Cover Image URL</Label>
-                <Input
-                  value={profile.cover_url || ''}
-                  onChange={(e) => setProfile({ ...profile, cover_url: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
+            </TabsContent>
+
+            {/* CONTACT */}
+            <TabsContent value="contact" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Phone className="h-4 w-4 text-blue-400" /> Contact Details
+                </p>
+
+                {([
+                  { key: 'contact_email',   icon: Mail,   label: 'Email',   placeholder: 'agency@example.com',   type: 'email' },
+                  { key: 'contact_phone',   icon: Phone,  label: 'Phone',   placeholder: '+966 50 000 0000',     type: 'tel'   },
+                  { key: 'contact_address', icon: MapPin, label: 'Address', placeholder: 'Riyadh, Saudi Arabia', type: 'text'  },
+                ] as const).map(({ key, icon: Icon, label, placeholder, type }) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">{label}</Label>
+                    <div className="relative">
+                      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                      <Input
+                        type={type}
+                        value={(profile as Record<string, string | undefined>)[key] || ''}
+                        onChange={(e) => updateProfile({ [key]: e.target.value })}
+                        placeholder={placeholder}
+                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabsContent>
 
-            <TabsContent value="content" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300">Tagline</Label>
-                <Input
-                  value={profile.tagline || ''}
-                  onChange={(e) => setProfile({ ...profile, tagline: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Bio</Label>
-                <Textarea
-                  value={profile.bio || ''}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  rows={5}
-                  className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
-                />
-              </div>
-            </TabsContent>
+            {/* SOCIAL */}
+            <TabsContent value="social" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Globe className="h-4 w-4 text-blue-400" /> Social Media Links
+                </p>
+                <p className="text-xs text-slate-500">Paste full profile URLs - they will appear as icons on your public page.</p>
 
-            <TabsContent value="contact" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300">Email</Label>
-                <Input
-                  value={profile.contact_email || ''}
-                  onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Phone</Label>
-                <Input
-                  value={profile.contact_phone || ''}
-                  onChange={(e) => setProfile({ ...profile, contact_phone: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Address</Label>
-                <Input
-                  value={profile.contact_address || ''}
-                  onChange={(e) => setProfile({ ...profile, contact_address: e.target.value })}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="social" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300">Instagram</Label>
-                <Input
-                  value={profile.social_links?.instagram || ''}
-                  onChange={(e) => updateSocial('instagram', e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">X (Twitter)</Label>
-                <Input
-                  value={profile.social_links?.x || ''}
-                  onChange={(e) => updateSocial('x', e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">LinkedIn</Label>
-                <Input
-                  value={profile.social_links?.linkedin || ''}
-                  onChange={(e) => updateSocial('linkedin', e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">WhatsApp</Label>
-                <Input
-                  value={profile.social_links?.whatsapp || ''}
-                  onChange={(e) => updateSocial('whatsapp', e.target.value)}
-                  className="bg-[#1a1a2e] border-gray-700 text-white"
-                />
+                {([
+                  { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'https://instagram.com/youragency', color: 'text-pink-400'  },
+                  { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'https://x.com/youragency',          color: 'text-sky-400'   },
+                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'https://linkedin.com/company/...',  color: 'text-blue-400'  },
+                  { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp',    placeholder: 'https://wa.me/966500000000',         color: 'text-green-400' },
+                ] as const).map(({ key, icon: Icon, label, placeholder, color }) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">{label}</Label>
+                    <div className="relative">
+                      <Icon className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${color} pointer-events-none`} />
+                      <Input
+                        value={profile.social_links?.[key] || ''}
+                        onChange={(e) => updateSocial(key, e.target.value)}
+                        placeholder={placeholder}
+                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
 
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="mt-6 bg-blue-600 hover:bg-blue-700"
-          >
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
+          {/* Save button + status */}
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleSave}
+              disabled={saveStatus === 'saving'}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
+            >
+              {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
+            </Button>
+
+            {saveStatus === 'saved' && (
+              <span className="flex items-center gap-1.5 text-sm text-green-400">
+                <CheckCircle2 className="h-4 w-4" /> Changes saved!
+              </span>
+            )}
+            {saveStatus === 'error' && (
+              <span className="flex items-center gap-1.5 text-sm text-red-400">
+                <AlertCircle className="h-4 w-4" /> {saveError}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Live Preview */}
-        <div className="lg:col-span-2">
-          <Card className="bg-[#12121a] border-gray-800 sticky top-4">
-            <CardHeader>
-              <CardTitle className="text-sm text-gray-400">Live Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg overflow-hidden border border-gray-700 bg-white">
-                {/* Preview Hero */}
-                <div className="relative h-32 overflow-hidden">
-                  {profile.cover_url ? (
-                    <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700" />
+        <div className="lg:sticky lg:top-4 self-start">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+
+            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Live Preview</span>
+              <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
+                Updates as you type
+              </span>
+            </div>
+
+            <div className="bg-slate-800 px-3 py-2 flex items-center gap-2">
+              <div className="flex gap-1">
+                <span className="h-2 w-2 rounded-full bg-red-500/70 inline-block" />
+                <span className="h-2 w-2 rounded-full bg-yellow-500/70 inline-block" />
+                <span className="h-2 w-2 rounded-full bg-green-500/70 inline-block" />
+              </div>
+              <div className="flex-1 bg-slate-700 rounded text-[10px] text-slate-400 px-2 py-0.5 truncate font-mono">
+                {publicUrl}
+              </div>
+            </div>
+
+            <div className="bg-white overflow-y-auto" style={{ maxHeight: 560 }}>
+
+              <div className="relative h-28 overflow-hidden">
+                {profile.cover_url ? (
+                  <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${primaryColor}cc, ${primaryColor}44)` }} />
+                )}
+                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
+                  {profile.logo_url && (
+                    <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover mb-1.5 border-2 border-white/30 shadow-lg" />
                   )}
-                  <div className="absolute inset-0 bg-black/40" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                    {profile.logo_url && (
-                      <img
-                        src={profile.logo_url}
-                        alt=""
-                        className="w-10 h-10 rounded-lg object-cover mb-2 border border-white/30"
-                      />
-                    )}
-                    <p className="font-bold text-sm">{data?.tenant.name}</p>
-                    {profile.tagline && (
-                      <p className="text-xs text-white/70 mt-0.5">{profile.tagline}</p>
-                    )}
-                  </div>
+                  <p className="font-bold text-sm leading-tight">
+                    {agencyName || data?.tenant?.name || 'Agency Name'}
+                  </p>
+                  {profile.tagline && (
+                    <p className="text-[11px] text-white/75 mt-0.5 line-clamp-1">{profile.tagline}</p>
+                  )}
                 </div>
-                {/* Preview About */}
-                <div className="p-3">
-                  <p className="text-xs font-semibold mb-1" style={{ color: primaryColor }}>
-                    About Us
+              </div>
+
+              <div className="p-3 space-y-3">
+
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>About Us</p>
+                  <p className="text-gray-600 text-[11px] leading-relaxed line-clamp-4">
+                    {profile.bio || 'Your bio will appear here...'}
                   </p>
-                  <p className="text-gray-600 text-xs line-clamp-3">
-                    {profile.bio || 'No bio yet.'}
-                  </p>
-                  <div className="mt-2 space-y-1">
-                    {profile.contact_phone && (
-                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                        <Phone className="h-3 w-3" style={{ color: primaryColor }} />
-                        {profile.contact_phone}
-                      </div>
-                    )}
-                    {profile.contact_email && (
-                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                        <Mail className="h-3 w-3" style={{ color: primaryColor }} />
-                        {profile.contact_email}
-                      </div>
-                    )}
-                    {profile.contact_address && (
-                      <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                        <MapPin className="h-3 w-3" style={{ color: primaryColor }} />
-                        {profile.contact_address}
-                      </div>
-                    )}
+                  {profile.licence_no && (
+                    <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-0.5">
+                      <Hash className="h-2.5 w-2.5 inline" /> Lic. {profile.licence_no}
+                    </p>
+                  )}
+                </div>
+
+                {(profile.contact_email || profile.contact_phone || profile.contact_address) && (
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>Contact</p>
+                    <div className="space-y-1">
+                      {profile.contact_phone && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                          <Phone className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
+                          {profile.contact_phone}
+                        </div>
+                      )}
+                      {profile.contact_email && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                          <Mail className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
+                          {profile.contact_email}
+                        </div>
+                      )}
+                      {profile.contact_address && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                          <MapPin className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
+                          {profile.contact_address}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-1.5 mt-2">
+                )}
+
+                {(profile.social_links?.whatsapp || profile.social_links?.instagram || profile.social_links?.x || profile.social_links?.linkedin) && (
+                  <div className="flex gap-1.5 pt-0.5">
                     {profile.social_links?.whatsapp && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
-                        <MessageCircle className="h-3 w-3" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                        <MessageCircle className="h-3.5 w-3.5" />
                       </div>
                     )}
                     {profile.social_links?.instagram && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
-                        <Instagram className="h-3 w-3" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                        <Instagram className="h-3.5 w-3.5" />
                       </div>
                     )}
                     {profile.social_links?.x && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
-                        <Twitter className="h-3 w-3" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                        <Twitter className="h-3.5 w-3.5" />
                       </div>
                     )}
                     {profile.social_links?.linkedin && (
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
-                        <Linkedin className="h-3 w-3" />
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                        <Linkedin className="h-3.5 w-3.5" />
                       </div>
                     )}
                   </div>
+                )}
+
+                <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
+                  View Our Listings
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
