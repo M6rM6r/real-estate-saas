@@ -71,6 +71,7 @@ type Post = {
   id: string
   title: string
   body: string | null
+  image_url?: string | null
   images: string[]
   price: number | null
   location: string | null

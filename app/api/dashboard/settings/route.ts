@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
 
   // Merge tenant-level fields (primary_color) with settings subcollection
   return NextResponse.json({
-    primary_color: tenant?.primary_color ?? '#3B82F6',
     email_notifications: false,
     notification_email: null,
     lead_auto_reply: false,

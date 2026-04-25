@@ -33,9 +33,9 @@ import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader as Loader2, X, Megaphone, Search } from 'lucide-react';
 
 const demoAnnouncements: Post[] = [
-  { id: 'da1', title: 'Office Closed on National Day', body: 'Our offices will be closed on December 2nd for UAE National Day. We wish everyone a joyful celebration!', published: true, images: [], created_at: new Date(Date.now() - 86400000 * 2).toISOString(), type: 'announcement', tenantId: 'demo' },
-  { id: 'da2', title: 'New Property Listings Now Available', body: 'We have just added 12 new premium listings in Dubai Marina and Palm Jumeirah. Browse them now in our latest collection.', published: true, images: [], created_at: new Date(Date.now() - 86400000 * 5).toISOString(), type: 'announcement', tenantId: 'demo' },
-  { id: 'da3', title: 'Upcoming Open House — Emirates Hills', body: 'Join us this Friday for an exclusive open house at our Emirates Hills mansion listing. RSVP to reserve your spot.', published: false, images: [], created_at: new Date(Date.now() - 86400000 * 8).toISOString(), type: 'announcement', tenantId: 'demo' },
+  { id: 'da1', title: 'Office Closed on National Day', body: 'Our offices will be closed on December 2nd for UAE National Day. We wish everyone a joyful celebration!', published: true, images: [], created_at: new Date(Date.now() - 86400000 * 2).toISOString(), type: 'announcement', tenant_id: 'demo' },
+  { id: 'da2', title: 'New Property Listings Now Available', body: 'We have just added 12 new premium listings in Dubai Marina and Palm Jumeirah. Browse them now in our latest collection.', published: true, images: [], created_at: new Date(Date.now() - 86400000 * 5).toISOString(), type: 'announcement', tenant_id: 'demo' },
+  { id: 'da3', title: 'Upcoming Open House — Emirates Hills', body: 'Join us this Friday for an exclusive open house at our Emirates Hills mansion listing. RSVP to reserve your spot.', published: false, images: [], created_at: new Date(Date.now() - 86400000 * 8).toISOString(), type: 'announcement', tenant_id: 'demo' },
 ];
 
 const emptyForm = {
@@ -130,7 +130,7 @@ export default function AnnouncementsPage() {
     try {
       const payload = {
         title: form.title,
-        body: form.body || undefined,
+        body: form.body || '',
         published: form.published,
         images: form.images,
       };
@@ -139,7 +139,7 @@ export default function AnnouncementsPage() {
           setItems((prev) => prev.map((i) => i.id === editingId ? { ...i, ...payload } : i));
           toast({ title: 'Updated', description: 'Announcement updated successfully.' });
         } else {
-          const newItem: Post = { id: `da${Date.now()}`, ...payload, images: form.images, created_at: new Date().toISOString(), type: 'announcement', tenantId: 'demo' };
+          const newItem: Post = { id: `da${Date.now()}`, ...payload, images: form.images, created_at: new Date().toISOString(), type: 'announcement', tenant_id: 'demo' };
           setItems((prev) => [newItem, ...prev]);
           toast({ title: 'Created', description: 'Announcement created successfully.' });
         }

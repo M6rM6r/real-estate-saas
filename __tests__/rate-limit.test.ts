@@ -1,3 +1,11 @@
+// Ensure rate limiter is initialized in lib/rate-limit.ts
+process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io'
+process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token'
+
+const mockLimiter = {
+  limit: jest.fn().mockResolvedValue({ success: true }),
+}
+
 // Mock Next.js types
 jest.mock('next/server', () => ({
   NextRequest: class MockNextRequest {
@@ -12,12 +20,8 @@ jest.mock('next/server', () => ({
 
 // Mock Upstash Redis and Ratelimit
 jest.mock('@upstash/ratelimit', () => {
-  const mockLimiter = {
-    limit: jest.fn().mockResolvedValue({ success: true }),
-  }
-
   const MockRatelimit = jest.fn().mockImplementation(() => mockLimiter)
-  MockRatelimit.slidingWindow = jest.fn().mockReturnValue({})
+  ;(MockRatelimit as any).slidingWindow = jest.fn().mockReturnValue({})
 
   return {
     Ratelimit: MockRatelimit,
@@ -28,12 +32,17 @@ jest.mock('@upstash/redis', () => ({
   Redis: jest.fn().mockImplementation(() => ({})),
 }))
 
-import { rateLimit } from '@/lib/rate-limit'
-
 describe('rateLimit', () => {
   let mockRequest: any
+  let rateLimit: (request: any) => Promise<any>
 
   beforeEach(() => {
+    jest.resetModules()
+    process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token'
+    mockLimiter.limit.mockResolvedValue({ success: true })
+    rateLimit = require('@/lib/rate-limit').rateLimit
+
     mockRequest = {
       headers: {
         get: jest.fn(),
@@ -50,18 +59,15 @@ describe('rateLimit', () => {
   })
 
   it('should block requests exceeding rate limit', async () => {
-    // Get the mocked limiter instance
-    const ratelimitModule = require('@upstash/ratelimit')
-    const mockInstance = ratelimitModule.Ratelimit.mock.results[0].value
-    mockInstance.limit.mockResolvedValueOnce({ success: false })
+    mockLimiter.limit.mockResolvedValueOnce({ success: false })
 
-    const mockRequest = {
+    const request = {
       headers: {
         get: jest.fn().mockReturnValue('127.0.0.1'),
       },
     }
 
-    const result = await rateLimit(mockRequest as any)
+    const result = await rateLimit(request as any)
 
     expect(result).toBeInstanceOf(Object)
     expect(result?.status).toBe(429)

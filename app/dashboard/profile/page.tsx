@@ -9,14 +9,23 @@ type Profile = {
   tenant_id?: string
   logo_url?: string
   cover_url?: string
+  logoUrl?: string
+  coverUrl?: string
   bio?: string
   tagline?: string
   licenceNo?: string
+  licence_no?: string
   agencyName?: string
   contactEmail?: string
   contactPhone?: string
   contactAddress?: string
   socialLinks?: {
+    instagram?: string
+    x?: string
+    linkedin?: string
+    whatsapp?: string
+  }
+  social_links?: {
     instagram?: string
     x?: string
     linkedin?: string
@@ -90,7 +99,11 @@ export default function ProfilePage() {
       return
     }
     const { url } = await res.json()
-    setProfile(prev => prev ? { ...prev, [type === 'logo' ? 'logoUrl' : 'coverUrl']: url } : null)
+    setProfile(prev => prev ? {
+      ...prev,
+      [type === 'logo' ? 'logoUrl' : 'coverUrl']: url,
+      [type === 'logo' ? 'logo_url' : 'cover_url']: url,
+    } : null)
     toast({ title: 'Uploaded', description: `${type === 'logo' ? 'Logo' : 'Cover'} updated successfully.` })
   }
 

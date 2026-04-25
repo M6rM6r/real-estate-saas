@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
 import { authFetch } from '@/lib/api'
 import { TrendingUp, Users, Eye, BarChart2 } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 type Analytics = {
   pageViews: { date: string; views: number }[]
@@ -12,13 +12,6 @@ type Analytics = {
   totalLeads: number
 }
 
-const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false })
-const Line = dynamic(() => import('recharts').then(m => ({ default: m.Line })), { ssr: false })
-const XAxis = dynamic(() => import('recharts').then(m => ({ default: m.XAxis })), { ssr: false })
-const YAxis = dynamic(() => import('recharts').then(m => ({ default: m.YAxis })), { ssr: false })
-const CartesianGrid = dynamic(() => import('recharts').then(m => ({ default: m.CartesianGrid })), { ssr: false })
-const Tooltip = dynamic(() => import('recharts').then(m => ({ default: m.Tooltip })), { ssr: false })
-const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false })
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null)

@@ -615,9 +615,6 @@ export default function PageBuilderPage() {
                       aria-label={`Select theme ${theme.label}`}
                       aria-pressed={selectedTheme === theme.id}
                     >
-                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
-                      } bg-slate-800 text-right`}
-                    >
                       <div className="h-20 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#dbe4ee' }}>
                         <div className="h-3 rounded-t-lg" style={{ backgroundColor: theme.accent }} />
                         <div className="px-2 py-2 h-full" style={{ backgroundColor: theme.card }}>
