@@ -52,8 +52,10 @@ export default function AdminLogsPage() {
           <p className="text-slate-400 text-sm mt-1">All admin actions recorded here</p>
         </div>
         <button
+          type="button"
           onClick={fetchLogs}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-colors text-sm"
+          aria-label="تحديث السجلات"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>

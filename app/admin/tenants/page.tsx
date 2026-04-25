@@ -270,15 +270,19 @@ export default function AdminTenantsPage() {
                           <ExternalLink className="h-4 w-4" />
                         </a>
                         <button
+                          type="button"
                           onClick={() => openEdit(t)}
-                          className="p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                          aria-label={`تعديل ${t.name}`}
+                          className="p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                           title="Edit"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => setDeleteId(t.id)}
-                          className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                          aria-label={`حذف ${t.name}`}
+                          className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />

@@ -50,7 +50,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p className="text-xs text-slate-500">rewrew7</p>
           </div>
           <button
-            className="ml-auto md:hidden text-slate-400 hover:text-white"
+            type="button"
+            aria-label="إغلاق القائمة الجانبية"
+            className="ml-auto md:hidden text-slate-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -62,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {navItems.map((item) => (
             <button
               key={item.href}
+              type="button"
               onClick={() => { router.push(item.href); setSidebarOpen(false); }}
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
@@ -79,8 +82,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Footer */}
         <div className="px-3 py-4 border-t border-slate-800">
           <button
+            type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+            aria-label="تسجيل الخروج"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             Sign out
@@ -93,7 +98,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Top bar */}
         <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center px-4 md:px-6 gap-4 shrink-0">
           <button
-            className="md:hidden text-slate-400 hover:text-white"
+            type="button"
+            aria-label="فتح القائمة الجانبية"
+            className="md:hidden text-slate-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5" />

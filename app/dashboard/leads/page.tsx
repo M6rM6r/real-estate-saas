@@ -80,8 +80,8 @@ export default function LeadsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">Leads</h1>
-        <p className="text-sm text-gray-400">Review inquiries, update statuses, and track response performance.</p>
+        <h1 className="text-2xl font-bold">العملاء المحتملين</h1>
+        <p className="text-sm text-gray-400">استعراض الاستفسارات وتحديث الحالات وتتبع الأداء.</p>
       </div>
 
       <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0a0f]/80 border border-gray-800 rounded-xl p-3">
@@ -91,7 +91,7 @@ export default function LeadsPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, phone, or message"
+              placeholder="البحث بالاسم أو الهاتف أو الرسالة"
               className="pl-9 bg-[#12121a] border-gray-700 text-white"
             />
           </div>
@@ -101,38 +101,50 @@ export default function LeadsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#1a1a2e] border-gray-700">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="contacted">Contacted</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="all">كل الحالات</SelectItem>
+                <SelectItem value="new">جديد</SelectItem>
+                <SelectItem value="contacted">تم التواصل</SelectItem>
+                <SelectItem value="closed">مغلق</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
+            type="button"
+            aria-pressed={filter === 'all'}
+            aria-label="عرض كل العملاء"
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'all' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${filter === 'all' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
           >
-            All ({leads.length})
+            الكل ({leads.length})
           </button>
           <button
+            type="button"
+            aria-pressed={filter === 'new'}
+            aria-label="عرض العملاء الجدد"
             onClick={() => setFilter('new')}
-            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'new' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${filter === 'new' ? 'bg-blue-500/20 text-blue-300 border-blue-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
           >
-            New ({leads.filter((l) => l.status === 'new').length})
+            جديد ({leads.filter((l) => l.status === 'new').length})
           </button>
           <button
+            type="button"
+            aria-pressed={filter === 'contacted'}
+            aria-label="عرض العملاء الذين تم التواصل معهم"
             onClick={() => setFilter('contacted')}
-            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'contacted' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${filter === 'contacted' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
           >
-            Contacted ({leads.filter((l) => l.status === 'contacted').length})
+            تم التواصل ({leads.filter((l) => l.status === 'contacted').length})
           </button>
           <button
+            type="button"
+            aria-pressed={filter === 'closed'}
+            aria-label="عرض العملاء المغلقين"
             onClick={() => setFilter('closed')}
-            className={`px-3 py-1 rounded-full text-xs border transition-colors ${filter === 'closed' ? 'bg-green-500/20 text-green-300 border-green-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${filter === 'closed' ? 'bg-green-500/20 text-green-300 border-green-500/40' : 'bg-[#12121a] text-gray-400 border-gray-700 hover:text-white'}`}
           >
-            Closed ({leads.filter((l) => l.status === 'closed').length})
+            مغلق ({leads.filter((l) => l.status === 'closed').length})
           </button>
         </div>
       </div>
@@ -149,8 +161,8 @@ export default function LeadsPage() {
 
       {filtered.length === 0 ? (
         <Card className="bg-[#12121a] border-gray-800 py-16 text-center">
-          <p className="text-gray-300 font-medium">No leads found</p>
-          <p className="text-gray-500 text-sm mt-2">Try changing filters or clearing your search query.</p>
+          <p className="text-gray-300 font-medium">لا يوجد عملاء محتملين</p>
+          <p className="text-gray-500 text-sm mt-2">جرب تغيير المرشحات أو مسح البحث.</p>
         </Card>
       ) : (
         <Card className="bg-[#12121a] border-gray-800 overflow-hidden">
@@ -158,11 +170,11 @@ export default function LeadsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Phone</th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Message</th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Date</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">الاسم</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">الهاتف</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">الرسالة</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">الحالة</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">التاريخ</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,9 +206,9 @@ export default function LeadsPage() {
                           </Badge>
                         </SelectTrigger>
                         <SelectContent className="bg-[#1a1a2e] border-gray-700">
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="contacted">Contacted</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
+                          <SelectItem value="new">جديد</SelectItem>
+                          <SelectItem value="contacted">تم التواصل</SelectItem>
+                          <SelectItem value="closed">مغلق</SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
