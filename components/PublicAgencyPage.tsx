@@ -5,7 +5,6 @@ import Image from 'next/image'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
 import { PropertyDetailModal } from './PropertyDetailModal'
 import { FloatContactButtons } from './FloatContactButtons'
-import { InquiryForm } from './InquiryForm'
 
 const STATUS_LABELS: Record<string, string> = {
   available: 'متاح',
@@ -110,7 +109,6 @@ interface Props {
 export default function PublicAgencyPage({ tenant, profile, listings, news, gallery, team }: Props) {
   const primary = tenant.primary_color ?? '#2563eb'
   const [activeListing, setActiveListing] = useState<Post | null>(null)
-  const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
@@ -250,11 +248,6 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                   تواصل عبر واتساب
                 </a>
               )}
-              <button
-                onClick={() => setShowInquiryModal(true)}
-                className="bg-white/20 backdrop-blur text-white border border-white/40 px-8 py-3 rounded-full font-semibold hover:bg-white/30 transition-colors">
-                أرسل استفساراً
-              </button>
             </div>
             </div>
           </div>
@@ -584,10 +577,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           </div>
         </footer>)}
 
-        {/* Float contact buttons (WhatsApp + Phone) */}
+        {/* Float contact button (WhatsApp only) */}
         <FloatContactButtons
           whatsapp={profile?.social_links?.whatsapp}
-          phone={profile?.contact_phone ?? undefined}
           accentColor={primary}
         />
 
@@ -600,23 +592,6 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             slug={tenant.slug}
             accentColor={primary}
           />
-        )}
-
-        {/* Standalone Inquiry Modal */}
-        {showInquiryModal && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-            <div className="bg-gray-900 rounded-2xl w-full max-w-md p-6 border border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">أرسل استفساراً</h3>
-                <button onClick={() => setShowInquiryModal(false)} className="text-gray-400 hover:text-gray-300 text-xl">×</button>
-              </div>
-              <InquiryForm
-                slug={tenant.slug}
-                accentColor={primary}
-                onSuccess={() => setTimeout(() => setShowInquiryModal(false), 2500)}
-              />
-            </div>
-          </div>
         )}
       </div>
     </>
