@@ -193,24 +193,24 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Sticky RTL Navbar */}
         <nav className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur shadow-sm' : 'bg-transparent'}`}>
-          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={40} height={40}
-                  className="w-10 h-10 rounded-full object-cover" priority={false} />
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover" priority={false} />
               )}
-              <span className={`font-bold text-lg ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+              <span className={`font-bold text-sm sm:text-lg ${scrolled ? 'text-gray-900' : 'text-white'}`}>
                 {tenant.name}
               </span>
             </div>
             {whatsapp && (
               <a href={waLink} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 btn-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                className="flex items-center gap-2 btn-primary text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
                   <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/>
                 </svg>
-                واتساب
+                <span className="hidden sm:inline">واتساب</span>
               </a>
             )}
           </div>
@@ -218,30 +218,30 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Hero */}
         {sections.hero && (<section
-          className="relative h-screen flex items-end justify-center pb-20 bg-gray-900 bg-cover bg-center"
+          className="relative min-h-screen flex items-end justify-center pb-12 sm:pb-20 pt-24 sm:pt-28 bg-gray-900 bg-cover bg-center"
           style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})` } : {}}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/70" />
-          <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-8 py-10 shadow-2xl">
+          <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto">
             {profile?.logo_url && (
               <Image
                 src={profile.logo_url}
                 alt={tenant.name}
                 width={96}
                 height={96}
-                className="w-24 h-24 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg"
+                className="w-20 h-20 sm:w-24 sm:h-24 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg"
                 priority={true}
               />
             )}
-            <h1 className="text-4xl md:text-6xl font-bold mb-3">{tenant.name}</h1>
-            {profile?.tagline && <p className="text-xl md:text-2xl text-primary font-medium mb-4">{profile.tagline}</p>}
-            <p className="text-lg text-white/80 mb-6">{pageConfig.hero_headline}</p>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 leading-tight">{tenant.name}</h1>
+            {profile?.tagline && <p className="text-lg sm:text-xl md:text-2xl text-primary font-medium mb-4">{profile.tagline}</p>}
+            <p className="text-base sm:text-lg text-white/80 mb-6 leading-relaxed">{pageConfig.hero_headline}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {whatsapp && (
                 <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  className="btn-primary text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity inline-flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  className="btn-primary text-white px-6 sm:px-8 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 w-full sm:w-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
                     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/>
                   </svg>
@@ -255,8 +255,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Featured Listings */}
         {sections.featured && featuredListings.length > 0 && (
-          <section className="reveal py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">العقارات المميزة</h2>
+          <section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6">العقارات المميزة</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map(l => (
                 <button key={l.id} onClick={() => setActiveListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
@@ -295,8 +295,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Listings menu */}
         {sections.listings && publishedListings.length > 0 && (
-          <section className="reveal py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">قائمة العقارات</h2>
+          <section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6">قائمة العقارات</h2>
 
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -381,12 +381,12 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section className="reveal py-16 bg-gray-50">
+          <section className="reveal py-12 sm:py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8">آخر الأخبار</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8">آخر الأخبار</h2>
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {news.map(item => (
-                  <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm shrink-0 w-80">
+                  <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm shrink-0 w-[85vw] sm:w-80 max-w-80">
                     {(item.image_url || item.images?.[0]) && <Image
                       src={item.image_url || item.images[0]}
                       alt={item.title}
@@ -410,9 +410,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* About */}
-        {sections.about && (<section className="reveal py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">من نحن</h2>
-          {profile?.bio && <p className="text-gray-600 leading-relaxed text-lg">{profile.bio}</p>}
+        {sections.about && (<section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">من نحن</h2>
+          {profile?.bio && <p className="text-gray-600 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
           {profile?.licence_no && (
             <p className="mt-4 text-sm text-gray-400 font-mono">رقم الترخيص: {profile.licence_no}</p>
           )}
@@ -420,9 +420,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Team */}
         {sections.team && team.length > 0 && (
-          <section className="py-16 bg-gray-50">
+          <section className="py-12 sm:py-16 bg-gray-50">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8 text-center">فريقنا</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">فريقنا</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {team.map(member => (
                   <div key={member.id} className="bg-white rounded-2xl p-6 text-center shadow-sm">
@@ -456,9 +456,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* Gallery */}
         {sections.gallery && gallery.length > 0 && (
-          <section className="py-16">
+          <section className="py-12 sm:py-16">
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8">معرض الصور</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8">معرض الصور</h2>
               <div id="media-vault-gallery" className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
                 {gallery.map((item, i) => (
                   <a
@@ -489,7 +489,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         )}
 
         {/* Footer */}
-        {sections.footer && (<footer className="bg-gray-900 text-white py-12 px-4 md:px-8">
+        {sections.footer && (<footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-24 sm:pb-12">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               {profile?.logo_url && (
