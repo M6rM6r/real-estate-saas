@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { toast } from '@/hooks/use-toast';
 import { Upload, Trash2, Loader as Loader2, Image as ImageIcon } from 'lucide-react';
 
 export default function GalleryPage() {
@@ -55,8 +56,13 @@ export default function GalleryPage() {
         });
       }
       fetchMedia();
+      toast({ title: 'Upload complete', description: 'Images uploaded successfully.' });
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Upload failed');
+      toast({
+        title: 'Upload failed',
+        description: e instanceof Error ? e.message : 'Unable to upload images.',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -70,7 +76,9 @@ export default function GalleryPage() {
       await authFetch(`/api/dashboard/media/${deleteId}`, { method: 'DELETE' });
       setMedia(media.filter((m) => m.id !== deleteId));
       setDeleteId(null);
+      toast({ title: 'Deleted', description: 'Image removed from gallery.' });
     } catch {
+      toast({ title: 'Delete failed', description: 'Unable to delete image.', variant: 'destructive' });
     } finally {
       setDeleting(false);
     }

@@ -16,6 +16,17 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -81,6 +92,7 @@ export default function ListingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyListing);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
 
   const fetchListings = () => {
@@ -140,40 +152,51 @@ export default function ListingsPage() {
       if (isDemo) {
         if (editingId) {
           setListings(listings.map((l) => (l.id === editingId ? { ...l, ...payload, body: payload.body || '' } : l)));
+          toast({ title: 'Updated', description: 'Listing updated successfully.' });
         } else {
           setListings([...listings, { ...payload, body: payload.body || '', id: Date.now().toString(), tenant_id: 'demo', type: 'listing' as const, created_at: new Date().toISOString() } as Post]);
+          toast({ title: 'Created', description: 'Listing added successfully.' });
         }
       } else if (editingId) {
         await authFetch(`/api/dashboard/posts/${editingId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
+        toast({ title: 'Updated', description: 'Listing updated successfully.' });
       } else {
         await authFetch('/api/dashboard/listings', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
+        toast({ title: 'Created', description: 'Listing added successfully.' });
       }
       setModalOpen(false);
       if (!isDemo) fetchListings();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
+      toast({
+        title: 'Save failed',
+        description: e instanceof Error ? e.message : 'Unable to save listing.',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this listing?')) return;
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
     if (isDemo) {
       setListings(listings.filter((l) => l.id !== id));
+      toast({ title: 'Deleted', description: 'Listing removed.' });
       return;
     }
     try {
       await authFetch(`/api/dashboard/posts/${id}`, { method: 'DELETE' });
       fetchListings();
-    } catch {}
+      toast({ title: 'Deleted', description: 'Listing removed.' });
+    } catch {
+      toast({ title: 'Delete failed', description: 'Unable to delete listing.', variant: 'destructive' });
+    }
   };
 
   const addImage = () => {
@@ -286,14 +309,16 @@ export default function ListingsPage() {
                     size="sm"
                     onClick={() => openEdit(listing)}
                     className="text-gray-400 hover:text-white"
+                    aria-label={`Edit ${listing.title}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(listing.id)}
+                    onClick={() => setDeleteId(listing.id)}
                     className="text-gray-400 hover:text-red-400"
+                    aria-label={`Delete ${listing.title}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -433,6 +458,7 @@ export default function ListingsPage() {
                       <button
                         onClick={() => removeImage(i)}
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove image ${i + 1}`}
                       >
                         <X className="h-3 w-3 text-white" />
                       </button>
@@ -461,6 +487,31 @@ export default function ListingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="bg-[#12121a] border-gray-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete listing</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (deleteId) {
+                  void handleDelete(deleteId);
+                  setDeleteId(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -18,6 +18,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader as Loader2, X, Megaphone, Search } from 'lucide-react';
 
 const demoAnnouncements: Post[] = [
@@ -40,6 +51,7 @@ export default function AnnouncementsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -102,9 +114,11 @@ export default function AnnouncementsPage() {
       if (isDemo) {
         if (editingId) {
           setItems((prev) => prev.map((i) => i.id === editingId ? { ...i, ...payload } : i));
+          toast({ title: 'Updated', description: 'Announcement updated successfully.' });
         } else {
           const newItem: Post = { id: `da${Date.now()}`, ...payload, images: form.images, created_at: new Date().toISOString(), type: 'announcement', tenantId: 'demo' };
           setItems((prev) => [newItem, ...prev]);
+          toast({ title: 'Created', description: 'Announcement created successfully.' });
         }
         setModalOpen(false);
         setSaving(false);
@@ -123,8 +137,9 @@ export default function AnnouncementsPage() {
       }
       setModalOpen(false);
       fetchData();
+      toast({ title: editingId ? 'Updated' : 'Created', description: `Announcement ${editingId ? 'updated' : 'created'} successfully.` });
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
+      toast({ title: 'Save failed', description: e instanceof Error ? e.message : 'Unable to save announcement.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -132,15 +147,18 @@ export default function AnnouncementsPage() {
 
   const handleDelete = async (id: string) => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
-    if (!confirm('Delete this announcement?')) return;
     if (isDemo) {
       setItems((prev) => prev.filter((i) => i.id !== id));
+      toast({ title: 'Deleted', description: 'Announcement removed.' });
       return;
     }
     try {
       await authFetch(`/api/dashboard/announcements/${id}`, { method: 'DELETE' });
       fetchData();
-    } catch {}
+      toast({ title: 'Deleted', description: 'Announcement removed.' });
+    } catch {
+      toast({ title: 'Delete failed', description: 'Unable to delete announcement.', variant: 'destructive' });
+    }
   };
 
   const addImage = () => {
@@ -242,14 +260,16 @@ export default function AnnouncementsPage() {
                     size="sm"
                     onClick={() => openEdit(item)}
                     className="text-gray-400 hover:text-white"
+                    aria-label={`Edit announcement ${item.title}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setDeleteId(item.id)}
                     className="text-gray-400 hover:text-red-400"
+                    aria-label={`Delete announcement ${item.title}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -323,6 +343,7 @@ export default function AnnouncementsPage() {
                       <button
                         onClick={() => removeImage(i)}
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove image ${i + 1}`}
                       >
                         <X className="h-3 w-3 text-white" />
                       </button>
@@ -347,6 +368,31 @@ export default function AnnouncementsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="bg-[#12121a] border-gray-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete announcement</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (deleteId) {
+                  void handleDelete(deleteId);
+                  setDeleteId(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

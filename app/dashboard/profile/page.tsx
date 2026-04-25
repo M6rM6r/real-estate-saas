@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { auth } from '@/lib/firebase'
+import { toast } from '@/hooks/use-toast'
 
 type Profile = {
   tenant_id?: string
@@ -70,7 +71,11 @@ export default function ProfilePage() {
       body: JSON.stringify(profile),
     })
     setSaving(false)
-    if (!res.ok) alert('Error saving')
+    if (!res.ok) {
+      toast({ title: 'Save failed', description: 'Error saving profile.', variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Saved', description: 'Profile updated successfully.' })
   }
 
   const handleFileUpload = async (file: File, type: 'logo' | 'cover') => {
@@ -80,9 +85,13 @@ export default function ProfilePage() {
     formData.append('file', file)
     formData.append('folder', 'profiles')
     const res = await fetch('/api/dashboard/upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData })
-    if (!res.ok) return alert('Upload error')
+    if (!res.ok) {
+      toast({ title: 'Upload failed', description: 'Unable to upload file.', variant: 'destructive' })
+      return
+    }
     const { url } = await res.json()
     setProfile(prev => prev ? { ...prev, [type === 'logo' ? 'logoUrl' : 'coverUrl']: url } : null)
+    toast({ title: 'Uploaded', description: `${type === 'logo' ? 'Logo' : 'Cover'} updated successfully.` })
   }
 
   if (loading) {

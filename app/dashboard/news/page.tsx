@@ -24,6 +24,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader as Loader2, X, Newspaper, Search } from 'lucide-react';
 
 const demoNews: Post[] = [
@@ -46,6 +57,7 @@ export default function NewsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -95,40 +107,47 @@ export default function NewsPage() {
       if (isDemo) {
         if (editingId) {
           setItems(items.map((i) => (i.id === editingId ? { ...i, ...payload, body: payload.body || '' } : i)));
+          toast({ title: 'Updated', description: 'Article updated successfully.' });
         } else {
           setItems([...items, { ...payload, body: payload.body || '', id: Date.now().toString(), tenant_id: 'demo', type: 'news' as const, created_at: new Date().toISOString() } as Post]);
+          toast({ title: 'Created', description: 'Article created successfully.' });
         }
       } else if (editingId) {
         await authFetch(`/api/dashboard/news/${editingId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
+        toast({ title: 'Updated', description: 'Article updated successfully.' });
       } else {
         await authFetch('/api/dashboard/news', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
+        toast({ title: 'Created', description: 'Article created successfully.' });
       }
       setModalOpen(false);
       if (!isDemo) fetchData();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
+      toast({ title: 'Save failed', description: e instanceof Error ? e.message : 'Unable to save article.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this news article?')) return;
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
     if (isDemo) {
       setItems(items.filter((i) => i.id !== id));
+      toast({ title: 'Deleted', description: 'Article removed.' });
       return;
     }
     try {
       await authFetch(`/api/dashboard/news/${id}`, { method: 'DELETE' });
       fetchData();
-    } catch {}
+      toast({ title: 'Deleted', description: 'Article removed.' });
+    } catch {
+      toast({ title: 'Delete failed', description: 'Unable to delete article.', variant: 'destructive' });
+    }
   };
 
   const addImage = () => {
@@ -231,14 +250,16 @@ export default function NewsPage() {
                     size="sm"
                     onClick={() => openEdit(item)}
                     className="text-gray-400 hover:text-white"
+                    aria-label={`Edit article ${item.title}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setDeleteId(item.id)}
                     className="text-gray-400 hover:text-red-400"
+                    aria-label={`Delete article ${item.title}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -312,6 +333,7 @@ export default function NewsPage() {
                       <button
                         onClick={() => removeImage(i)}
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove image ${i + 1}`}
                       >
                         <X className="h-3 w-3 text-white" />
                       </button>
@@ -336,6 +358,31 @@ export default function NewsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="bg-[#12121a] border-gray-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete article</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (deleteId) {
+                  void handleDelete(deleteId);
+                  setDeleteId(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

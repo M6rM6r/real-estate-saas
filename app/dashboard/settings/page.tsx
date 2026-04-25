@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
 import { Loader as Loader2, Save, ExternalLink, Copy, Check } from 'lucide-react';
 
 type ProfileResponse = {
@@ -70,8 +71,13 @@ export default function SettingsPage() {
         }),
       });
       setSaved(true);
+      toast({ title: 'Saved', description: 'Settings updated successfully.' });
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Save failed');
+      toast({
+        title: 'Save failed',
+        description: e instanceof Error ? e.message : 'Unable to save settings.',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
