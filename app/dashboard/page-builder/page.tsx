@@ -428,6 +428,7 @@ export default function PageBuilderPage() {
   const previewInactiveChipClass = previewIsDark ? 'bg-white/5 text-slate-400' : 'bg-gray-100 text-gray-500';
   const previewListings = listings.filter((listing) => listing.published !== false);
   const previewFeaturedListings = previewListings.slice(0, pageConfig.featured_count || 6);
+  const getListingImage = (listing: any) => listing.images?.[0] || listing.image_url || '';
   const previewListingsFiltered = previewSearch.trim()
     ? previewListings.filter((listing) =>
       `${listing.title || ''} ${listing.location || ''}`.toLowerCase().includes(previewSearch.toLowerCase()),
@@ -1101,6 +1102,17 @@ export default function PageBuilderPage() {
                     <div className="grid grid-cols-2 gap-2.5">
                       {previewFeaturedListings.slice(0, 4).map((listing) => (
                         <div key={listing.id} className={`border rounded-lg p-2 transition-colors ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          {getListingImage(listing) ? (
+                            <img
+                              src={getListingImage(listing)}
+                              alt={listing.title || 'listing'}
+                              className="w-full h-14 rounded-md object-cover mb-1.5"
+                            />
+                          ) : (
+                            <div className={`w-full h-14 rounded-md mb-1.5 flex items-center justify-center text-[10px] ${previewMutedClass}`} style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}>
+                              بدون صورة
+                            </div>
+                          )}
                           <p className={`text-[11px] font-semibold truncate ${previewTextClass}`}>{listing.title}</p>
                           <p className={`text-[10px] truncate mt-0.5 ${previewMutedClass}`}>{listing.location || 'بدون موقع'}</p>
                         </div>
@@ -1130,6 +1142,17 @@ export default function PageBuilderPage() {
                     <div className={`grid gap-1 ${pageConfig.listings_columns === 2 ? 'grid-cols-2' : pageConfig.listings_columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
                       {previewListingsFiltered.slice(0, 8).map((listing) => (
                         <div key={listing.id} className={`border rounded p-1.5 text-center ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          {getListingImage(listing) ? (
+                            <img
+                              src={getListingImage(listing)}
+                              alt={listing.title || 'listing'}
+                              className="w-full h-10 rounded object-cover mb-1"
+                            />
+                          ) : (
+                            <div className={`w-full h-10 rounded mb-1 flex items-center justify-center text-[9px] ${previewMutedClass}`} style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}>
+                              بدون صورة
+                            </div>
+                          )}
                           <p className={`text-[10px] truncate ${previewTextClass}`}>{listing.title}</p>
                         </div>
                       ))}
