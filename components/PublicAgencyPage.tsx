@@ -116,11 +116,12 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
 
-  const surfaceCardClass = isDarkTheme ? 'bg-slate-900/90 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'
-  const sectionSoftClass = isDarkTheme ? 'bg-slate-950/50' : 'bg-gray-50'
+  const surfaceCardClass = isDarkTheme ? 'text-white' : 'text-gray-900'
   const bodyTextClass = isDarkTheme ? 'text-slate-300' : 'text-gray-600'
   const mutedTextClass = isDarkTheme ? 'text-slate-400' : 'text-gray-500'
   const navTextClass = scrolled ? (isDarkTheme ? 'text-white' : 'text-gray-900') : 'text-white'
+  const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
+  const sectionAltStyle = { backgroundColor: pageTheme.sectionAlt }
 
   const sections = {
     hero: true,
@@ -186,7 +187,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         {/* Sticky RTL Navbar */}
         <nav
           className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-sm border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: isDarkTheme ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)', borderColor: isDarkTheme ? 'rgba(255,255,255,0.08)' : '#e2e8f0' } : undefined}
+          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}
         >
           <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -216,9 +217,12 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           className="relative min-h-screen flex items-end justify-center pb-12 sm:pb-20 pt-24 sm:pt-28 bg-gray-900 bg-cover bg-center"
           style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})` } : {}}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/70" />
+          <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
           <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto">
+            <div
+              className={`border rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-md' : ''}`}
+              style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder }}
+            >
             {profile?.logo_url && (
               <Image
                 src={profile.logo_url}
@@ -229,7 +233,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 priority={true}
               />
             )}
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 leading-tight">{tenant.name}</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 leading-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
             {profile?.tagline && <p className="text-lg sm:text-xl md:text-2xl text-primary font-medium mb-4">{profile.tagline}</p>}
             <p className="text-base sm:text-lg text-white/80 mb-6 leading-relaxed">{pageConfig.hero_headline}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -251,7 +255,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         {/* Listings */}
         {sections.listings && publishedListings.length > 0 && (
           <section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6">قائمة العقارات</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>قائمة العقارات</h2>
 
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -259,8 +263,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                   value={listingSearch}
                   onChange={(e) => setListingSearch(e.target.value)}
                   placeholder="ابحث باسم العقار أو الموقع"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                  style={{ ['--tw-ring-color' as any]: `${primary}55` }}
+                  className="w-full border px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
+                  style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, ['--tw-ring-color' as any]: `${primary}55` }}
                 />
               </div>
             )}
@@ -273,11 +277,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                     type="button"
                     onClick={() => setStatusFilter(f)}
                     className={`px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all border ${
-                      statusFilter === f
-                        ? 'text-white border-transparent'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                      statusFilter === f ? 'text-white border-transparent' : `${surfaceCardClass} hover:opacity-80`
                     }`}
-                    style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : {}}
+                    style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}
                     aria-label={`تصفية العقارات: ${f === 'all' ? 'الكل' : STATUS_LABELS[f]}`}
                     aria-pressed={statusFilter === f}
                   >
@@ -292,7 +294,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {menuListings.map(l => (
-                  <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`} aria-label={`عرض تفاصيل العقار: ${l.title}`}>
+                  <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border overflow-hidden hover:shadow-xl transition-all ${surfaceCardClass}`} style={cardStyle} aria-label={`عرض تفاصيل العقار: ${l.title}`}>
                     <div className="relative">
                       {l.images[0] ? (
                         <Image
@@ -339,12 +341,12 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section className={`reveal py-12 sm:py-16 ${sectionSoftClass}`}>
+          <section className="reveal py-12 sm:py-16" style={sectionAltStyle}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8">آخر الأخبار</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
                 {news.map(item => (
-                  <div key={item.id} className={`rounded-2xl overflow-hidden shadow-sm shrink-0 snap-start w-[80vw] sm:w-80 max-w-80 border ${surfaceCardClass}`}>
+                  <div key={item.id} className={`overflow-hidden shrink-0 snap-start w-[80vw] sm:w-80 max-w-80 border ${surfaceCardClass}`} style={cardStyle}>
                     {(item.image_url || item.images?.[0]) && <Image
                       src={item.image_url || item.images[0]}
                       alt={item.title}
@@ -369,7 +371,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* About */}
         {sections.about && (<section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">من نحن</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
           {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyTextClass}`}>{profile.bio}</p>}
           {profile?.licence_no && (
             <p className={`mt-4 text-sm font-mono ${mutedTextClass}`}>رقم الترخيص: {profile.licence_no}</p>

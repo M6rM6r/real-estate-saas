@@ -599,19 +599,18 @@ export default function PageBuilderPage() {
                       aria-label={`Select theme ${theme.label}`}
                       aria-pressed={selectedTheme === theme.id}
                     >
-                      <div className="h-20 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#dbe4ee' }}>
-                        <div className="h-3 rounded-t-lg" style={{ backgroundColor: theme.accent }} />
-                        <div className="px-2 py-2 h-full" style={{ backgroundColor: theme.card }}>
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.accent, opacity: 0.9 }} />
-                            <div className="h-1.5 rounded w-3/4" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.75)' : '#cbd5e1' }} />
-                          </div>
-                          <div className="space-y-1.5">
-                            <div className="h-1.5 rounded w-5/6" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.78)' : '#d1d5db' }} />
-                            <div className="h-1.5 rounded w-2/3" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.5)' : '#e5e7eb' }} />
-                            <div className="flex gap-1 pt-1.5">
-                              <div className="h-5 w-14 rounded-full" style={{ backgroundColor: theme.accent, opacity: theme.dark ? 0.95 : 0.85 }} />
-                              <div className="h-5 w-10 rounded-full" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.08)' : '#eef2f7' }} />
+                      <div className="h-24 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.cardBorder }}>
+                        {/* Mini hero */}
+                        <div className="h-9 relative flex items-end px-2 pb-1.5" style={{ background: theme.heroOverlay.replace('to bottom,', 'to bottom left,') }}>
+                          <div className="h-4 w-16 rounded opacity-90" style={{ backgroundColor: theme.heroCardBg, borderColor: theme.heroCardBorder, border: '1px solid' }} />
+                        </div>
+                        {/* Mini card */}
+                        <div className="px-2 pt-2 pb-1.5" style={{ backgroundColor: theme.bg }}>
+                          <div className="px-1.5 py-1.5 border" style={{ backgroundColor: theme.cardBg, borderColor: theme.cardBorder, borderRadius: `calc(${theme.radius} * 0.45)`, boxShadow: theme.cardShadow }}>
+                            <div className="h-1.5 rounded w-3/4 mb-1.5" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.7)' : '#cbd5e1', fontFamily: theme.headingFont }} />
+                            <div className="flex items-center gap-1">
+                              <div className="h-4 w-10" style={{ backgroundColor: theme.accent, borderRadius: `calc(${theme.radius} * 0.35)`, opacity: 0.9 }} />
+                              <div className="h-4 w-8" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.08)' : theme.sectionAlt, borderRadius: `calc(${theme.radius} * 0.35)`, border: `1px solid ${theme.cardBorder}` }} />
                             </div>
                           </div>
                         </div>
