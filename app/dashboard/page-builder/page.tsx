@@ -489,7 +489,7 @@ export default function PageBuilderPage() {
             <p className="text-sm font-bold text-white">إدارة أقسام الصفحة</p>
             <p className="text-xs text-slate-500">تحكّم بما يراه عملاؤك مباشرة</p>
             {([
-              ['hero', 'الهيرو'],
+              ['hero', 'القسم الرئيسي'],
               ['featured', 'العقارات المميزة'],
               ['listings', 'كل العقارات'],
               ['about', 'من نحن'],
@@ -515,7 +515,7 @@ export default function PageBuilderPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
             <p className="text-sm font-bold text-white">إعدادات العرض</p>
             <div className="space-y-1">
-              <Label className="text-xs text-slate-400">عنوان الهيرو</Label>
+              <Label className="text-xs text-slate-400">العنوان الرئيسي</Label>
               <Input
                 value={pageConfig.hero_headline || ''}
                 onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
