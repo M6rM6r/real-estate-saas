@@ -24,12 +24,14 @@ type Profile = {
     x?: string
     linkedin?: string
     whatsapp?: string
+    snapchat?: string
   }
   social_links?: {
     instagram?: string
     x?: string
     linkedin?: string
     whatsapp?: string
+    snapchat?: string
   }
 }
 
@@ -252,6 +254,12 @@ export default function ProfilePage() {
             value={profile?.socialLinks?.linkedin || profile?.social_links?.linkedin} 
             onChange={(e: any) => setProfile(prev => prev ? { ...prev, socialLinks: { ...prev.socialLinks, linkedin: e.target.value } } : null)} 
             placeholder="https://linkedin.com/company/youragency" 
+          />
+          <InputField 
+            label="Snapchat Username" 
+            value={profile?.socialLinks?.snapchat || profile?.social_links?.snapchat} 
+            onChange={(e: any) => setProfile(prev => prev ? { ...prev, socialLinks: { ...prev.socialLinks, snapchat: e.target.value } } : null)} 
+            placeholder="https://snapchat.com/add/youragency" 
           />
         </div>
       </div>

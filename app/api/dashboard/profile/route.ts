@@ -29,6 +29,7 @@ const ProfileDataSchema = z.object({
     x: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     linkedin: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     whatsapp: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
+    snapchat: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   }).optional().nullable(),
   working_hours: z.record(
     z.object({

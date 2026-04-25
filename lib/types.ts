@@ -79,6 +79,7 @@ export type Profile = {
     x?: string;
     linkedin?: string;
     whatsapp?: string;
+    snapchat?: string;
   };
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
   page_sections?: {
