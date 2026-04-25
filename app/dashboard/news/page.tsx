@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -59,8 +60,18 @@ export default function NewsPage() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [formErrors, setFormErrors] = useState<{ title?: string; images?: string }>({});
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
+
+  const isValidUrl = (value: string) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
   const fetchData = () => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
@@ -80,6 +91,8 @@ export default function NewsPage() {
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setFormErrors({});
+    setImageUrl('');
     setModalOpen(true);
   };
 
@@ -91,10 +104,20 @@ export default function NewsPage() {
       published: item.published,
       images: item.images || [],
     });
+    setFormErrors({});
+    setImageUrl('');
     setModalOpen(true);
   };
 
   const handleSave = async () => {
+    const nextErrors: { title?: string; images?: string } = {};
+    if (!form.title.trim()) nextErrors.title = 'Title is required.';
+    if (form.images.some((img) => img && !isValidUrl(img))) {
+      nextErrors.images = 'All image URLs must start with http:// or https://';
+    }
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     setSaving(true);
     try {
       const payload = {
@@ -152,6 +175,11 @@ export default function NewsPage() {
 
   const addImage = () => {
     if (imageUrl.trim()) {
+      if (!isValidUrl(imageUrl.trim())) {
+        setFormErrors((prev) => ({ ...prev, images: 'Enter a valid image URL (http/https).' }));
+        return;
+      }
+      setFormErrors((prev) => ({ ...prev, images: undefined }));
       setForm({ ...form, images: [...form.images, imageUrl.trim()] });
       setImageUrl('');
     }
@@ -159,6 +187,7 @@ export default function NewsPage() {
 
   const removeImage = (idx: number) => {
     setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
+    setFormErrors((prev) => ({ ...prev, images: undefined }));
   };
 
   const filteredItems = items.filter((item) => {
@@ -172,8 +201,26 @@ export default function NewsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-28 bg-gray-800" />
+          <Skeleton className="h-4 w-96 max-w-full bg-gray-800" />
+        </div>
+        <Skeleton className="h-16 w-full rounded-xl bg-gray-800" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <Card key={idx} className="bg-[#12121a] border-gray-800">
+              <CardContent className="p-4 flex items-start gap-4">
+                <Skeleton className="h-20 w-20 rounded bg-gray-800" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-2/3 bg-gray-800" />
+                  <Skeleton className="h-4 w-5/6 bg-gray-800" />
+                  <Skeleton className="h-4 w-1/2 bg-gray-800" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -289,6 +336,7 @@ export default function NewsPage() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 className="bg-[#1a1a2e] border-gray-700 text-white"
               />
+              {formErrors.title && <p className="text-xs text-red-400">{formErrors.title}</p>}
             </div>
             <div className="space-y-2">
               <Label className="text-gray-300">Content</Label>
@@ -324,6 +372,7 @@ export default function NewsPage() {
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
+              {formErrors.images && <p className="text-xs text-red-400">{formErrors.images}</p>}
               {form.images.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {form.images.map((url, i) => (

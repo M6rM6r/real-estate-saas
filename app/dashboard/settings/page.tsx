@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { Loader as Loader2, Save, ExternalLink, Copy, Check } from 'lucide-react';
 
@@ -25,6 +26,16 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; logoUrl?: string }>({});
+
+  const isValidUrl = (value: string) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
@@ -56,6 +67,16 @@ export default function SettingsPage() {
   }, []);
 
   const handleSave = async () => {
+    const nextErrors: { email?: string; logoUrl?: string } = {};
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      nextErrors.email = 'Please enter a valid email address.';
+    }
+    if (logoUrl.trim() && !isValidUrl(logoUrl.trim())) {
+      nextErrors.logoUrl = 'Logo URL must start with http:// or https://';
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     setSaving(true);
     setSaved(false);
     try {
@@ -85,8 +106,28 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6 max-w-2xl">
+        <Skeleton className="h-8 w-28 bg-gray-800" />
+        <Card className="bg-[#12121a] border-gray-800">
+          <CardHeader>
+            <Skeleton className="h-6 w-40 bg-gray-800" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-10 w-full bg-gray-800" />
+            <Skeleton className="h-10 w-full bg-gray-800" />
+          </CardContent>
+        </Card>
+        <Card className="bg-[#12121a] border-gray-800">
+          <CardHeader>
+            <Skeleton className="h-6 w-36 bg-gray-800" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-16 w-full bg-gray-800" />
+            <Skeleton className="h-16 w-full bg-gray-800" />
+            <Skeleton className="h-16 w-full bg-gray-800" />
+            <Skeleton className="h-10 w-36 bg-gray-800" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -145,17 +186,25 @@ export default function SettingsPage() {
             <Input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors((prev) => ({ ...prev, email: undefined }));
+              }}
               className="bg-[#1a1a2e] border-gray-700 text-white"
             />
+            {errors.email && <p className="text-xs text-red-400">{errors.email}</p>}
           </div>
           <div className="space-y-2">
             <Label className="text-gray-300">Logo URL</Label>
             <Input
               value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
+              onChange={(e) => {
+                setLogoUrl(e.target.value);
+                setErrors((prev) => ({ ...prev, logoUrl: undefined }));
+              }}
               className="bg-[#1a1a2e] border-gray-700 text-white"
             />
+            {errors.logoUrl && <p className="text-xs text-red-400">{errors.logoUrl}</p>}
           </div>
           <Button
             onClick={handleSave}
