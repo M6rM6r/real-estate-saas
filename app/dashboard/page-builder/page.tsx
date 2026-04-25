@@ -71,6 +71,14 @@ const COLOR_PRESETS = [
   '#059669', '#0891b2', '#db2777', '#475569',
 ];
 
+const THEME_DESCRIPTIONS: Record<string, string> = {
+  modern: 'واجهة نظيفة وعملية تناسب معظم المكاتب العقارية.',
+  luxury: 'ستايل داكن ولمسات ذهبية لعرض العقارات الفاخرة.',
+  nature: 'ألوان هادئة ومنعشة تمنح الصفحة طابعاً ودوداً.',
+  ocean: 'طابع أنيق ومستوحى من البحر بإحساس خفيف ومشرق.',
+  desert: 'دفء بصري ولمسات ترابية مناسبة للهوية المحلية.',
+};
+
 const demoListings = [
   { id: '1', title: 'فيلا فاخرة في الخليج', price: 2500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 3, area_sqm: 450, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
   { id: '2', title: 'شقة حديثة مع إطلالة', price: 1200000, location: 'Downtown Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 200, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
@@ -412,6 +420,12 @@ export default function PageBuilderPage() {
   const shouldShowMissingUrlInfo = !configuredBaseUrl;
   const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
   const pageConfig = { ...DEFAULT_PAGE_CONFIG, ...(profile.page_config ?? {}) };
+  const activeTheme = PAGE_THEMES[selectedTheme as keyof typeof PAGE_THEMES] ?? PAGE_THEMES.modern;
+  const previewIsDark = activeTheme.dark;
+  const previewTextClass = previewIsDark ? 'text-slate-100' : 'text-gray-800';
+  const previewMutedClass = previewIsDark ? 'text-slate-400' : 'text-gray-500';
+  const previewBorderClass = previewIsDark ? 'border-white/10' : 'border-gray-200';
+  const previewInactiveChipClass = previewIsDark ? 'bg-white/5 text-slate-400' : 'bg-gray-100 text-gray-500';
   const previewListings = listings.filter((listing) => listing.published !== false);
   const previewFeaturedListings = previewListings.slice(0, pageConfig.featured_count || 6);
   const previewListingsFiltered = previewSearch.trim()
@@ -582,24 +596,40 @@ export default function PageBuilderPage() {
             <TabsContent value="themes" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
                 <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
-                <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على صفحتك العامة</p>
+                <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.values(PAGE_THEMES).map((theme) => (
                     <button
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
                       className={`relative rounded-xl p-3 cursor-pointer transition-all border-2 ${
-                        selectedTheme === theme.id ? 'border-blue-500' : 'border-slate-700 hover:border-slate-500'
-                      } bg-slate-800`}
+                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
+                      } bg-slate-800 text-right`}
                     >
-                      <div className="h-16 rounded-lg mb-2 overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                      <div className="h-24 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#dbe4ee' }}>
                         <div className="h-3 rounded-t-lg" style={{ backgroundColor: theme.accent }} />
-                        <div className="px-1.5 mt-1.5 space-y-1">
-                          <div className="h-1.5 bg-gray-300 rounded w-3/4" />
-                          <div className="h-1.5 bg-gray-200 rounded w-1/2" />
+                        <div className="px-2 py-2 h-full" style={{ backgroundColor: theme.card }}>
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.accent, opacity: 0.9 }} />
+                            <div className="h-1.5 rounded w-3/4" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.75)' : '#cbd5e1' }} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="h-1.5 rounded w-5/6" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.78)' : '#d1d5db' }} />
+                            <div className="h-1.5 rounded w-2/3" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.5)' : '#e5e7eb' }} />
+                            <div className="flex gap-1 pt-1.5">
+                              <div className="h-5 w-14 rounded-full" style={{ backgroundColor: theme.accent, opacity: theme.dark ? 0.95 : 0.85 }} />
+                              <div className="h-5 w-10 rounded-full" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.08)' : '#eef2f7' }} />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm font-medium text-white text-center">{theme.label}</p>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold text-white">{theme.label}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${theme.dark ? 'bg-white/10 text-slate-300' : 'bg-slate-700 text-slate-200'}`}>
+                          {theme.labelEn}
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-5 text-slate-400 min-h-[2.75rem]">{THEME_DESCRIPTIONS[theme.id]}</p>
                       {selectedTheme === theme.id && (
                         <CheckCircle2 className="absolute top-2 left-2 h-4 w-4 text-blue-400" />
                       )}
@@ -1030,25 +1060,25 @@ export default function PageBuilderPage() {
               </span>
             </div>
 
-            <div className="bg-slate-800 px-3 py-2 flex items-center gap-2">
+            <div className="px-3 py-2 flex items-center gap-2" style={{ backgroundColor: activeTheme.card, borderBottom: `1px solid ${previewIsDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb'}` }}>
               <div className="flex gap-1">
                 <span className="h-2 w-2 rounded-full bg-red-500/70 inline-block" />
                 <span className="h-2 w-2 rounded-full bg-yellow-500/70 inline-block" />
                 <span className="h-2 w-2 rounded-full bg-green-500/70 inline-block" />
               </div>
-              <div className="flex-1 bg-slate-700 rounded text-[10px] text-slate-400 px-2 py-0.5 truncate font-mono">
+              <div className="flex-1 rounded text-[10px] px-2 py-0.5 truncate font-mono" style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', color: previewIsDark ? '#94a3b8' : '#64748b' }}>
                 {publicUrl}
               </div>
             </div>
 
-            <div className="bg-white overflow-y-auto" style={{ maxHeight: 560 }}>
+            <div className="overflow-y-auto transition-colors" style={{ maxHeight: 560, backgroundColor: activeTheme.bg }}>
 
               {sections.hero && (
                 <div className="relative h-28 overflow-hidden">
                   {profile.cover_url ? (
                     <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${primaryColor}cc, ${primaryColor}44)` }} />
+                    <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${activeTheme.accent}dd, ${primaryColor}55)` }} />
                   )}
                   <div className="absolute inset-0 bg-black/40" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
@@ -1070,9 +1100,9 @@ export default function PageBuilderPage() {
                     <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>العقارات المميزة</p>
                     <div className="grid grid-cols-2 gap-2">
                       {previewFeaturedListings.slice(0, 4).map((listing) => (
-                        <div key={listing.id} className="border border-gray-200 rounded-lg p-1.5">
-                          <p className="text-[10px] font-semibold text-gray-800 truncate">{listing.title}</p>
-                          <p className="text-[10px] text-gray-500 truncate">{listing.location || 'بدون موقع'}</p>
+                        <div key={listing.id} className={`border rounded-lg p-1.5 transition-colors ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          <p className={`text-[10px] font-semibold truncate ${previewTextClass}`}>{listing.title}</p>
+                          <p className={`text-[10px] truncate ${previewMutedClass}`}>{listing.location || 'بدون موقع'}</p>
                         </div>
                       ))}
                     </div>
@@ -1092,15 +1122,15 @@ export default function PageBuilderPage() {
                     )}
                     {pageConfig.show_listing_filters && (
                       <div className="flex gap-1 mb-2 text-[10px]">
-                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">الكل</span>
-                        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">متاح</span>
-                        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">مباع</span>
+                        <span className="px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: primaryColor }}>الكل</span>
+                        <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>متاح</span>
+                        <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>مباع</span>
                       </div>
                     )}
                     <div className={`grid gap-1 ${pageConfig.listings_columns === 2 ? 'grid-cols-2' : pageConfig.listings_columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
                       {previewListingsFiltered.slice(0, 8).map((listing) => (
-                        <div key={listing.id} className="border border-gray-200 rounded p-1 text-center">
-                          <p className="text-[9px] text-gray-700 truncate">{listing.title}</p>
+                        <div key={listing.id} className={`border rounded p-1 text-center ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          <p className={`text-[9px] truncate ${previewTextClass}`}>{listing.title}</p>
                         </div>
                       ))}
                     </div>
@@ -1110,11 +1140,11 @@ export default function PageBuilderPage() {
                 {sections.about && (
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>من نحن</p>
-                  <p className="text-gray-600 text-[11px] leading-relaxed line-clamp-4">
+                  <p className={`text-[11px] leading-relaxed line-clamp-4 ${previewMutedClass}`}>
                     {profile.bio || 'نبذة مكتبك ستظهر هنا...'}
                   </p>
                   {profile.licence_no && (
-                    <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-0.5">
+                    <p className={`text-[10px] mt-1 flex items-center gap-0.5 ${previewMutedClass}`}>
                       <Hash className="h-2.5 w-2.5 inline" /> رقم الترخيص: {profile.licence_no}
                     </p>
                   )}
@@ -1126,19 +1156,19 @@ export default function PageBuilderPage() {
                     <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>التواصل</p>
                     <div className="space-y-1">
                       {profile.contact_phone && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
                           <Phone className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
                           {profile.contact_phone}
                         </div>
                       )}
                       {profile.contact_email && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
                           <Mail className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
                           {profile.contact_email}
                         </div>
                       )}
                       {profile.contact_address && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
                           <MapPin className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
                           {profile.contact_address}
                         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
+import { PAGE_THEMES } from '@/lib/types'
 import { PropertyDetailModal } from './PropertyDetailModal'
 import { FloatContactButtons } from './FloatContactButtons'
 
@@ -108,10 +109,18 @@ interface Props {
 
 export default function PublicAgencyPage({ tenant, profile, listings, news, gallery, team }: Props) {
   const primary = tenant.primary_color ?? '#2563eb'
+  const pageTheme = PAGE_THEMES[(tenant.theme as keyof typeof PAGE_THEMES) ?? 'modern'] ?? PAGE_THEMES.modern
+  const isDarkTheme = pageTheme.dark
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
+
+  const surfaceCardClass = isDarkTheme ? 'bg-slate-900/90 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'
+  const sectionSoftClass = isDarkTheme ? 'bg-slate-950/50' : 'bg-gray-50'
+  const bodyTextClass = isDarkTheme ? 'text-slate-300' : 'text-gray-600'
+  const mutedTextClass = isDarkTheme ? 'text-slate-400' : 'text-gray-500'
+  const navTextClass = scrolled ? (isDarkTheme ? 'text-white' : 'text-gray-900') : 'text-white'
 
   const sections = {
     hero: true,
@@ -189,17 +198,20 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         .revealed { opacity: 1; transform: translateY(0); }
       `}</style>
 
-      <div className="min-h-screen bg-white text-gray-900" dir="rtl">
+      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: isDarkTheme ? '#f8fafc' : '#111827' }}>
 
         {/* Sticky RTL Navbar */}
-        <nav className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur shadow-sm' : 'bg-transparent'}`}>
+        <nav
+          className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-sm border-b' : 'bg-transparent'}`}
+          style={scrolled ? { backgroundColor: isDarkTheme ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)', borderColor: isDarkTheme ? 'rgba(255,255,255,0.08)' : '#e2e8f0' } : undefined}
+        >
           <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={40} height={40}
                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover" priority={false} />
               )}
-              <span className={`font-bold text-sm sm:text-lg ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+              <span className={`font-bold text-sm sm:text-lg ${navTextClass}`}>
                 {tenant.name}
               </span>
             </div>
@@ -259,7 +271,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">العقارات المميزة</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map(l => (
-                <button key={l.id} onClick={() => setActiveListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`}>
                   <div className="relative">
                     {l.images[0] ? (
                       <Image
@@ -283,9 +295,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1">{l.title}</h3>
+                    <h3 className="font-semibold mb-1">{l.title}</h3>
                     {l.price != null && <p className="text-primary font-bold text-lg mb-1">{l.price.toLocaleString('ar-SA')} ر.س</p>}
-                    {l.location && <p className="text-gray-500 text-sm mb-2">📍 {l.location}</p>}
+                    {l.location && <p className={`text-sm mb-2 ${mutedTextClass}`}>📍 {l.location}</p>}
                   </div>
                 </button>
               ))}
@@ -330,11 +342,11 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             )}
 
             {menuListings.length === 0 ? (
-              <p className="text-center text-gray-400 py-12">لا توجد عقارات لهذا التصنيف</p>
+              <p className={`text-center py-12 ${mutedTextClass}`}>لا توجد عقارات لهذا التصنيف</p>
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {menuListings.map(l => (
-                  <button key={l.id} onClick={() => setActiveListing(l)} className="text-right group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                  <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`}>
                     <div className="relative">
                       {l.images[0] ? (
                         <Image
@@ -363,10 +375,10 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-1">{l.title}</h3>
+                      <h3 className="font-semibold mb-1">{l.title}</h3>
                       {l.price != null && <p className="text-primary font-bold text-lg mb-1">{l.price.toLocaleString('ar-SA')} ر.س</p>}
-                      {l.location && <p className="text-gray-500 text-sm mb-2">📍 {l.location}</p>}
-                      <div className="flex gap-3 text-xs text-gray-500">
+                      {l.location && <p className={`text-sm mb-2 ${mutedTextClass}`}>📍 {l.location}</p>}
+                      <div className={`flex gap-3 text-xs ${mutedTextClass}`}>
                         {l.bedrooms != null && <span>🛏 {l.bedrooms} غرفة</span>}
                         {l.bathrooms != null && <span>🚿 {l.bathrooms} حمام</span>}
                         {l.area_sqm != null && <span>📐 {l.area_sqm} م²</span>}
@@ -381,12 +393,12 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section className="reveal py-12 sm:py-16 bg-gray-50">
+          <section className={`reveal py-12 sm:py-16 ${sectionSoftClass}`}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8">آخر الأخبار</h2>
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {news.map(item => (
-                  <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm shrink-0 w-[85vw] sm:w-80 max-w-80">
+                  <div key={item.id} className={`rounded-2xl overflow-hidden shadow-sm shrink-0 w-[85vw] sm:w-80 max-w-80 border ${surfaceCardClass}`}>
                     {(item.image_url || item.images?.[0]) && <Image
                       src={item.image_url || item.images[0]}
                       alt={item.title}
@@ -396,11 +408,11 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                       priority={false}
                     />}
                     <div className="p-5">
-                      <p className="text-xs text-gray-400 mb-1">
+                      <p className={`text-xs mb-1 ${mutedTextClass}`}>
                         {new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
-                      <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                      {item.body && <p className="text-sm text-gray-500 line-clamp-3">{item.body}</p>}
+                      <h3 className="font-semibold mb-2">{item.title}</h3>
+                      {item.body && <p className={`text-sm line-clamp-3 ${mutedTextClass}`}>{item.body}</p>}
                     </div>
                   </div>
                 ))}
@@ -412,20 +424,20 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
         {/* About */}
         {sections.about && (<section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">من نحن</h2>
-          {profile?.bio && <p className="text-gray-600 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
+          {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyTextClass}`}>{profile.bio}</p>}
           {profile?.licence_no && (
-            <p className="mt-4 text-sm text-gray-400 font-mono">رقم الترخيص: {profile.licence_no}</p>
+            <p className={`mt-4 text-sm font-mono ${mutedTextClass}`}>رقم الترخيص: {profile.licence_no}</p>
           )}
         </section>)}
 
         {/* Team */}
         {sections.team && team.length > 0 && (
-          <section className="py-12 sm:py-16 bg-gray-50">
+          <section className={`py-12 sm:py-16 ${sectionSoftClass}`}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">فريقنا</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {team.map(member => (
-                  <div key={member.id} className="bg-white rounded-2xl p-6 text-center shadow-sm">
+                  <div key={member.id} className={`rounded-2xl p-6 text-center shadow-sm border ${surfaceCardClass}`}>
                     {member.photo_url ? (
                       <Image
                         src={member.photo_url}
@@ -440,8 +452,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                         {(member.display_name || member.email).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <h3 className="font-semibold text-gray-900">{member.display_name || member.email.split('@')[0]}</h3>
-                    <p className="text-sm text-gray-500">{member.role === 'admin' ? 'مدير' : 'وكيل عقاري'}</p>
+                    <h3 className="font-semibold">{member.display_name || member.email.split('@')[0]}</h3>
+                    <p className={`text-sm ${mutedTextClass}`}>{member.role === 'admin' ? 'مدير' : 'وكيل عقاري'}</p>
                     {member.phone && (
                       <a href={`tel:${member.phone}`} className="text-sm text-primary hover:underline mt-2 block">
                         {member.phone}
