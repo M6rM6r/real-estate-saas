@@ -38,12 +38,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       ? null
       : fallbackProfilesSnap?.docs[0].data()
 
+  const seoTitle = (profile?.page_config as any)?.seo_title || `${tenant.name} — عقارات`
+  const seoDesc = ((profile?.page_config as any)?.seo_description || (profile?.bio as string)) ?? 'خدمات عقارية متميزة'
+
   return {
-    title: `${tenant.name} — Real Estate`,
-    description: (profile?.bio as string) ?? 'Professional real estate services',
+    title: seoTitle,
+    description: seoDesc,
     openGraph: {
-      title: tenant.name,
-      description: (profile?.bio as string) ?? '',
+      title: seoTitle,
+      description: seoDesc,
       images: profile?.cover_url ? [profile.cover_url as string] : [],
     },
   }

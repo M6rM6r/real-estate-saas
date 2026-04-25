@@ -64,6 +64,13 @@ type Profile = {
     listings_columns?: 2 | 3 | 4
     show_listing_filters?: boolean
     show_listing_search?: boolean
+    hero_style?: 'centered' | 'split' | 'minimal'
+    hero_cta_text?: string
+    button_shape?: 'pill' | 'soft' | 'sharp'
+    seo_title?: string
+    seo_description?: string
+    announcement_text?: string
+    announcement_color?: 'accent' | 'yellow' | 'green'
   } | null
 } | null
 
@@ -139,8 +146,17 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
     listings_columns: 3 as 2 | 3 | 4,
     show_listing_filters: true,
     show_listing_search: true,
+    hero_style: 'centered' as 'centered' | 'split' | 'minimal',
+    hero_cta_text: 'تواصل عبر واتساب',
+    button_shape: 'soft' as 'pill' | 'soft' | 'sharp',
+    seo_title: '',
+    seo_description: '',
+    announcement_text: '',
+    announcement_color: 'accent' as 'accent' | 'yellow' | 'green',
     ...(profile?.page_config ?? {}),
   }
+
+  const btnRadius = pageConfig.button_shape === 'pill' ? '9999px' : pageConfig.button_shape === 'sharp' ? '0px' : pageConfig.button_shape === 'soft' ? pageTheme.radius : pageTheme.radius
 
   const whatsapp = profile?.social_links?.whatsapp
   const waLink = whatsapp
@@ -213,8 +229,69 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           </div>
         </nav>
 
+        {/* Announcement Banner */}
+        {pageConfig.announcement_text && (
+          <div
+            className="w-full text-center text-sm font-medium py-2 px-4 sticky top-0 z-50"
+            style={{
+              backgroundColor: pageConfig.announcement_color === 'yellow' ? '#f59e0b' : pageConfig.announcement_color === 'green' ? '#22c55e' : primary,
+              color: '#fff',
+            }}
+          >
+            {pageConfig.announcement_text}
+          </div>
+        )}
+
         {/* Hero */}
-        {sections.hero && (<section
+        {sections.hero && pageConfig.hero_style === 'split' && (
+          <section className="min-h-screen flex flex-col lg:flex-row items-stretch pt-14 sm:pt-16">
+            <div className="relative flex-1 min-h-[40vh] lg:min-h-screen">
+              {profile?.cover_url ? (
+                <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
+              ) : (
+                <div className="w-full h-full min-h-[40vh]" style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }} />
+              )}
+            </div>
+            <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 py-16" style={{ backgroundColor: pageTheme.bg }}>
+              {profile?.logo_url && (
+                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-full mb-6 shadow-lg" />
+              )}
+              <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDarkTheme ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+              {profile?.tagline && <p className="text-primary text-lg font-medium mb-3">{profile.tagline}</p>}
+              <p className="text-base mb-8" style={{ color: isDarkTheme ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>
+              {whatsapp && (
+                <a href={waLink} target="_blank" rel="noopener noreferrer"
+                  className="btn-primary text-white px-7 py-3 font-semibold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 w-fit"
+                  style={{ borderRadius: btnRadius }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg>
+                  {pageConfig.hero_cta_text || 'تواصل عبر واتساب'}
+                </a>
+              )}
+            </div>
+          </section>
+        )}
+
+        {sections.hero && pageConfig.hero_style === 'minimal' && (
+          <section className="pt-28 sm:pt-32 pb-16 px-4 text-center" style={{ backgroundColor: pageTheme.sectionAlt }}>
+            {profile?.logo_url && (
+              <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full object-contain mb-6 shadow" />
+            )}
+            <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDarkTheme ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+            <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
+            {profile?.tagline && <p className="text-xl font-medium mb-3" style={{ color: primary }}>{profile.tagline}</p>}
+            <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto" style={{ color: isDarkTheme ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>
+            {whatsapp && (
+              <a href={waLink} target="_blank" rel="noopener noreferrer"
+                className="btn-primary text-white px-8 py-3 font-semibold hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+                style={{ borderRadius: btnRadius }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg>
+                {pageConfig.hero_cta_text || 'تواصل عبر واتساب'}
+              </a>
+            )}
+          </section>
+        )}
+
+        {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (<section
           className="relative min-h-screen flex items-end justify-center pb-12 sm:pb-20 pt-24 sm:pt-28 bg-gray-900 bg-cover bg-center"
           style={profile?.cover_url ? { backgroundImage: `url(${profile.cover_url})` } : {}}
         >
@@ -240,12 +317,13 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {whatsapp && (
                 <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  className="btn-primary text-white px-6 sm:px-8 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 w-full sm:w-auto">
+                  className="btn-primary text-white px-6 sm:px-8 py-3 font-semibold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+                  style={{ borderRadius: btnRadius }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
                     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/>
                   </svg>
-                  تواصل عبر واتساب
+                  {pageConfig.hero_cta_text || 'تواصل عبر واتساب'}
                 </a>
               )}
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { authFetch } from '@/lib/api';
 import type { Profile, Tenant } from '@/lib/types';
 import { PAGE_THEMES } from '@/lib/types';
@@ -9,11 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Loader2, ExternalLink, Copy, Check, Phone, Mail, MapPin,
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search,
 } from 'lucide-react';
 
 type ProfileResponse = {
@@ -36,6 +39,13 @@ const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   listings_columns: 3,
   show_listing_filters: true,
   show_listing_search: true,
+  hero_style: 'centered',
+  hero_cta_text: 'تواصل عبر واتساب',
+  button_shape: 'soft',
+  seo_title: '',
+  seo_description: '',
+  announcement_text: '',
+  announcement_color: 'accent',
 };
 
 const EMPTY_PROFILE: Profile = {
@@ -136,16 +146,19 @@ export default function PageBuilderPage() {
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
   const [previewSearch, setPreviewSearch] = useState('');
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('themes');
+  const [showChecklist, setShowChecklist] = useState(false);
 
-  const profileCompletionCount = [
-    agencyName,
-    profile.tagline,
-    profile.bio,
-    profile.logo_url,
-    profile.contact_phone,
-    profile.contact_email,
-  ].filter(Boolean).length;
-  const profileCompletionPct = Math.round((profileCompletionCount / 6) * 100);
+  const profileCompletionItems = [
+    { key: 'name',      label: 'اسم المكتب',          done: Boolean(agencyName),                tab: 'branding' },
+    { key: 'logo',      label: 'شعار المكتب',          done: Boolean(profile.logo_url),          tab: 'branding' },
+    { key: 'cover',     label: 'صورة الغلاف',          done: Boolean(profile.cover_url),         tab: 'branding' },
+    { key: 'bio',       label: 'نبذة عن المكتب',       done: Boolean(profile.bio),               tab: 'content'  },
+    { key: 'whatsapp',  label: 'رقم واتساب',           done: Boolean(profile.social_links?.whatsapp), tab: 'social' },
+    { key: 'listing',   label: 'عقار واحد على الأقل',  done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
+    { key: 'theme',     label: 'تصميم مخصص',           done: selectedTheme !== 'modern',         tab: 'themes'   },
+  ];
 
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
@@ -384,6 +397,19 @@ export default function PageBuilderPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const downloadQr = () => {
+    const svg = document.getElementById('qr-svg');
+    if (!svg) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = 360; canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => { ctx.drawImage(img, 0, 0, 360, 360); canvas.toBlob((blob) => { if (!blob) return; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `qr-${slug || 'page'}.png`; a.click(); }); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-72">
@@ -433,7 +459,43 @@ export default function PageBuilderPage() {
   return (
     <div className="space-y-5 pb-10" dir="rtl">
 
-      {/* Arabic heading */}
+      {/* QR Code Dialog */}
+      <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <QrCode className="h-5 w-5 text-blue-400" /> رمز QR لصفحتك
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div className="bg-white p-4 rounded-xl">
+              <QRCodeSVG
+                id="qr-svg"
+                value={publicUrl}
+                size={200}
+                fgColor={activeTheme.accent}
+                level="M"
+                includeMargin={false}
+              />
+            </div>
+            <p className="text-xs text-slate-400 font-mono break-all text-center">{publicUrl}</p>
+            <div className="flex gap-2 w-full">
+              <Button onClick={downloadQr} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
+                <Download className="h-4 w-4" /> تحميل PNG
+              </Button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent('صفحتي العقارية: ' + publicUrl)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button variant="outline" className="w-full gap-2 border-slate-600 text-slate-200 hover:bg-slate-800">
+                  <MessageCircle className="h-4 w-4 text-green-400" /> واتساب
+                </Button>
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="mb-1">
         <h1 className="text-xl font-bold text-white">منشئ الصفحة</h1>
         <p className="text-sm text-slate-400">خصّص صفحتك العامة التي يراها عملاؤك</p>
@@ -464,6 +526,9 @@ export default function PageBuilderPage() {
               تغييرات غير محفوظة
             </span>
           )}
+          <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
+            <QrCode className="h-3.5 w-3.5" /> QR
+          </Button>
           <Button size="sm" variant="ghost" onClick={copyLink} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
             {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'تم النسخ!' : 'نسخ الرابط'}
@@ -521,7 +586,90 @@ export default function PageBuilderPage() {
                 placeholder="ابحث عن عقارك المثالي"
               />
             </div>
+
+            {/* Hero Style Picker */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-slate-400">شكل القسم الرئيسي</Label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  { value: 'centered', label: 'وسط', icon: '⬛' },
+                  { value: 'split',    label: 'نصفين', icon: '▧' },
+                  { value: 'minimal', label: 'بسيط', icon: '▭' },
+                ] as const).map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => updatePageConfig({ hero_style: value })}
+                    className={`px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${ pageConfig.hero_style === value ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500' }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA Text */}
             <div className="space-y-1">
+              <Label className="text-xs text-slate-400">نص زر التواصل</Label>
+              <Input
+                value={pageConfig.hero_cta_text || ''}
+                onChange={(e) => updatePageConfig({ hero_cta_text: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white text-sm"
+                placeholder="تواصل عبر واتساب"
+              />
+            </div>
+
+            {/* Button Shape */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-slate-400">شكل الأزرار</Label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  { value: 'pill',  label: 'دائري' },
+                  { value: 'soft',  label: 'ناعم' },
+                  { value: 'sharp', label: 'حاد' },
+                ] as const).map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => updatePageConfig({ button_shape: value })}
+                    className={`px-2 py-1.5 text-[11px] font-medium border transition-all ${ pageConfig.button_shape === value ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500' } ${ value === 'pill' ? 'rounded-full' : value === 'soft' ? 'rounded-lg' : 'rounded-none' }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Announcement text */}
+            {sections.hero && (
+              <div className="space-y-1.5 border-t border-slate-800 pt-3">
+                <Label className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <Megaphone className="h-3 w-3" /> إعلان مثبّت (اختياري)
+                </Label>
+                <Input
+                  value={pageConfig.announcement_text || ''}
+                  onChange={(e) => updatePageConfig({ announcement_text: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white text-sm"
+                  placeholder="عرض خاص: تخفيض 10% على التقييم..."
+                  maxLength={300}
+                />
+                {pageConfig.announcement_text && (
+                  <div className="flex gap-1.5">
+                    {(['accent', 'yellow', 'green'] as const).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => updatePageConfig({ announcement_color: c })}
+                        className={`h-5 w-5 rounded-full border-2 transition-all ${ pageConfig.announcement_color === c ? 'border-white scale-110' : 'border-transparent' } ${ c === 'yellow' ? 'bg-yellow-500' : c === 'green' ? 'bg-green-500' : 'bg-blue-600' }`}
+                        aria-label={c}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-1 border-t border-slate-800 pt-3">
               <Label className="text-xs text-slate-400">أعمدة شبكة العقارات</Label>
               <select
                 value={pageConfig.listings_columns || 3}
@@ -562,8 +710,8 @@ export default function PageBuilderPage() {
 
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 xl:max-w-[560px]">
-          <Tabs defaultValue="themes" className="w-full">
-            <TabsList className="w-full grid grid-cols-6 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-7 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
                 { value: 'themes',   icon: Layout,         label: 'التصميم'  },
                 { value: 'branding', icon: Palette,        label: 'الهوية'   },
@@ -571,6 +719,7 @@ export default function PageBuilderPage() {
                 { value: 'posts',    icon: Building2,      label: 'العقارات' },
                 { value: 'contact',  icon: Phone,          label: 'التواصل' },
                 { value: 'social',   icon: Globe,          label: 'سوشيال'  },
+                { value: 'seo',      icon: Search,         label: 'SEO'      },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -1014,34 +1163,140 @@ export default function PageBuilderPage() {
                     </div>
                   </div>
                 ))}
+
+                {/* Snapchat */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">Snapchat</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400 pointer-events-none text-sm font-bold">👻</span>
+                    <Input
+                      value={profile.social_links?.snapchat || ''}
+                      onChange={(e) => updateSocial('snapchat', e.target.value)}
+                      placeholder="اسم المستخدم أو https://snapchat.com/add/..."
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* SEO */}
+            <TabsContent value="seo" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Search className="h-4 w-4 text-blue-400" /> محركات البحث والمشاركة
+                </p>
+                <p className="text-xs text-slate-500">هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل</p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">عنوان الصفحة (SEO Title)</Label>
+                  <Input
+                    value={pageConfig.seo_title || ''}
+                    onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    placeholder={`${agencyName || 'مكتبك'} | عقارات`}
+                    maxLength={120}
+                  />
+                  <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 (يُنصح بـ 60 حرفاً)</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">وصف الصفحة (Meta Description)</Label>
+                  <Textarea
+                    value={pageConfig.seo_description || ''}
+                    onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
+                    placeholder="وصف موجز لمكتبك يظهر في نتائج البحث..."
+                    rows={3}
+                    maxLength={160}
+                  />
+                  <p className={`text-[11px] text-left ${ (pageConfig.seo_description || '').length > 160 ? 'text-red-400' : 'text-slate-500' }`}>{(pageConfig.seo_description || '').length}/160</p>
+                </div>
+
+                {/* WhatsApp preview */}
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-400 font-medium">معاينة عند المشاركة على واتساب</p>
+                  <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
+                    {profile.cover_url && (
+                      <img src={profile.cover_url} alt="OG preview" className="w-full h-24 object-cover" />
+                    )}
+                    <div className="p-3">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {pageConfig.seo_title || agencyName || 'اسم المكتب'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
+                        {pageConfig.seo_description || profile.bio || 'وصف المكتب يظهر هنا'}
+                      </p>
+                      <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
 
-          {/* Save button + status */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={saveStatus === 'saving' || !dirty}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
+          {/* Save button + status + completion checklist */}
+          <div className="space-y-3">
+            {/* Completion checklist toggle */}
+            <button
+              type="button"
+              onClick={() => setShowChecklist(!showChecklist)}
+              className="w-full flex items-center justify-between text-sm text-slate-300 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 hover:bg-slate-800 transition-colors"
             >
-              {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
-            </Button>
-
-            <span className="text-xs text-slate-500">اختصار الحفظ: Ctrl/Cmd + S</span>
-            <span className="text-xs text-slate-400">اكتمال الملف: {profileCompletionPct}%</span>
-
-            {saveStatus === 'saved' && (
-              <span className="flex items-center gap-1.5 text-sm text-green-400">
-                <CheckCircle2 className="h-4 w-4" /> تم الحفظ بنجاح!
+              <span className="flex items-center gap-2">
+                <span className="text-white font-medium">اكتمال الملف الشخصي</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${ profileCompletionItems.filter(i => i.done).length === 7 ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300' }`}>
+                  {profileCompletionItems.filter(i => i.done).length}/7
+                </span>
               </span>
+              {showChecklist ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
+            </button>
+            {showChecklist && (
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                {profileCompletionItems.filter(i => i.done).length === 7 && (
+                  <div className="mb-3 p-2.5 bg-green-500/10 border border-green-500/20 rounded-lg text-center text-sm text-green-400 font-medium">
+                    🎉 صفحتك جاهزة للمشاركة!
+                  </div>
+                )}
+                {profileCompletionItems.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => { setActiveTab(item.tab); setShowChecklist(false); }}
+                    className="w-full flex items-center gap-3 text-sm hover:bg-slate-800 px-2 py-1.5 rounded-lg transition-colors"
+                  >
+                    <span className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${ item.done ? 'bg-green-500 border-green-500' : 'border-slate-600' }`}>
+                      {item.done && <Check className="h-2.5 w-2.5 text-white" />}
+                    </span>
+                    <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-200'}>{item.label}</span>
+                    {!item.done && <span className="mr-auto text-[10px] text-blue-400">إضافة ←</span>}
+                  </button>
+                ))}
+              </div>
             )}
-            {saveStatus === 'error' && (
-              <span className="flex items-center gap-1.5 text-sm text-red-400">
-                <AlertCircle className="h-4 w-4" /> {saveError}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={handleSave}
+                disabled={saveStatus === 'saving' || !dirty}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
+              >
+                {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+                {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+              </Button>
+
+              <span className="text-xs text-slate-500">اختصار الحفظ: Ctrl/Cmd + S</span>
+
+              {saveStatus === 'saved' && (
+                <span className="flex items-center gap-1.5 text-sm text-green-400">
+                  <CheckCircle2 className="h-4 w-4" /> تم الحفظ بنجاح!
+                </span>
+              )}
+              {saveStatus === 'error' && (
+                <span className="flex items-center gap-1.5 text-sm text-red-400">
+                  <AlertCircle className="h-4 w-4" /> {saveError}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

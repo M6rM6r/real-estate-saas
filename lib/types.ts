@@ -98,6 +98,13 @@ export type Profile = {
     listings_columns?: 2 | 3 | 4;
     show_listing_filters?: boolean;
     show_listing_search?: boolean;
+    hero_style?: 'centered' | 'split' | 'minimal';
+    hero_cta_text?: string;
+    button_shape?: 'pill' | 'soft' | 'sharp';
+    seo_title?: string;
+    seo_description?: string;
+    announcement_text?: string;
+    announcement_color?: 'accent' | 'yellow' | 'green';
   };
 };
 

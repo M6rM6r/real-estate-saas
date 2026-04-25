@@ -54,6 +54,13 @@ const ProfileDataSchema = z.object({
     listings_columns: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
     show_listing_filters: z.boolean().optional(),
     show_listing_search: z.boolean().optional(),
+    hero_style: z.enum(['centered', 'split', 'minimal']).optional(),
+    hero_cta_text: z.preprocess(emptyToNull, z.string().max(100).nullable().optional()),
+    button_shape: z.enum(['pill', 'soft', 'sharp']).optional(),
+    seo_title: z.preprocess(emptyToNull, z.string().max(120).nullable().optional()),
+    seo_description: z.preprocess(emptyToNull, z.string().max(160).nullable().optional()),
+    announcement_text: z.preprocess(emptyToNull, z.string().max(300).nullable().optional()),
+    announcement_color: z.enum(['accent', 'yellow', 'green']).optional(),
   }).optional(),
 }).optional()
 
