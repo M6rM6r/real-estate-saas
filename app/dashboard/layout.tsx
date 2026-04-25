@@ -7,10 +7,10 @@ import { BarChart3, LayoutTemplate, Settings, LogOut, Building2, Menu, X, Megaph
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: BarChart3 },
-  { href: '/dashboard/page-builder', label: 'Page Builder', icon: LayoutTemplate },
-  { href: '/dashboard/announcements', label: 'Announcements', icon: Megaphone },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', label: 'نظرة عامة', icon: BarChart3 },
+  { href: '/dashboard/page-builder', label: 'منشئ الصفحة', icon: LayoutTemplate },
+  { href: '/dashboard/announcements', label: 'الإعلانات', icon: Megaphone },
+  { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -85,15 +85,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <Building2 className="h-4 w-4 text-white" />
           </div>
-          <span className="font-semibold text-lg">Dashboard</span>
+          <span className="font-semibold text-lg">لوحة التحكم</span>
           {isDemo && (
-            <span className="ml-auto text-[10px] font-bold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
-              Demo
+            <span className="ml-auto text-[10px] font-bold tracking-wider bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
+              تجريبي
             </span>
           )}
           <button
+            type="button"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden text-gray-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            aria-label="إغلاق القائمة الجانبية"
           >
             <X className="h-5 w-5" />
           </button>
@@ -105,12 +107,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             return (
               <button
                 key={item.href}
+                type="button"
                 onClick={() => {
                   router.push(item.href);
                   setSidebarOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
                   isActive
                     ? 'bg-blue-600/20 text-blue-400'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -139,9 +142,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             variant="ghost"
             onClick={handleLogout}
             className="w-full justify-start gap-3 text-gray-400 hover:text-red-400 hover:bg-red-400/10"
+            aria-label="تسجيل الخروج"
           >
             <LogOut className="h-5 w-5" />
-            Sign Out
+            تسجيل الخروج
           </Button>
         </div>
       </aside>
@@ -149,8 +153,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-gray-800 flex items-center px-4 lg:px-8">
           <button
+            type="button"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-400 hover:text-white mr-4"
+            className="lg:hidden text-gray-400 hover:text-white mr-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            aria-label="فتح القائمة الجانبية"
           >
             <Menu className="h-6 w-6" />
           </button>
