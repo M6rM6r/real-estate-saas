@@ -14,6 +14,8 @@ const ListingSchema = z.object({
   bathrooms: z.number().int().min(0).optional().nullable(),
   area_sqm: z.number().positive().optional().nullable(),
   listing_status: z.enum(['available', 'sold', 'rented']).optional(),
+  offer_type: z.enum(['sale', 'rent']).optional().nullable(),
+  property_type: z.string().max(50).optional().nullable(),
   published: z.boolean().optional(),
   images: z.array(z.string().url()).max(20).optional(),
 })

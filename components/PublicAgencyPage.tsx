@@ -87,6 +87,8 @@ type Post = {
   bathrooms: number | null
   area_sqm: number | null
   listing_status: string | null
+  offer_type?: string | null
+  property_type?: string | null
   published: boolean
   created_at: string
 }
@@ -122,6 +124,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
   const isDarkTheme = pageTheme.dark
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [offerFilter, setOfferFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
 
@@ -182,12 +187,19 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
 
   const publishedListings = listings.filter((l) => l.published !== false)
-  const filteredListings = statusFilter === 'all'
-    ? publishedListings
-    : publishedListings.filter(l => l.listing_status === statusFilter)
+  const availablePropertyTypes = Array.from(new Set(publishedListings.map(l => l.property_type).filter(Boolean))) as string[]
+  const filteredListings = publishedListings
+    .filter(l => statusFilter === 'all' || l.listing_status === statusFilter)
+    .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
+    .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
+  const sortedListings = sortPrice === 'none'
+    ? filteredListings
+    : [...filteredListings].sort((a, b) =>
+        sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
+      )
   const menuListings = listingSearch.trim()
-    ? filteredListings.filter((l) => `${l.title || ''} ${l.location || ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
-    : filteredListings
+    ? sortedListings.filter((l) => `${l.title || ''} ${l.location || ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
+    : sortedListings
 
   return (
     <>
@@ -350,22 +362,75 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             )}
 
             {pageConfig.show_listing_filters && (
-              <div className="flex flex-wrap gap-2 mb-8">
-                {(['all', 'available', 'sold', 'rented'] as const).map(f => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setStatusFilter(f)}
-                    className={`px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all border ${
-                      statusFilter === f ? 'text-white border-transparent' : `${surfaceCardClass} hover:opacity-80`
-                    }`}
-                    style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}
-                    aria-label={`تصفية العقارات: ${f === 'all' ? 'الكل' : STATUS_LABELS[f]}`}
-                    aria-pressed={statusFilter === f}
+              <div className="space-y-3 mb-6">
+                {/* Offer type: بيع / تأجير */}
+                <div className="flex flex-wrap gap-2">
+                  {(['all', 'sale', 'rent'] as const).map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setOfferFilter(f)}
+                      className={`px-4 py-2 min-h-[40px] rounded-full text-sm font-medium transition-all border ${
+                        offerFilter === f ? 'text-white border-transparent' : `${surfaceCardClass} hover:opacity-80`
+                      }`}
+                      style={offerFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}
+                      aria-pressed={offerFilter === f}
+                    >
+                      {f === 'all' ? 'الكل' : f === 'sale' ? 'للبيع' : 'للإيجار'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Property type: dynamic from data */}
+                {availablePropertyTypes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {(['all', ...availablePropertyTypes] as string[]).map(f => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setTypeFilter(f)}
+                        className={`px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border ${
+                          typeFilter === f ? 'text-white border-transparent' : `${surfaceCardClass} hover:opacity-80`
+                        }`}
+                        style={typeFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}
+                        aria-pressed={typeFilter === f}
+                      >
+                        {f === 'all' ? 'كل الأنواع' : f}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sort + status row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Status filter */}
+                  {(['all', 'available', 'sold', 'rented'] as const).map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setStatusFilter(f)}
+                      className={`px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border ${
+                        statusFilter === f ? 'text-white border-transparent' : `${surfaceCardClass} hover:opacity-80`
+                      }`}
+                      style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}
+                      aria-pressed={statusFilter === f}
+                    >
+                      {f === 'all' ? 'كل الحالات' : STATUS_LABELS[f]}
+                    </button>
+                  ))}
+                  {/* Price sort */}
+                  <select
+                    value={sortPrice}
+                    onChange={(e) => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}
+                    className="mr-auto text-xs px-3 py-2 border rounded-full focus:outline-none focus:ring-2"
+                    style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: isDarkTheme ? '#fff' : '#111', ['--tw-ring-color' as any]: `${primary}55` }}
+                    aria-label="ترتيب حسب السعر"
                   >
-                    {f === 'all' ? 'الكل' : STATUS_LABELS[f]}
-                  </button>
-                ))}
+                    <option value="none">ترتيب السعر</option>
+                    <option value="desc">الأعلى سعراً</option>
+                    <option value="asc">الأقل سعراً</option>
+                  </select>
+                </div>
               </div>
             )}
 
@@ -401,8 +466,17 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                           {STATUS_LABELS[l.listing_status] ?? l.listing_status}
                         </span>
                       )}
+                      {l.offer_type && (
+                        <span
+                          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
+                          style={{ backgroundColor: l.offer_type === 'sale' ? '#2563eb' : '#7c3aed' }}
+                        >
+                          {l.offer_type === 'sale' ? 'للبيع' : 'للإيجار'}
+                        </span>
+                      )}
                     </div>
                     <div className="p-4">
+                      {l.property_type && <span className={`text-xs px-2 py-0.5 rounded-full ${mutedTextClass}`} style={{ backgroundColor: pageTheme.sectionAlt }}>{l.property_type}</span>}
                       <h3 className="font-semibold mb-1">{l.title}</h3>
                       {l.price != null && <p className="text-primary font-bold text-lg mb-1">{l.price.toLocaleString('ar-SA')} ر.س</p>}
                       {l.location && <p className={`text-sm mb-2 ${mutedTextClass}`}>📍 {l.location}</p>}

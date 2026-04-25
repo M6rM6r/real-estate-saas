@@ -142,7 +142,7 @@ export default function PageBuilderPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
-  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
+  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available', offer_type: 'sale', property_type: '' });
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
@@ -254,7 +254,7 @@ export default function PageBuilderPage() {
   };
 
   const resetListingForm = () => {
-    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available' });
+    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available', offer_type: 'sale', property_type: '' });
     setEditingListing(null);
     setListingError('');
     setListingPublished(true);
@@ -272,6 +272,8 @@ export default function PageBuilderPage() {
       area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : null,
       images: listingForm.image ? [listingForm.image] : [],
       listing_status: listingForm.status as 'available' | 'sold' | 'rented',
+      offer_type: listingForm.offer_type as 'sale' | 'rent',
+      property_type: listingForm.property_type || null,
       published: listingPublished,
     };
     if (isDemo) {
@@ -947,7 +949,28 @@ export default function PageBuilderPage() {
                     <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العقار' : 'إضافة عقار جديد'}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">العنوان *</Label>
+                        <Label className="text-slate-400 text-xs">نوع العرض</Label>
+                        <select value={listingForm.offer_type} onChange={(e) => setListingForm({ ...listingForm, offer_type: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
+                          <option value="sale">للبيع</option>
+                          <option value="rent">للإيجار</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">نوع العقار</Label>
+                        <select value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
+                          <option value="">اختر...</option>
+                          <option>شقة</option>
+                          <option>فيلا</option>
+                          <option>أرض</option>
+                          <option>مكتب</option>
+                          <option>محل</option>
+                          <option>مستوديو</option>
+                          <option>دوبلكس</option>
+                          <option>مستودع</option>
+                          <option>أخرى</option>
+                        </select>
+                      </div>
+                    <div className="space-y-1">
                         <Input value={listingForm.title} onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="فيلا فاخرة..." />
                       </div>
                       <div className="space-y-1">
@@ -1042,7 +1065,7 @@ export default function PageBuilderPage() {
                           {listing.published === false && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">مسودة</span>
                           )}
-                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
