@@ -57,6 +57,7 @@ const EMPTY_PROFILE: Profile = {
   licence_no: '',
   contact_email: '',
   contact_phone: '',
+  extra_phones: [],
   contact_address: '',
   social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
   working_hours: {
@@ -1060,7 +1061,7 @@ export default function PageBuilderPage() {
 
                 {([
                   { key: 'contact_email',   icon: Mail,   label: 'البريد الإلكتروني', placeholder: 'agency@example.com',   type: 'email' },
-                  { key: 'contact_phone',   icon: Phone,  label: 'رقم الهاتف',         placeholder: '+966 50 000 0000',     type: 'tel'   },
+                  { key: 'contact_phone',   icon: Phone,  label: 'رقم الهاتف الرئيسي', placeholder: '+966 50 000 0000',   type: 'tel'   },
                   { key: 'contact_address', icon: MapPin, label: 'العنوان',             placeholder: 'الرياض، المملكة العربية السعودية', type: 'text'  },
                 ] as const).map(({ key, icon: Icon, label, placeholder, type }) => (
                   <div key={key} className="space-y-1.5">
@@ -1077,6 +1078,48 @@ export default function PageBuilderPage() {
                     </div>
                   </div>
                 ))}
+
+                {/* Extra phones */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">أرقام إضافية</Label>
+                    {(profile.extra_phones?.length ?? 0) < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => updateProfile({ extra_phones: [...(profile.extra_phones ?? []), ''] })}
+                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <Plus className="h-3 w-3" /> إضافة رقم
+                      </button>
+                    )}
+                  </div>
+                  {(profile.extra_phones ?? []).map((num, idx) => (
+                    <div key={idx} className="relative flex items-center gap-2">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                      <Input
+                        type="tel"
+                        value={num}
+                        onChange={(e) => {
+                          const updated = [...(profile.extra_phones ?? [])];
+                          updated[idx] = e.target.value;
+                          updateProfile({ extra_phones: updated });
+                        }}
+                        placeholder="+966 50 000 0000"
+                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 pr-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (profile.extra_phones ?? []).filter((_, i) => i !== idx);
+                          updateProfile({ extra_phones: updated });
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Working hours */}

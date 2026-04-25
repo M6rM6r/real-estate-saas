@@ -73,6 +73,7 @@ export type Profile = {
   primary_color?: string;
   contact_email?: string;
   contact_phone?: string;
+  extra_phones?: string[];
   contact_address?: string;
   social_links?: {
     instagram?: string;

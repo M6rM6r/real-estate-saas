@@ -23,6 +23,7 @@ const ProfileDataSchema = z.object({
   licence_no: z.preprocess(emptyToNull, z.string().max(100).nullable().optional()),
   contact_email: z.preprocess(emptyToNull, z.string().email().max(200).nullable().optional()),
   contact_phone: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
+  extra_phones: z.array(z.string().max(30)).max(5).optional(),
   contact_address: z.preprocess(emptyToNull, z.string().max(300).nullable().optional()),
   social_links: z.object({
     instagram: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),

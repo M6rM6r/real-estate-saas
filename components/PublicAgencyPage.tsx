@@ -39,6 +39,7 @@ type Profile = {
   tagline?: string | null
   contact_email?: string | null
   contact_phone?: string | null
+  extra_phones?: string[] | null
   contact_address?: string | null
   social_links?: {
     instagram?: string
@@ -427,7 +428,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 {news.map(item => (
                   <div key={item.id} className={`overflow-hidden shrink-0 snap-start w-[80vw] sm:w-80 max-w-80 border ${surfaceCardClass}`} style={cardStyle}>
                     {(item.image_url || item.images?.[0]) && <Image
-                      src={item.image_url || item.images[0]}
+                      src={item.image_url || item.images?.[0]}
                       alt={item.title}
                       width={320}
                       height={176}
@@ -491,6 +492,11 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                   📞 {profile.contact_phone}
                 </a>
               )}
+              {(profile?.extra_phones ?? []).filter(Boolean).map((num, i) => (
+                <a key={i} href={`tel:${num}`} className="text-sm text-gray-300 hover:text-white block mb-2 transition-colors">
+                  📞 {num}
+                </a>
+              ))}
               <div className="flex gap-2 mt-4">
                 {profile?.social_links?.instagram && (
                   <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer"
