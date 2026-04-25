@@ -219,6 +219,9 @@ export default function NewsPage() {
           <Newspaper className="h-12 w-12 mx-auto mb-4 text-gray-600" />
           <p className="text-gray-300 font-medium">No news articles found.</p>
           <p className="text-gray-500 text-sm mt-2">Try clearing your search/filter, or create a new article.</p>
+          <Button onClick={openCreate} className="mt-5 bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" /> Create Article
+          </Button>
         </Card>
       ) : (
         <div className="space-y-3">

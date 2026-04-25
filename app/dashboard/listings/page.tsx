@@ -235,9 +235,15 @@ export default function ListingsPage() {
       </div>
 
       {listings.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">
-          No listings yet. Create your first one!
-        </div>
+        <Card className="bg-[#12121a] border-gray-800 border-dashed">
+          <CardContent className="py-16 text-center">
+            <p className="text-gray-300 font-medium">No listings yet.</p>
+            <p className="text-gray-500 text-sm mt-2">Create your first property to start showcasing your inventory.</p>
+            <Button onClick={openCreate} className="mt-5 bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" /> Add First Listing
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {listings.map((listing) => (

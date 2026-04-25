@@ -225,9 +225,14 @@ export default function AnnouncementsPage() {
             <p className="text-gray-400 font-medium">
               {query || filter !== 'all' ? 'No announcements match your filters' : 'No announcements yet'}
             </p>
-            {!query && filter === 'all' && (
-              <p className="text-gray-600 text-sm mt-1">Click "New Announcement" to get started</p>
-            )}
+            {!query && filter === 'all' ? (
+              <>
+                <p className="text-gray-600 text-sm mt-1">Click "New Announcement" to get started</p>
+                <Button onClick={openCreate} className="mt-5 bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" /> New Announcement
+                </Button>
+              </>
+            ) : null}
           </CardContent>
         </Card>
       ) : (
