@@ -25,18 +25,14 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   hero: true,
-  featured: true,
   listings: true,
   about: true,
   news: true,
-  gallery: false,
-  team: false,
   footer: true,
 };
 
 const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   hero_headline: 'ابحث عن عقارك المثالي',
-  featured_count: 6,
   listings_columns: 3,
   show_listing_filters: true,
   show_listing_search: true,
@@ -427,7 +423,6 @@ export default function PageBuilderPage() {
   const previewBorderClass = previewIsDark ? 'border-white/10' : 'border-gray-200';
   const previewInactiveChipClass = previewIsDark ? 'bg-white/5 text-slate-400' : 'bg-gray-100 text-gray-500';
   const previewListings = listings.filter((listing) => listing.published !== false);
-  const previewFeaturedListings = previewListings.slice(0, pageConfig.featured_count || 6);
   const getListingImage = (listing: any) => listing.images?.[0] || listing.image_url || '';
   const previewListingsFiltered = previewSearch.trim()
     ? previewListings.filter((listing) =>
@@ -524,17 +519,6 @@ export default function PageBuilderPage() {
                 onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
                 className="bg-slate-800 border-slate-700 text-white text-sm"
                 placeholder="ابحث عن عقارك المثالي"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-400">عدد العقارات المميزة</Label>
-              <Input
-                type="number"
-                min={3}
-                max={12}
-                value={pageConfig.featured_count || 6}
-                onChange={(e) => updatePageConfig({ featured_count: Math.min(12, Math.max(3, Number(e.target.value) || 6)) })}
-                className="bg-slate-800 border-slate-700 text-white text-sm"
               />
             </div>
             <div className="space-y-1">
@@ -1108,31 +1092,6 @@ export default function PageBuilderPage() {
               )}
 
               <div className="p-4 space-y-4" dir="rtl">
-
-                {sections.featured && previewFeaturedListings.length > 0 && (
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>العقارات المميزة</p>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      {previewFeaturedListings.slice(0, 4).map((listing) => (
-                        <div key={listing.id} className={`border rounded-lg p-2 transition-colors ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
-                          {getListingImage(listing) ? (
-                            <img
-                              src={getListingImage(listing)}
-                              alt={listing.title || 'listing'}
-                              className="w-full h-14 rounded-md object-cover mb-1.5"
-                            />
-                          ) : (
-                            <div className={`w-full h-14 rounded-md mb-1.5 flex items-center justify-center text-[10px] ${previewMutedClass}`} style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}>
-                              بدون صورة
-                            </div>
-                          )}
-                          <p className={`text-[11px] font-semibold truncate ${previewTextClass}`}>{listing.title}</p>
-                          <p className={`text-[10px] truncate mt-0.5 ${previewMutedClass}`}>{listing.location || 'بدون موقع'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {sections.listings && (
                   <div>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import PhotoSwipeLightbox from 'photoswipe/lightbox'
 import { PAGE_THEMES } from '@/lib/types'
 import { PropertyDetailModal } from './PropertyDetailModal'
 import { FloatContactButtons } from './FloatContactButtons'
@@ -125,12 +124,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
   const sections = {
     hero: true,
-    featured: true,
     listings: true,
     about: true,
     news: true,
-    gallery: false,
-    team: false,
     footer: true,
     ...(profile?.page_sections ?? {}),
   }
@@ -150,19 +146,6 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
     : '#'
 
   useEffect(() => {
-    let lightbox = new PhotoSwipeLightbox({
-      gallery: '#media-vault-gallery',
-      children: 'a',
-      pswpModule: () => import('photoswipe')
-    });
-    lightbox.init();
-    return () => {
-      lightbox.destroy();
-      lightbox = null as any;
-    };
-  }, []);
-
-  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -180,7 +163,6 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
 
 
   const publishedListings = listings.filter((l) => l.published !== false)
-  const featuredListings = publishedListings.slice(0, pageConfig.featured_count)
   const filteredListings = statusFilter === 'all'
     ? publishedListings
     : publishedListings.filter(l => l.listing_status === statusFilter)
@@ -266,47 +248,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           </div>
         </section>)}
 
-        {/* Featured Listings */}
-        {sections.featured && featuredListings.length > 0 && (
-          <section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6">العقارات المميزة</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredListings.map(l => (
-                <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`} aria-label={`عرض تفاصيل العقار: ${l.title}`}>
-                  <div className="relative">
-                    {l.images[0] ? (
-                      <Image
-                        src={l.images[0]}
-                        alt={l.title}
-                        width={400}
-                        height={208}
-                        className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
-                        priority={false}
-                      />
-                    ) : (
-                      <div className="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-300 text-sm">لا توجد صورة</div>
-                    )}
-                    {l.listing_status && (
-                      <span
-                        className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-                        style={{ backgroundColor: STATUS_COLORS[l.listing_status] ?? primary }}
-                      >
-                        {STATUS_LABELS[l.listing_status] ?? l.listing_status}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold mb-1">{l.title}</h3>
-                    {l.price != null && <p className="text-primary font-bold text-lg mb-1">{l.price.toLocaleString('ar-SA')} ر.س</p>}
-                    {l.location && <p className={`text-sm mb-2 ${mutedTextClass}`}>📍 {l.location}</p>}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Listings menu */}
+        {/* Listings */}
         {sections.listings && publishedListings.length > 0 && (
           <section className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">قائمة العقارات</h2>
@@ -328,8 +270,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                 {(['all', 'available', 'sold', 'rented'] as const).map(f => (
                   <button
                     key={f}
+                    type="button"
                     onClick={() => setStatusFilter(f)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                    className={`px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all border ${
                       statusFilter === f
                         ? 'text-white border-transparent'
                         : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
@@ -399,9 +342,9 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
           <section className={`reveal py-12 sm:py-16 ${sectionSoftClass}`}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8">آخر الأخبار</h2>
-              <div className="flex gap-6 overflow-x-auto pb-4">
+              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
                 {news.map(item => (
-                  <div key={item.id} className={`rounded-2xl overflow-hidden shadow-sm shrink-0 w-[85vw] sm:w-80 max-w-80 border ${surfaceCardClass}`}>
+                  <div key={item.id} className={`rounded-2xl overflow-hidden shadow-sm shrink-0 snap-start w-[80vw] sm:w-80 max-w-80 border ${surfaceCardClass}`}>
                     {(item.image_url || item.images?.[0]) && <Image
                       src={item.image_url || item.images[0]}
                       alt={item.title}
@@ -432,76 +375,6 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <p className={`mt-4 text-sm font-mono ${mutedTextClass}`}>رقم الترخيص: {profile.licence_no}</p>
           )}
         </section>)}
-
-        {/* Team */}
-        {sections.team && team.length > 0 && (
-          <section className={`py-12 sm:py-16 ${sectionSoftClass}`}>
-            <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">فريقنا</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {team.map(member => (
-                  <div key={member.id} className={`rounded-2xl p-6 text-center shadow-sm border ${surfaceCardClass}`}>
-                    {member.photo_url ? (
-                      <Image
-                        src={member.photo_url}
-                        alt={member.display_name || member.email}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                        priority={false}
-                      />
-                    ) : (
-                      <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center text-2xl">
-                        {(member.display_name || member.email).charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <h3 className="font-semibold">{member.display_name || member.email.split('@')[0]}</h3>
-                    <p className={`text-sm ${mutedTextClass}`}>{member.role === 'admin' ? 'مدير' : 'وكيل عقاري'}</p>
-                    {member.phone && (
-                      <a href={`tel:${member.phone}`} className="text-sm text-primary hover:underline mt-2 block">
-                        {member.phone}
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Gallery */}
-        {sections.gallery && gallery.length > 0 && (
-          <section className="py-12 sm:py-16">
-            <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8">معرض الصور</h2>
-              <div id="media-vault-gallery" className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-                {gallery.map((item, i) => (
-                  <a
-                    key={item.id}
-                    href={item.url}
-                    data-pswp-width="1920"
-                    data-pswp-height="1080"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block group relative overflow-hidden break-inside-avoid rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <Image
-                      src={item.url}
-                      alt={item.label ?? `صورة ${i + 1}`}
-                      width={600}
-                      height={400}
-                      className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      priority={false}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 bg-white/20 backdrop-blur text-white px-3 py-1 rounded-full text-sm font-medium transition-opacity">تكبير</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Footer */}
         {sections.footer && (<footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-24 sm:pb-12">
