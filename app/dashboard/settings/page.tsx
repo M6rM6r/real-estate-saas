@@ -157,10 +157,10 @@ export default function SettingsPage() {
               <div className="flex-1 bg-[#1a1a2e] border border-gray-700 rounded-md px-3 py-2 text-sm text-blue-400 font-mono truncate">
                 {publicUrl}
               </div>
-              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={handleCopy}>
+              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={handleCopy} aria-label="Copy public page link">
                 {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
               </Button>
-              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={() => window.open(publicUrl, '_blank')}>
+              <Button size="sm" variant="outline" className="border-gray-700 text-gray-300 hover:text-white shrink-0" onClick={() => window.open(publicUrl, '_blank')} aria-label="Open public page in new tab">
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </div>

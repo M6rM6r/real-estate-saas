@@ -504,6 +504,8 @@ export default function PageBuilderPage() {
                 type="button"
                 onClick={() => toggleSection(key)}
                 className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white"
+                aria-label={`Toggle section ${label}`}
+                aria-pressed={sections[key]}
               >
                 <span>{label}</span>
                 <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
@@ -551,6 +553,8 @@ export default function PageBuilderPage() {
               type="button"
               onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })}
               className="w-full flex items-center justify-between text-sm text-slate-200"
+              aria-label="Toggle listing filters"
+              aria-pressed={pageConfig.show_listing_filters}
             >
               <span>إظهار الفلاتر</span>
               <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
@@ -561,6 +565,8 @@ export default function PageBuilderPage() {
               type="button"
               onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })}
               className="w-full flex items-center justify-between text-sm text-slate-200"
+              aria-label="Toggle listing search"
+              aria-pressed={pageConfig.show_listing_search}
             >
               <span>إظهار البحث</span>
               <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
@@ -604,6 +610,11 @@ export default function PageBuilderPage() {
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
                       className={`relative rounded-xl p-3 cursor-pointer transition-all border-2 ${
+                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
+                      } bg-slate-800 text-right`}
+                      aria-label={`Select theme ${theme.label}`}
+                      aria-pressed={selectedTheme === theme.id}
+                    >
                         selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
                       } bg-slate-800 text-right`}
                     >
@@ -665,6 +676,7 @@ export default function PageBuilderPage() {
                       key={c}
                       onClick={() => { setPrimaryColor(c); markDirty(); }}
                       title={c}
+                      aria-label={`Choose brand color ${c}`}
                       className="h-7 w-7 rounded-full border-2 transition-all hover:scale-110"
                       style={{
                         backgroundColor: c,
@@ -850,6 +862,8 @@ export default function PageBuilderPage() {
                         type="button"
                         onClick={() => setListingPublished(!listingPublished)}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${ listingPublished ? 'bg-blue-600' : 'bg-slate-700' }`}
+                        aria-label="Toggle listing publish status"
+                        aria-pressed={listingPublished}
                       >
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ listingPublished ? 'translate-x-4' : 'translate-x-1' }`} />
                       </button>
@@ -899,7 +913,7 @@ export default function PageBuilderPage() {
                             <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">مسودة</span>
                           )}
                           <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
-                          <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
                     ))}
@@ -964,6 +978,8 @@ export default function PageBuilderPage() {
                         type="button"
                         onClick={() => setDay({ enabled: !h.enabled })}
                         className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ h.enabled ? 'bg-blue-600' : 'bg-slate-700' }`}
+                        aria-label={`Toggle working hours for ${DAY_AR[day]}`}
+                        aria-pressed={h.enabled}
                       >
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ h.enabled ? 'translate-x-4' : 'translate-x-1' }`} />
                       </button>

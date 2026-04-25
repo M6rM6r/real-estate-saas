@@ -153,6 +153,7 @@ export default function GalleryPage() {
                   size="icon"
                   onClick={() => setDeleteId(item.id)}
                   className="text-red-400 hover:text-red-300 hover:bg-red-400/20"
+                  aria-label="Delete gallery image"
                 >
                   <Trash2 className="h-5 w-5" />
                 </Button>

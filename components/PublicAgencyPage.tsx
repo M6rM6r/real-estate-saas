@@ -271,7 +271,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">العقارات المميزة</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map(l => (
-                <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`}>
+                <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`} aria-label={`عرض تفاصيل العقار: ${l.title}`}>
                   <div className="relative">
                     {l.images[0] ? (
                       <Image
@@ -334,6 +334,8 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                         : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
                     }`}
                     style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : {}}
+                    aria-label={`تصفية العقارات: ${f === 'all' ? 'الكل' : STATUS_LABELS[f]}`}
+                    aria-pressed={statusFilter === f}
                   >
                     {f === 'all' ? 'الكل' : STATUS_LABELS[f]}
                   </button>
@@ -346,7 +348,7 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {menuListings.map(l => (
-                  <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`}>
+                  <button key={l.id} onClick={() => setActiveListing(l)} className={`text-right group border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all ${surfaceCardClass}`} aria-label={`عرض تفاصيل العقار: ${l.title}`}>
                     <div className="relative">
                       {l.images[0] ? (
                         <Image
