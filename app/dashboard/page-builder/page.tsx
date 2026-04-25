@@ -481,10 +481,10 @@ export default function PageBuilderPage() {
       </div>
 
       {/* Main three-panel layout */}
-      <div className="grid lg:grid-cols-[260px_1fr_360px] gap-5 items-start">
+      <div className="grid xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] lg:grid-cols-[220px_minmax(300px,0.88fr)_minmax(440px,1.12fr)] gap-5 items-start">
 
         {/* Left sidebar: sections & quick config */}
-        <div className="space-y-4 lg:sticky lg:top-4">
+        <div className="space-y-4 lg:sticky lg:top-4 xl:max-w-[220px]">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
             <p className="text-sm font-bold text-white">إدارة أقسام الصفحة</p>
             <p className="text-xs text-slate-500">تحكّم بما يراه عملاؤك مباشرة</p>
@@ -570,7 +570,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Editor panel */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0 xl:max-w-[560px]">
           <Tabs defaultValue="themes" className="w-full">
             <TabsList className="w-full grid grid-cols-6 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
@@ -594,10 +594,10 @@ export default function PageBuilderPage() {
 
             {/* THEMES */}
             <TabsContent value="themes" className="mt-4 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 xl:p-5">
                 <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
                 <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {Object.values(PAGE_THEMES).map((theme) => (
                     <button
                       key={theme.id}
@@ -606,7 +606,7 @@ export default function PageBuilderPage() {
                         selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
                       } bg-slate-800 text-right`}
                     >
-                      <div className="h-24 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#dbe4ee' }}>
+                      <div className="h-20 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#dbe4ee' }}>
                         <div className="h-3 rounded-t-lg" style={{ backgroundColor: theme.accent }} />
                         <div className="px-2 py-2 h-full" style={{ backgroundColor: theme.card }}>
                           <div className="flex items-center gap-1.5 mb-2">
@@ -629,7 +629,7 @@ export default function PageBuilderPage() {
                           {theme.labelEn}
                         </span>
                       </div>
-                      <p className="text-[11px] leading-5 text-slate-400 min-h-[2.75rem]">{THEME_DESCRIPTIONS[theme.id]}</p>
+                      <p className="text-[10px] leading-4 text-slate-400 min-h-[2.25rem]">{THEME_DESCRIPTIONS[theme.id]}</p>
                       {selectedTheme === theme.id && (
                         <CheckCircle2 className="absolute top-2 left-2 h-4 w-4 text-blue-400" />
                       )}
@@ -1049,7 +1049,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Live Preview */}
-        <div className="lg:sticky lg:top-4 self-start">
+        <div className="lg:sticky lg:top-4 self-start min-w-0">
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
@@ -1071,10 +1071,10 @@ export default function PageBuilderPage() {
               </div>
             </div>
 
-            <div className="overflow-y-auto transition-colors" style={{ maxHeight: 560, backgroundColor: activeTheme.bg }}>
+            <div className="overflow-y-auto transition-colors" style={{ maxHeight: 720, backgroundColor: activeTheme.bg }}>
 
               {sections.hero && (
-                <div className="relative h-28 overflow-hidden">
+                <div className="relative h-40 overflow-hidden">
                   {profile.cover_url ? (
                     <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -1083,26 +1083,26 @@ export default function PageBuilderPage() {
                   <div className="absolute inset-0 bg-black/40" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
                     {profile.logo_url && (
-                      <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover mb-1.5 border-2 border-white/30 shadow-lg" />
+                      <img src={profile.logo_url} alt="Logo" className="w-12 h-12 rounded-lg object-cover mb-2 border-2 border-white/30 shadow-lg" />
                     )}
-                    <p className="font-bold text-sm leading-tight">
+                    <p className="font-bold text-base leading-tight">
                       {agencyName || data?.tenant?.name || 'اسم المكتب'}
                     </p>
-                    <p className="text-[11px] text-white/75 mt-0.5 line-clamp-1">{pageConfig.hero_headline || profile.tagline || 'ابحث عن عقارك المثالي'}</p>
+                    <p className="text-xs text-white/75 mt-1 line-clamp-2 max-w-md">{pageConfig.hero_headline || profile.tagline || 'ابحث عن عقارك المثالي'}</p>
                   </div>
                 </div>
               )}
 
-              <div className="p-3 space-y-3" dir="rtl">
+              <div className="p-4 space-y-4" dir="rtl">
 
                 {sections.featured && previewFeaturedListings.length > 0 && (
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>العقارات المميزة</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>العقارات المميزة</p>
+                    <div className="grid grid-cols-2 gap-2.5">
                       {previewFeaturedListings.slice(0, 4).map((listing) => (
-                        <div key={listing.id} className={`border rounded-lg p-1.5 transition-colors ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
-                          <p className={`text-[10px] font-semibold truncate ${previewTextClass}`}>{listing.title}</p>
-                          <p className={`text-[10px] truncate ${previewMutedClass}`}>{listing.location || 'بدون موقع'}</p>
+                        <div key={listing.id} className={`border rounded-lg p-2 transition-colors ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          <p className={`text-[11px] font-semibold truncate ${previewTextClass}`}>{listing.title}</p>
+                          <p className={`text-[10px] truncate mt-0.5 ${previewMutedClass}`}>{listing.location || 'بدون موقع'}</p>
                         </div>
                       ))}
                     </div>
@@ -1111,17 +1111,17 @@ export default function PageBuilderPage() {
 
                 {sections.listings && (
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>قائمة العقارات</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>قائمة العقارات</p>
                     {pageConfig.show_listing_search && (
                       <Input
                         value={previewSearch}
                         onChange={(e) => setPreviewSearch(e.target.value)}
-                        className="h-7 text-[10px] mb-2"
+                        className="h-8 text-[11px] mb-2.5"
                         placeholder="ابحث بالاسم أو الموقع"
                       />
                     )}
                     {pageConfig.show_listing_filters && (
-                      <div className="flex gap-1 mb-2 text-[10px]">
+                      <div className="flex gap-1.5 mb-2.5 text-[10px]">
                         <span className="px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: primaryColor }}>الكل</span>
                         <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>متاح</span>
                         <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>مباع</span>
@@ -1129,8 +1129,8 @@ export default function PageBuilderPage() {
                     )}
                     <div className={`grid gap-1 ${pageConfig.listings_columns === 2 ? 'grid-cols-2' : pageConfig.listings_columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
                       {previewListingsFiltered.slice(0, 8).map((listing) => (
-                        <div key={listing.id} className={`border rounded p-1 text-center ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
-                          <p className={`text-[9px] truncate ${previewTextClass}`}>{listing.title}</p>
+                        <div key={listing.id} className={`border rounded p-1.5 text-center ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
+                          <p className={`text-[10px] truncate ${previewTextClass}`}>{listing.title}</p>
                         </div>
                       ))}
                     </div>
@@ -1139,12 +1139,12 @@ export default function PageBuilderPage() {
 
                 {sections.about && (
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>من نحن</p>
-                  <p className={`text-[11px] leading-relaxed line-clamp-4 ${previewMutedClass}`}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>من نحن</p>
+                  <p className={`text-xs leading-relaxed line-clamp-4 ${previewMutedClass}`}>
                     {profile.bio || 'نبذة مكتبك ستظهر هنا...'}
                   </p>
                   {profile.licence_no && (
-                    <p className={`text-[10px] mt-1 flex items-center gap-0.5 ${previewMutedClass}`}>
+                    <p className={`text-[10px] mt-1.5 flex items-center gap-0.5 ${previewMutedClass}`}>
                       <Hash className="h-2.5 w-2.5 inline" /> رقم الترخيص: {profile.licence_no}
                     </p>
                   )}
