@@ -24,6 +24,116 @@ type ProfileResponse = {
   tenant: (Tenant & { primary_color?: string; theme?: string }) | null;
 };
 
+/* ── Reusable image uploader ── */
+function ImageUploader({
+  value,
+  onChange,
+  aspect = 'cover', // 'cover' | 'square'
+  label,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  aspect?: 'cover' | 'square';
+  label?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState('');
+  const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+
+  const handleFile = useCallback(async (file: File) => {
+    if (!file) return;
+    setErr('');
+    // Demo mode: create a local object URL
+    if (isDemo) {
+      onChange(URL.createObjectURL(file));
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('files', file);
+      const res = await fetch('/api/dashboard/upload', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error((await res.json()).error ?? 'فشل الرفع');
+      const { urls } = await res.json();
+      onChange(urls[0]);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'فشل الرفع');
+    } finally {
+      setUploading(false);
+    }
+  }, [isDemo, onChange]);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
+
+  if (aspect === 'square') {
+    return (
+      <div className="flex gap-3 items-start">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden hover:border-blue-500 transition-colors relative"
+          title={label ?? 'رفع صورة'}
+        >
+          {uploading ? (
+            <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
+          ) : value ? (
+            <img src={value} alt="preview" className="w-full h-full object-cover" />
+          ) : (
+            <ImageIcon className="h-6 w-6 text-slate-600" />
+          )}
+          {value && !uploading && (
+            <span className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-medium">تغيير</span>
+          )}
+        </button>
+        <div className="flex-1 space-y-1">
+          <p className="text-xs text-slate-400">{label ?? 'اضغط لاختيار صورة'}</p>
+          <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+          {err && <p className="text-[11px] text-red-400">{err}</p>}
+        </div>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+      </div>
+    );
+  }
+
+  // cover / wide
+  return (
+    <div
+      onDrop={onDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onClick={() => !uploading && inputRef.current?.click()}
+      className="w-full cursor-pointer group"
+    >
+      {value ? (
+        <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
+          <img src={value} alt="cover preview" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
+            {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> تغيير الصورة</>}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
+          {uploading ? (
+            <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+          ) : (
+            <>
+              <ImageIcon className="h-6 w-6 text-slate-500" />
+              <p className="text-xs text-slate-400">اضغط أو اسحب صورة هنا</p>
+              <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+            </>
+          )}
+        </div>
+      )}
+      {err && <p className="text-[11px] text-red-400 mt-1">{err}</p>}
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+    </div>
+  );
+}
+
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
@@ -842,40 +952,22 @@ export default function PageBuilderPage() {
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   <ImageIcon className="h-4 w-4 text-blue-400" /> الشعار (Logo)
                 </p>
-                <div className="flex gap-3 items-start">
-                  <div className="h-14 w-14 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
-                    {profile.logo_url ? (
-                      <img src={profile.logo_url} alt="Logo preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="h-5 w-5 text-slate-600" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <Input
-                      value={profile.logo_url || ''}
-                      onChange={(e) => updateProfile({ logo_url: e.target.value })}
-                      placeholder="https://example.com/logo.png"
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-slate-500">الصق رابط الصورة مباشرة (PNG, JPG, SVG)</p>
-                  </div>
-                </div>
+                <ImageUploader
+                  value={profile.logo_url || ''}
+                  onChange={(url) => updateProfile({ logo_url: url })}
+                  aspect="square"
+                  label="شعار المكتب — اضغط لرفع صورة"
+                />
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   <ImageIcon className="h-4 w-4 text-blue-400" /> صورة الغلاف
                 </p>
-                {profile.cover_url && (
-                  <div className="w-full h-24 rounded-lg overflow-hidden border border-slate-700">
-                    <img src={profile.cover_url} alt="Cover preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <Input
+                <ImageUploader
                   value={profile.cover_url || ''}
-                  onChange={(e) => updateProfile({ cover_url: e.target.value })}
-                  placeholder="https://example.com/cover.jpg"
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  onChange={(url) => updateProfile({ cover_url: url })}
+                  aspect="cover"
                 />
                 <p className="text-xs text-slate-500">مقترح: 1200×400 بكسل أو أوسع</p>
               </div>
@@ -994,9 +1086,13 @@ export default function PageBuilderPage() {
                         <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">رابط الصورة</Label>
-                      <Input value={listingForm.image} onChange={(e) => setListingForm({ ...listingForm, image: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="https://..." />
+                    <div className="col-span-2 space-y-1">
+                      <Label className="text-slate-400 text-xs">صورة العقار</Label>
+                      <ImageUploader
+                        value={listingForm.image}
+                        onChange={(url) => setListingForm({ ...listingForm, image: url })}
+                        aspect="cover"
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-slate-400 text-xs">الحالة</Label>
@@ -1303,43 +1399,6 @@ export default function PageBuilderPage() {
 
           {/* Save button + status + completion checklist */}
           <div className="space-y-3">
-            {/* Completion checklist toggle */}
-            <button
-              type="button"
-              onClick={() => setShowChecklist(!showChecklist)}
-              className="w-full flex items-center justify-between text-sm text-slate-300 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 hover:bg-slate-800 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-white font-medium">اكتمال الملف الشخصي</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${ profileCompletionItems.filter(i => i.done).length === 7 ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-300' }`}>
-                  {profileCompletionItems.filter(i => i.done).length}/7
-                </span>
-              </span>
-              {showChecklist ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
-            </button>
-            {showChecklist && (
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
-                {profileCompletionItems.filter(i => i.done).length === 7 && (
-                  <div className="mb-3 p-2.5 bg-green-500/10 border border-green-500/20 rounded-lg text-center text-sm text-green-400 font-medium">
-                    🎉 صفحتك جاهزة للمشاركة!
-                  </div>
-                )}
-                {profileCompletionItems.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => { setActiveTab(item.tab); setShowChecklist(false); }}
-                    className="w-full flex items-center gap-3 text-sm hover:bg-slate-800 px-2 py-1.5 rounded-lg transition-colors"
-                  >
-                    <span className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${ item.done ? 'bg-green-500 border-green-500' : 'border-slate-600' }`}>
-                      {item.done && <Check className="h-2.5 w-2.5 text-white" />}
-                    </span>
-                    <span className={item.done ? 'text-slate-400 line-through' : 'text-slate-200'}>{item.label}</span>
-                    {!item.done && <span className="mr-auto text-[10px] text-blue-400">إضافة ←</span>}
-                  </button>
-                ))}
-              </div>
-            )}
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 onClick={handleSave}
@@ -1349,8 +1408,6 @@ export default function PageBuilderPage() {
                 {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
               </Button>
-
-              <span className="text-xs text-slate-500">اختصار الحفظ: Ctrl/Cmd + S</span>
 
               {saveStatus === 'saved' && (
                 <span className="flex items-center gap-1.5 text-sm text-green-400">
