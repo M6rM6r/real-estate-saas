@@ -15,6 +15,7 @@ const UpdateListingSchema = z.object({
   listing_status: z.enum(['available', 'sold', 'rented']).optional(),
   offer_type: z.enum(['sale', 'rent']).optional().nullable(),
   property_type: z.string().max(50).optional().nullable(),
+  card_style: z.enum(['standard', 'featured', 'compact']).optional().nullable(),
   published: z.boolean().optional(),
   images: z.array(z.string().url()).max(20).optional(),
 })

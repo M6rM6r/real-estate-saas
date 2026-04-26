@@ -124,6 +124,9 @@ export type Post = {
   bathrooms?: number;
   area_sqm?: number;
   listing_status?: ListingStatus;
+  offer_type?: 'sale' | 'rent' | null;
+  property_type?: string | null;
+  card_style?: 'standard' | 'featured' | 'compact' | null;
   published: boolean;
   published_at?: string;
   created_at: string;

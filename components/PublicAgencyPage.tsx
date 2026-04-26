@@ -89,6 +89,7 @@ type Post = {
   listing_status: string | null
   offer_type?: string | null
   property_type?: string | null
+  card_style?: string | null
   published: boolean
   created_at: string
 }
@@ -447,11 +448,11 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                           alt={l.title}
                           width={400}
                           height={208}
-                          className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                          className={`w-full object-cover group-hover:scale-105 transition-transform duration-500 ${l.card_style === 'featured' ? 'h-72' : l.card_style === 'compact' ? 'h-32' : 'h-52'}`}
                           priority={false}
                         />
                       ) : (
-                        <div className="w-full h-52 bg-gray-100 flex items-center justify-center text-gray-300 text-sm">لا توجد صورة</div>
+                        <div className={`w-full bg-gray-100 flex items-center justify-center text-gray-300 text-sm ${l.card_style === 'featured' ? 'h-72' : l.card_style === 'compact' ? 'h-32' : 'h-52'}`}>لا توجد صورة</div>
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-gray-900 px-4 py-1.5 rounded-full text-sm font-semibold transition-opacity">
@@ -472,6 +473,11 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
                           style={{ backgroundColor: l.offer_type === 'sale' ? '#2563eb' : '#7c3aed' }}
                         >
                           {l.offer_type === 'sale' ? 'للبيع' : 'للإيجار'}
+                        </span>
+                      )}
+                      {l.images.length > 1 && (
+                        <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                          📷 {l.images.length}
                         </span>
                       )}
                     </div>

@@ -252,7 +252,7 @@ export default function PageBuilderPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
-  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available', offer_type: 'sale', property_type: '' });
+  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [] as string[], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '' });
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
@@ -364,7 +364,7 @@ export default function PageBuilderPage() {
   };
 
   const resetListingForm = () => {
-    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', status: 'available', offer_type: 'sale', property_type: '' });
+    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '' });
     setEditingListing(null);
     setListingError('');
     setListingPublished(true);
@@ -380,7 +380,8 @@ export default function PageBuilderPage() {
       bedrooms: listingForm.bedrooms ? parseInt(listingForm.bedrooms) : null,
       bathrooms: listingForm.bathrooms ? parseInt(listingForm.bathrooms) : null,
       area_sqm: listingForm.area_sqm ? parseInt(listingForm.area_sqm) : null,
-      images: listingForm.image ? [listingForm.image] : [],
+      images: [listingForm.image, ...listingForm.extra_images].filter(Boolean),
+      card_style: listingForm.card_style as 'standard' | 'featured' | 'compact',
       listing_status: listingForm.status as 'available' | 'sold' | 'rented',
       offer_type: listingForm.offer_type as 'sale' | 'rent',
       property_type: listingForm.property_type || null,
@@ -1087,12 +1088,73 @@ export default function PageBuilderPage() {
                       </div>
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <Label className="text-slate-400 text-xs">صورة العقار</Label>
+                      <Label className="text-slate-400 text-xs">صورة العقار الرئيسية</Label>
                       <ImageUploader
                         value={listingForm.image}
                         onChange={(url) => setListingForm({ ...listingForm, image: url })}
                         aspect="cover"
                       />
+                    </div>
+
+                    {/* Extra photos */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-slate-400 text-xs">صور إضافية (اختياري)</Label>
+                        {listingForm.extra_images.length < 4 && (
+                          <button
+                            type="button"
+                            onClick={() => setListingForm({ ...listingForm, extra_images: [...listingForm.extra_images, ''] })}
+                            className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
+                          >
+                            <Plus className="h-3 w-3" /> إضافة صورة
+                          </button>
+                        )}
+                      </div>
+                      {listingForm.extra_images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {listingForm.extra_images.map((img, idx) => (
+                            <div key={idx} className="relative">
+                              <ImageUploader
+                                value={img}
+                                onChange={(url) => {
+                                  const updated = [...listingForm.extra_images];
+                                  updated[idx] = url;
+                                  setListingForm({ ...listingForm, extra_images: updated });
+                                }}
+                                aspect="cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setListingForm({ ...listingForm, extra_images: listingForm.extra_images.filter((_, i) => i !== idx) })}
+                                className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center hover:bg-red-600 z-10"
+                                aria-label="حذف الصورة"
+                              >×</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card style */}
+                    <div className="space-y-2">
+                      <Label className="text-slate-400 text-xs">طريقة عرض البطاقة</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { value: 'standard', label: 'عادي', desc: 'h-52', icon: '▬' },
+                          { value: 'featured', label: 'مميز', desc: 'h-72', icon: '◼' },
+                          { value: 'compact', label: 'مضغوط', desc: 'h-32', icon: '▭' },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setListingForm({ ...listingForm, card_style: opt.value })}
+                            className={`rounded-lg border p-2.5 text-center transition-colors ${listingForm.card_style === opt.value ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-500'}`}
+                          >
+                            <div className="text-lg leading-none mb-1">{opt.icon}</div>
+                            <div className="text-xs font-medium">{opt.label}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-slate-400 text-xs">الحالة</Label>
@@ -1161,7 +1223,7 @@ export default function PageBuilderPage() {
                           {listing.published === false && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">مسودة</span>
                           )}
-                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
