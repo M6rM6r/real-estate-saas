@@ -85,8 +85,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Slug already in use' }, { status: 409 })
     }
 
-    // Create Firebase Auth user
-    const userRecord = await adminAuth.createUser({ email, password: tempPassword })
+    // Create Firebase Auth user (or reuse existing)
+    let userRecord: { uid: string }
+    try {
+      userRecord = await adminAuth.createUser({ email, password: tempPassword })
+    } catch (authErr: unknown) {
+      const code = (authErr as { code?: string }).code
+      if (code === 'auth/email-already-exists') {
+        userRecord = await adminAuth.getUserByEmail(email)
+        // Update password to the new temp password
+        await adminAuth.updateUser(userRecord.uid, { password: tempPassword })
+      } else {
+        throw authErr
+      }
+    }
 
     const tenantId = uuidv4()
 
@@ -120,6 +132,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id: tenantId, name, slug, status: 'active', primary_color }, { status: 201 })
   } catch (err: unknown) {
     console.error('[POST /api/admin/tenants]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const msg = (err as { message?: string }).message ?? 'Internal server error'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
