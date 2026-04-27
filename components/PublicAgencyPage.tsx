@@ -633,12 +633,16 @@ export default function PublicAgencyPage({ tenant, profile, listings, news, gall
               <div>
                 <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">ساعات العمل</h4>
                 <div className="space-y-1">
-                  {Object.entries(profile.working_hours).map(([day, h]: [string, { enabled: boolean; open: string; close: string }]) => (
-                    <div key={day} className="flex justify-between text-xs text-gray-400">
-                      <span>{DAY_LABELS_AR[day] ?? day}</span>
-                      <span>{h.enabled ? `${h.open} – ${h.close}` : 'مغلق'}</span>
-                    </div>
-                  ))}
+                  {(['sun','mon','tue','wed','thu','fri','sat'] as const).map((day) => {
+                    const h = profile.working_hours![day];
+                    if (!h) return null;
+                    return (
+                      <div key={day} className="flex justify-between text-xs text-gray-400">
+                        <span>{DAY_LABELS_AR[day] ?? day}</span>
+                        <span>{h.enabled ? `${h.open} – ${h.close}` : 'مغلق'}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
