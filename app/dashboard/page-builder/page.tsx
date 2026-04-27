@@ -53,7 +53,11 @@ function ImageUploader({
     try {
       const fd = new FormData();
       fd.append('files', file);
-      const res = await fetch('/api/dashboard/upload', { method: 'POST', body: fd });
+      const { auth } = await import('@/lib/firebase');
+      const token = await auth.currentUser?.getIdToken() ?? null;
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch('/api/dashboard/upload', { method: 'POST', body: fd, headers });
       if (!res.ok) throw new Error((await res.json()).error ?? 'فشل الرفع');
       const { urls } = await res.json();
       onChange(urls[0]);
