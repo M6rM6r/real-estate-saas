@@ -152,7 +152,7 @@ const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
 };
 
 const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
-  hero_headline: 'ابحث عن عقارك المثالي',
+  hero_headline: 'مرحباً بكم',
   listings_columns: 3,
   show_listing_filters: true,
   show_listing_search: true,
@@ -269,12 +269,12 @@ export default function PageBuilderPage() {
   const [showChecklist, setShowChecklist] = useState(false);
 
   const profileCompletionItems = [
-    { key: 'name',      label: 'اسم المكتب',          done: Boolean(agencyName),                tab: 'branding' },
-    { key: 'logo',      label: 'شعار المكتب',          done: Boolean(profile.logo_url),          tab: 'branding' },
+    { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'branding' },
+    { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'branding' },
     { key: 'cover',     label: 'صورة الغلاف',          done: Boolean(profile.cover_url),         tab: 'branding' },
-    { key: 'bio',       label: 'نبذة عن المكتب',       done: Boolean(profile.bio),               tab: 'content'  },
+    { key: 'bio',       label: 'نبذة عن المنشأة',      done: Boolean(profile.bio),               tab: 'content'  },
     { key: 'whatsapp',  label: 'رقم واتساب',           done: Boolean(profile.social_links?.whatsapp), tab: 'social' },
-    { key: 'listing',   label: 'عقار واحد على الأقل',  done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
+    { key: 'listing',   label: 'عرض واحد على الأقل',   done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
     { key: 'theme',     label: 'تصميم مخصص',           done: selectedTheme !== 'modern',         tab: 'themes'   },
   ];
 
@@ -605,7 +605,7 @@ export default function PageBuilderPage() {
                 <Download className="h-4 w-4" /> تحميل PNG
               </Button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent('صفحتي العقارية: ' + publicUrl)}`}
+                href={`https://wa.me/?text=${encodeURIComponent('صفحتي: ' + publicUrl)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1"
               >
@@ -672,8 +672,8 @@ export default function PageBuilderPage() {
             <p className="text-xs text-slate-500">تحكّم بما يراه عملاؤك مباشرة</p>
             {([
               ['hero', 'القسم الرئيسي'],
-              ['featured', 'العقارات المميزة'],
-              ['listings', 'كل العقارات'],
+              ['featured', 'المميز'],
+              ['listings', 'العروض'],
               ['about', 'من نحن'],
               ['news', 'الأخبار'],
               ['gallery', 'المعرض'],
@@ -837,7 +837,7 @@ export default function PageBuilderPage() {
                 { value: 'themes',   icon: Layout,         label: 'التصميم'  },
                 { value: 'branding', icon: Palette,        label: 'الهوية'   },
                 { value: 'content',  icon: FileText,       label: 'المحتوى'  },
-                { value: 'posts',    icon: Building2,      label: 'العقارات' },
+                { value: 'posts',    icon: Building2,      label: 'العروض'   },
                 { value: 'contact',  icon: Phone,          label: 'التواصل' },
                 { value: 'social',   icon: Globe,          label: 'سوشيال'  },
                 { value: 'seo',      icon: Search,         label: 'SEO'      },
@@ -906,12 +906,12 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Building2 className="h-4 w-4 text-blue-400" /> اسم المكتب
+                  <Building2 className="h-4 w-4 text-blue-400" /> اسم المنشأة
                 </p>
                 <Input
                   value={agencyName}
                   onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
-                  placeholder="مثال: مكتب الأفق للعقارات"
+                  placeholder="مثال: مطعم الواحة، مكتب الأفق، صالون نور..."
                   className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
@@ -993,7 +993,7 @@ export default function PageBuilderPage() {
                   <Input
                     value={profile.tagline || ''}
                     onChange={(e) => updateProfile({ tagline: e.target.value })}
-                    placeholder="مثال: شريكك الموثوق في العقارات"
+                    placeholder="مثال: شريكك الموثوق، جودة لا تُضاهى..."
                     maxLength={200}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
@@ -1001,11 +1001,11 @@ export default function PageBuilderPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">نبذة عن المكتب</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">نبذة عنا</Label>
                   <Textarea
                     value={profile.bio || ''}
                     onChange={(e) => updateProfile({ bio: e.target.value })}
-                    placeholder="أخبر الزوار عن مكتبك — خبرتك، قيمك، وما يميزك..."
+                    placeholder="أخبر الزوار عن منشأتك — خبرتك، قيمك، وما يميزك..."
                     rows={6}
                     maxLength={2000}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
@@ -1032,21 +1032,21 @@ export default function PageBuilderPage() {
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-white">إدارة العقارات المعروضة</p>
-                    <p className="text-xs text-slate-400 mt-0.5">أضف وعدّل عقاراتك التي تظهر في صفحتك العامة</p>
+                    <p className="text-sm font-bold text-white">إدارة العروض</p>
+                    <p className="text-xs text-slate-400 mt-0.5">أضف وعدّل عروضك أو منتجاتك أو خدماتك التي تظهر في صفحتك العامة</p>
                   </div>
                   <Button
                     onClick={() => { setShowListingForm(!showListingForm); resetListingForm(); }}
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 gap-1.5"
                   >
-                    <Plus className="h-4 w-4" /> إضافة عقار
+                    <Plus className="h-4 w-4" /> إضافة عرض
                   </Button>
                 </div>
 
                 {showListingForm && (
                   <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
-                    <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العقار' : 'إضافة عقار جديد'}</p>
+                    <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العرض' : 'إضافة عرض جديد'}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">نوع العرض</Label>
@@ -1056,19 +1056,8 @@ export default function PageBuilderPage() {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">نوع العقار</Label>
-                        <select value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
-                          <option value="">اختر...</option>
-                          <option>شقة</option>
-                          <option>فيلا</option>
-                          <option>أرض</option>
-                          <option>مكتب</option>
-                          <option>محل</option>
-                          <option>مستوديو</option>
-                          <option>دوبلكس</option>
-                          <option>مستودع</option>
-                          <option>أخرى</option>
-                        </select>
+                        <Label className="text-slate-400 text-xs">الفئة</Label>
+                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="مثال: شقة، منتج، خدمة..." />
                       </div>
                     <div className="space-y-1">
                         <Input value={listingForm.title} onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="فيلا فاخرة..." />
@@ -1204,7 +1193,7 @@ export default function PageBuilderPage() {
                 {listings.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
                     <Building2 className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">لا توجد عقارات مضافة بعد</p>
+                    <p className="text-sm">لا توجد عروض مضافة بعد</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -1425,7 +1414,7 @@ export default function PageBuilderPage() {
                     value={pageConfig.seo_title || ''}
                     onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                    placeholder={`${agencyName || 'مكتبك'} | عقارات`}
+                    placeholder={`${agencyName || 'اسم منشأتك'}`}
                     maxLength={120}
                   />
                   <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 (يُنصح بـ 60 حرفاً)</p>
@@ -1437,7 +1426,7 @@ export default function PageBuilderPage() {
                     value={pageConfig.seo_description || ''}
                     onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
-                    placeholder="وصف موجز لمكتبك يظهر في نتائج البحث..."
+                    placeholder="وصف موجز لمنشأتك يظهر في نتائج البحث..."
                     rows={3}
                     maxLength={160}
                   />
@@ -1453,10 +1442,10 @@ export default function PageBuilderPage() {
                     )}
                     <div className="p-3">
                       <p className="text-sm font-semibold text-white truncate">
-                        {pageConfig.seo_title || agencyName || 'اسم المكتب'}
+                        {pageConfig.seo_title || agencyName || 'اسم المنشأة'}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
-                        {pageConfig.seo_description || profile.bio || 'وصف المكتب يظهر هنا'}
+                        {pageConfig.seo_description || profile.bio || 'وصف المنشأة يظهر هنا'}
                       </p>
                       <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
                     </div>
@@ -1530,9 +1519,9 @@ export default function PageBuilderPage() {
                       <img src={profile.logo_url} alt="Logo" className="w-12 h-12 rounded-lg object-cover mb-2 border-2 border-white/30 shadow-lg" />
                     )}
                     <p className="font-bold text-base leading-tight">
-                      {agencyName || data?.tenant?.name || 'اسم المكتب'}
+                      {agencyName || data?.tenant?.name || 'اسم المنشأة'}
                     </p>
-                    <p className="text-xs text-white/75 mt-1 line-clamp-2 max-w-md">{pageConfig.hero_headline || profile.tagline || 'ابحث عن عقارك المثالي'}</p>
+                    <p className="text-xs text-white/75 mt-1 line-clamp-2 max-w-md">{pageConfig.hero_headline || profile.tagline || 'مرحباً بكم'}</p>
                   </div>
                 </div>
               )}
@@ -1541,7 +1530,7 @@ export default function PageBuilderPage() {
 
                 {sections.listings && (
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>قائمة العقارات</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>العروض</p>
                     {pageConfig.show_listing_search && (
                       <Input
                         value={previewSearch}
@@ -1582,7 +1571,7 @@ export default function PageBuilderPage() {
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>من نحن</p>
                   <p className={`text-xs leading-relaxed line-clamp-4 ${previewMutedClass}`}>
-                    {profile.bio || 'نبذة مكتبك ستظهر هنا...'}
+                    {profile.bio || 'نبذة عن منشأتك ستظهر هنا...'}
                   </p>
                   {profile.licence_no && (
                     <p className={`text-[10px] mt-1.5 flex items-center gap-0.5 ${previewMutedClass}`}>
@@ -1645,7 +1634,7 @@ export default function PageBuilderPage() {
 
                 {sections.footer && (
                   <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
-                    استعرض عقاراتنا
+                    استعرض عروضنا
                   </div>
                 )}
               </div>
