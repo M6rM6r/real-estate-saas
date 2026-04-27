@@ -58,9 +58,12 @@ function ImageUploader({
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const res = await fetch('/api/dashboard/upload', { method: 'POST', body: fd, headers });
-      if (!res.ok) throw new Error((await res.json()).error ?? 'فشل الرفع');
-      const { urls } = await res.json();
-      onChange(urls[0]);
+      const text = await res.text();
+      let data: Record<string, unknown> = {};
+      try { data = JSON.parse(text); } catch { /* empty body */ }
+      if (!res.ok) throw new Error((data.error as string) ?? `فشل الرفع (${res.status})`);
+      const urls = data.urls as string[] | undefined;
+      if (urls?.[0]) onChange(urls[0]);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'فشل الرفع');
     } finally {
