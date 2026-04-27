@@ -48,6 +48,7 @@ const emptyForm = {
   title: '',
   body: '',
   published: true,
+  publish_at: '',
   images: [] as string[],
 };
 
@@ -102,6 +103,7 @@ export default function NewsPage() {
       title: item.title,
       body: item.body || '',
       published: item.published,
+      publish_at: item.publish_at ? item.publish_at.slice(0, 16) : '',
       images: item.images || [],
     });
     setFormErrors({});
@@ -124,6 +126,7 @@ export default function NewsPage() {
         title: form.title,
         body: form.body || undefined,
         published: form.published,
+        publish_at: !form.published && form.publish_at ? new Date(form.publish_at).toISOString() : undefined,
         images: form.images,
       };
       const isDemo = sessionStorage.getItem('demo_auth') === 'true';
@@ -288,6 +291,11 @@ export default function NewsPage() {
                     {!item.published && (
                       <Badge className="bg-gray-500/20 text-gray-400">Draft</Badge>
                     )}
+                    {!item.published && item.publish_at && (
+                      <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">
+                        مجدول · {new Date(item.publish_at).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-gray-400 text-sm line-clamp-2">{item.body || 'No content'}</p>
                   <p className="text-gray-600 text-xs mt-1">
@@ -350,10 +358,21 @@ export default function NewsPage() {
             <div className="flex items-center gap-3">
               <Switch
                 checked={form.published}
-                onCheckedChange={(v) => setForm({ ...form, published: v })}
+                onCheckedChange={(v) => setForm({ ...form, published: v, publish_at: v ? '' : form.publish_at })}
               />
               <Label className="text-gray-300">Published</Label>
             </div>
+            {!form.published && (
+              <div className="space-y-2">
+                <Label className="text-gray-300">جدولة النشر (اختياري)</Label>
+                <Input
+                  type="datetime-local"
+                  value={form.publish_at}
+                  onChange={(e) => setForm({ ...form, publish_at: e.target.value })}
+                  className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label className="text-gray-300">Images</Label>
               <div className="flex gap-2">

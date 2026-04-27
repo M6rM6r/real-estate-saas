@@ -14,12 +14,22 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { Upload, Trash2, Loader as Loader2, Image as ImageIcon } from 'lucide-react';
 
+const demoMedia: Media[] = [
+  { id: '1', tenant_id: 'demo', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'villa-exterior.jpg', created_at: '2026-04-01T00:00:00Z', sort_order: 0 },
+  { id: '2', tenant_id: 'demo', url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'apartment-living.jpg', created_at: '2026-04-02T00:00:00Z', sort_order: 1 },
+  { id: '3', tenant_id: 'demo', url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'penthouse-view.jpg', created_at: '2026-04-03T00:00:00Z', sort_order: 2 },
+  { id: '4', tenant_id: 'demo', url: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'marina-studio.jpg', created_at: '2026-04-04T00:00:00Z', sort_order: 3 },
+  { id: '5', tenant_id: 'demo', url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'interior-design.jpg', created_at: '2026-04-05T00:00:00Z', sort_order: 4 },
+  { id: '6', tenant_id: 'demo', url: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'pool-area.jpg', created_at: '2026-04-06T00:00:00Z', sort_order: 5 },
+];
+
 export default function GalleryPage() {
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchMedia = () => {
@@ -29,9 +39,23 @@ export default function GalleryPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(fetchMedia, []);
+  useEffect(() => {
+    const demo = sessionStorage.getItem('demo_auth') === 'true';
+    if (demo) {
+      setIsDemo(true);
+      setMedia(demoMedia);
+      setLoading(false);
+      return;
+    }
+    fetchMedia();
+  }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isDemo) {
+      toast({ title: 'وضع العرض التجريبي', description: 'رفع الصور غير متاح في الوضع التجريبي.' });
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
     const files = e.target.files;
     if (!files?.length) return;
     setUploading(true);
@@ -70,6 +94,11 @@ export default function GalleryPage() {
   };
 
   const handleDelete = async () => {
+    if (isDemo) {
+      setDeleteId(null);
+      toast({ title: 'وضع العرض التجريبي', description: 'حذف الصور غير متاح في الوضع التجريبي.' });
+      return;
+    }
     if (!deleteId) return;
     setDeleting(true);
     try {

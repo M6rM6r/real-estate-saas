@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 
 const UpdateMediaSchema = z.object({
@@ -30,6 +31,7 @@ export async function PATCH(
   }
 
   await ref.update({ ...body, updatedAt: new Date() })
+  await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'gallery', resourceId: params.id, userId: session.uid })
   return NextResponse.json({ id: params.id, ...body })
 }
 
@@ -47,5 +49,6 @@ export async function DELETE(
   }
 
   await ref.delete()
+  await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'gallery', resourceId: params.id, userId: session.uid })
   return NextResponse.json({ success: true })
 }

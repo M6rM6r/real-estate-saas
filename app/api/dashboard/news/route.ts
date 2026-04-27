@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -48,5 +49,6 @@ export async function POST(request: NextRequest) {
     createdAt: new Date(),
   }
   await adminDb.collection('posts').doc(id).set(doc)
+  await logMutation({ tenantId: session.tenantId, action: 'create', resource: 'news', resourceId: id, userId: session.uid })
   return NextResponse.json({ id, ...doc }, { status: 201 })
 }

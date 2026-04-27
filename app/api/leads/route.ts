@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
+import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText } from '@/lib/sanitize'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
@@ -15,6 +16,9 @@ const LeadSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimit(request)
+  if (limited) return limited
+
   let body: z.infer<typeof LeadSchema>
   try {
     const raw = await request.json()

@@ -148,6 +148,7 @@ const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   listings: true,
   about: true,
   news: true,
+  contact: true,
   footer: true,
 };
 
@@ -163,6 +164,9 @@ const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   seo_description: '',
   announcement_text: '',
   announcement_color: 'accent',
+  currency: 'SAR',
+  offer_label_1: 'للبيع',
+  offer_label_2: 'للإيجار',
 };
 
 const EMPTY_PROFILE: Profile = {
@@ -176,7 +180,7 @@ const EMPTY_PROFILE: Profile = {
   contact_phone: '',
   extra_phones: [],
   contact_address: '',
-  social_links: { instagram: '', x: '', linkedin: '', whatsapp: '' },
+  social_links: { instagram: '', x: '', linkedin: '', whatsapp: '', snapchat: '', tiktok: '' },
   working_hours: {
     sun: { enabled: true,  open: '09:00', close: '17:00' },
     mon: { enabled: true,  open: '09:00', close: '17:00' },
@@ -191,17 +195,11 @@ const EMPTY_PROFILE: Profile = {
 };
 
 const COLOR_PRESETS = [
-  '#2563eb', '#7c3aed', '#dc2626', '#d97706',
-  '#059669', '#0891b2', '#db2777', '#475569',
+  '#2563eb', '#0ea5e9', '#7c3aed', '#9333ea',
+  '#db2777', '#dc2626', '#ea580c', '#d97706',
+  '#059669', '#0d9488', '#475569', '#1e293b',
+  '#e11d48', '#c026d3', '#0284c7', '#14b8a6',
 ];
-
-const THEME_DESCRIPTIONS: Record<string, string> = {
-  modern: 'واجهة نظيفة وعملية تناسب معظم المكاتب العقارية.',
-  luxury: 'ستايل داكن ولمسات ذهبية لعرض العقارات الفاخرة.',
-  nature: 'ألوان هادئة ومنعشة تمنح الصفحة طابعاً ودوداً.',
-  ocean: 'طابع أنيق ومستوحى من البحر بإحساس خفيف ومشرق.',
-  desert: 'دفء بصري ولمسات ترابية مناسبة للهوية المحلية.',
-};
 
 const demoListings = [
   { id: '1', title: 'فيلا فاخرة في الخليج', price: 2500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 3, area_sqm: 450, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
@@ -255,6 +253,7 @@ export default function PageBuilderPage() {
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
   const [agencyName, setAgencyName] = useState('');
   const [selectedTheme, setSelectedTheme] = useState<string>('modern');
+  const [businessType, setBusinessType] = useState<string>('real_estate');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [listings, setListings] = useState<any[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
@@ -263,7 +262,8 @@ export default function PageBuilderPage() {
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
-  const [previewSearch, setPreviewSearch] = useState('');
+  const [iframeKey, setIframeKey] = useState(0);
+  const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('desktop');
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('themes');
   const [showChecklist, setShowChecklist] = useState(false);
@@ -291,6 +291,7 @@ export default function PageBuilderPage() {
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
       setSelectedTheme(d.tenant.theme);
+      setBusinessType((d.tenant as any).business_type || 'real_estate');
       setListings(demoListings);
       setLoading(false);
       return;
@@ -311,6 +312,7 @@ export default function PageBuilderPage() {
         setPrimaryColor(profileRes.tenant?.primary_color || '#2563eb');
         setAgencyName(profileRes.tenant?.name || '');
         setSelectedTheme(profileRes.tenant?.theme || 'modern');
+        setBusinessType((profileRes.tenant as any)?.business_type || 'real_estate');
         setListings(listingsRes.data ?? []);
       })
       .catch(() => {})
@@ -486,11 +488,12 @@ export default function PageBuilderPage() {
         method: 'PATCH',
         body: JSON.stringify({
           profile,
-          tenant: { primary_color: primaryColor, name: agencyName || undefined, theme: selectedTheme },
+          tenant: { primary_color: primaryColor, name: agencyName || undefined, theme: selectedTheme, business_type: businessType },
         }),
       });
       setSaveStatus('saved');
       setDirty(false);
+      setIframeKey(k => k + 1);
       if (savedTimer.current) clearTimeout(savedTimer.current);
       savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (e) {
@@ -564,18 +567,6 @@ export default function PageBuilderPage() {
   const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
   const pageConfig = { ...DEFAULT_PAGE_CONFIG, ...(profile.page_config ?? {}) };
   const activeTheme = PAGE_THEMES[selectedTheme as keyof typeof PAGE_THEMES] ?? PAGE_THEMES.modern;
-  const previewIsDark = activeTheme.dark;
-  const previewTextClass = previewIsDark ? 'text-slate-100' : 'text-gray-800';
-  const previewMutedClass = previewIsDark ? 'text-slate-400' : 'text-gray-500';
-  const previewBorderClass = previewIsDark ? 'border-white/10' : 'border-gray-200';
-  const previewInactiveChipClass = previewIsDark ? 'bg-white/5 text-slate-400' : 'bg-gray-100 text-gray-500';
-  const previewListings = listings.filter((listing) => listing.published !== false);
-  const getListingImage = (listing: any) => listing.images?.[0] || listing.image_url || '';
-  const previewListingsFiltered = previewSearch.trim()
-    ? previewListings.filter((listing) =>
-      `${listing.title || ''} ${listing.location || ''}`.toLowerCase().includes(previewSearch.toLowerCase()),
-    )
-    : previewListings;
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
@@ -678,6 +669,7 @@ export default function PageBuilderPage() {
               ['news', 'الأخبار'],
               ['gallery', 'المعرض'],
               ['team', 'الفريق'],
+              ['contact', 'تواصل معنا'],
               ['footer', 'التذييل'],
             ] as const).map(([key, label]) => (
               <button
@@ -775,14 +767,23 @@ export default function PageBuilderPage() {
                   maxLength={300}
                 />
                 {pageConfig.announcement_text && (
-                  <div className="flex gap-1.5">
-                    {(['accent', 'yellow', 'green'] as const).map((c) => (
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { id: 'accent',  bg: 'bg-blue-600'   },
+                      { id: 'yellow',  bg: 'bg-yellow-500'  },
+                      { id: 'green',   bg: 'bg-green-500'   },
+                      { id: 'red',     bg: 'bg-red-600'     },
+                      { id: 'purple',  bg: 'bg-purple-600'  },
+                      { id: 'orange',  bg: 'bg-orange-500'  },
+                      { id: 'teal',    bg: 'bg-teal-500'    },
+                      { id: 'dark',    bg: 'bg-gray-800'    },
+                    ] as const).map(({ id, bg }) => (
                       <button
-                        key={c}
+                        key={id}
                         type="button"
-                        onClick={() => updatePageConfig({ announcement_color: c })}
-                        className={`h-5 w-5 rounded-full border-2 transition-all ${ pageConfig.announcement_color === c ? 'border-white scale-110' : 'border-transparent' } ${ c === 'yellow' ? 'bg-yellow-500' : c === 'green' ? 'bg-green-500' : 'bg-blue-600' }`}
-                        aria-label={c}
+                        onClick={() => updatePageConfig({ announcement_color: id })}
+                        className={`h-6 w-6 rounded-full border-2 transition-all hover:scale-110 ${pageConfig.announcement_color === id ? 'border-white scale-125 shadow-lg' : 'border-transparent'} ${bg}`}
+                        aria-label={id}
                       />
                     ))}
                   </div>
@@ -791,7 +792,7 @@ export default function PageBuilderPage() {
             )}
 
             <div className="space-y-1 border-t border-slate-800 pt-3">
-              <Label className="text-xs text-slate-400">أعمدة شبكة العقارات</Label>
+              <Label className="text-xs text-slate-400">أعمدة شبكة العروض</Label>
               <select
                 value={pageConfig.listings_columns || 3}
                 onChange={(e) => updatePageConfig({ listings_columns: Number(e.target.value) as 2 | 3 | 4 })}
@@ -801,6 +802,42 @@ export default function PageBuilderPage() {
                 <option value={3}>3 أعمدة</option>
                 <option value={4}>4 أعمدة</option>
               </select>
+            </div>
+            <div className="space-y-1 border-t border-slate-800 pt-3">
+              <Label className="text-xs text-slate-400">عملة الأسعار</Label>
+              <select
+                value={pageConfig.currency || 'SAR'}
+                onChange={(e) => updatePageConfig({ currency: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+              >
+                <option value="SAR">ر.س — ريال سعودي</option>
+                <option value="AED">د.إ — درهم إماراتي</option>
+                <option value="KWD">د.ك — دينار كويتي</option>
+                <option value="QAR">ر.ق — ريال قطري</option>
+                <option value="BHD">د.ب — دينار بحريني</option>
+                <option value="OMR">ر.ع — ريال عُماني</option>
+                <option value="EGP">ج.م — جنيه مصري</option>
+                <option value="USD">$ — دولار أمريكي</option>
+                <option value="EUR">€ — يورو</option>
+                <option value="GBP">£ — جنيه إسترليني</option>
+              </select>
+            </div>
+            <div className="space-y-1 border-t border-slate-800 pt-3">
+              <Label className="text-xs text-slate-400">تسمية نوع العرض (خيار 1 / خيار 2)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={pageConfig.offer_label_1 || ''}
+                  onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })}
+                  placeholder="للبيع"
+                  className="bg-slate-800 border-slate-700 text-white text-sm placeholder:text-slate-500"
+                />
+                <Input
+                  value={pageConfig.offer_label_2 || ''}
+                  onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })}
+                  placeholder="للإيجار"
+                  className="bg-slate-800 border-slate-700 text-white text-sm placeholder:text-slate-500"
+                />
+              </div>
             </div>
             <button
               type="button"
@@ -863,37 +900,76 @@ export default function PageBuilderPage() {
                     <button
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
-                      className={`relative rounded-xl p-3 cursor-pointer transition-all border-2 ${
-                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-0.5' : 'border-slate-700 hover:border-slate-500 hover:-translate-y-0.5'
-                      } bg-slate-800 text-right`}
+                      className={`relative rounded-xl overflow-hidden cursor-pointer transition-all border-2 ${
+                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'border-transparent hover:border-slate-500 hover:scale-[1.01]'
+                      }`}
                       aria-label={`Select theme ${theme.label}`}
                       aria-pressed={selectedTheme === theme.id}
                     >
-                      <div className="h-24 rounded-lg mb-3 overflow-hidden border" style={{ backgroundColor: theme.bg, borderColor: theme.cardBorder }}>
-                        {/* Mini hero */}
-                        <div className="h-9 relative flex items-end px-2 pb-1.5" style={{ background: theme.heroOverlay.replace('to bottom,', 'to bottom left,') }}>
-                          <div className="h-4 w-16 rounded opacity-90" style={{ backgroundColor: theme.heroCardBg, borderColor: theme.heroCardBorder, border: '1px solid' }} />
-                        </div>
-                        {/* Mini card */}
-                        <div className="px-2 pt-2 pb-1.5" style={{ backgroundColor: theme.bg }}>
-                          <div className="px-1.5 py-1.5 border" style={{ backgroundColor: theme.cardBg, borderColor: theme.cardBorder, borderRadius: `calc(${theme.radius} * 0.45)`, boxShadow: theme.cardShadow }}>
-                            <div className="h-1.5 rounded w-3/4 mb-1.5" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.7)' : '#cbd5e1', fontFamily: theme.headingFont }} />
-                            <div className="flex items-center gap-1">
-                              <div className="h-4 w-10" style={{ backgroundColor: theme.accent, borderRadius: `calc(${theme.radius} * 0.35)`, opacity: 0.9 }} />
-                              <div className="h-4 w-8" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.08)' : theme.sectionAlt, borderRadius: `calc(${theme.radius} * 0.35)`, border: `1px solid ${theme.cardBorder}` }} />
-                            </div>
+                      {/* Full template preview */}
+                      <div className="overflow-hidden" style={{ backgroundColor: theme.bg, fontFamily: theme.headingFont }}>
+
+                        {/* Nav bar */}
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border-b" style={{ backgroundColor: theme.navBg, borderColor: theme.navBorder }}>
+                          <div className="h-2 w-10 rounded-sm opacity-80" style={{ backgroundColor: theme.accent }} />
+                          <div className="flex gap-1">
+                            {[1,2,3].map(i => (
+                              <div key={i} className="h-1.5 w-5 rounded-sm" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.12)' : '#e2e8f0' }} />
+                            ))}
                           </div>
                         </div>
+
+                        {/* Hero */}
+                        <div className="relative h-16" style={{ background: `linear-gradient(135deg, ${theme.accent}cc, ${theme.accent}55)` }}>
+                          <div className="absolute inset-0" style={{ background: theme.heroOverlay }} />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-3">
+                            <div className="h-2 w-20 rounded-sm bg-white/80" />
+                            <div className="h-1.5 w-14 rounded-sm bg-white/50" />
+                            <div className="mt-1 h-3 w-12 rounded-sm" style={{ backgroundColor: theme.accent, opacity: 0.9, borderRadius: theme.radius }} />
+                          </div>
+                        </div>
+
+                        {/* Section label */}
+                        <div className="px-2.5 pt-2 pb-1" style={{ backgroundColor: theme.bg }}>
+                          <div className="h-1.5 w-8 rounded-sm mb-1.5" style={{ backgroundColor: theme.accent }} />
+                          {/* 3-col listing grid */}
+                          <div className="grid grid-cols-3 gap-1">
+                            {[0,1,2].map(i => (
+                              <div key={i} className="rounded border overflow-hidden" style={{ backgroundColor: theme.cardBg, borderColor: theme.cardBorder, borderRadius: `calc(${theme.radius} * 0.4)`, boxShadow: theme.cardShadow }}>
+                                <div className="h-6" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.06)' : theme.sectionAlt }} />
+                                <div className="p-1 space-y-0.5">
+                                  <div className="h-1 rounded-sm w-full" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.4)' : '#cbd5e1' }} />
+                                  <div className="h-1 rounded-sm w-2/3" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.2)' : '#e2e8f0' }} />
+                                  <div className="h-2 w-8 rounded-sm mt-0.5" style={{ backgroundColor: theme.accent, borderRadius: `calc(${theme.radius} * 0.3)`, opacity: 0.85 }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Footer strip */}
+                        <div className="flex items-center justify-between px-2.5 py-1.5" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.04)' : theme.sectionAlt, borderTop: `1px solid ${theme.cardBorder}` }}>
+                          <div className="flex gap-1">
+                            {[1,2,3].map(i => (
+                              <div key={i} className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: theme.accent, opacity: 0.6 + i * 0.13 }} />
+                            ))}
+                          </div>
+                          <div className="h-1.5 w-12 rounded-sm" style={{ backgroundColor: theme.dark ? 'rgba(255,255,255,0.15)' : '#cbd5e1' }} />
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="text-sm font-semibold text-white">{theme.label}</p>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${theme.dark ? 'bg-white/10 text-slate-300' : 'bg-slate-700 text-slate-200'}`}>
+
+                      {/* Label overlay at bottom */}
+                      <div className="flex items-center justify-between px-2.5 py-2" style={{ backgroundColor: theme.dark ? '#111' : '#f8fafc', borderTop: `1px solid ${theme.cardBorder}` }}>
+                        <p className="text-xs font-bold" style={{ color: theme.dark ? '#fff' : '#0f172a', fontFamily: theme.headingFont }}>{theme.label}</p>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: theme.accent + '22', color: theme.accent }}>
                           {theme.labelEn}
                         </span>
                       </div>
-                      <p className="text-[10px] leading-4 text-slate-400 min-h-[2.25rem]">{THEME_DESCRIPTIONS[theme.id]}</p>
+
                       {selectedTheme === theme.id && (
-                        <CheckCircle2 className="absolute top-2 left-2 h-4 w-4 text-blue-400" />
+                        <div className="absolute top-2 left-2 bg-blue-500 rounded-full p-0.5 shadow-lg">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
+                        </div>
                       )}
                     </button>
                   ))}
@@ -914,6 +990,25 @@ export default function PageBuilderPage() {
                   placeholder="مثال: مطعم الواحة، مكتب الأفق، صالون نور..."
                   className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  <Building2 className="h-4 w-4 text-blue-400" /> نوع النشاط التجاري
+                </p>
+                <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
+                <select
+                  value={businessType}
+                  onChange={(e) => { setBusinessType(e.target.value); markDirty(); }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+                >
+                  <option value="real_estate">🏠 عقارات</option>
+                  <option value="restaurant">🍽️ مطعم / كافيه</option>
+                  <option value="salon">✂️ صالون / سبا</option>
+                  <option value="retail">🛍️ متجر / بيع بالتجزئة</option>
+                  <option value="services">⚙️ خدمات</option>
+                  <option value="other">📋 أخرى</option>
+                </select>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
@@ -1051,8 +1146,8 @@ export default function PageBuilderPage() {
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">نوع العرض</Label>
                         <select value={listingForm.offer_type} onChange={(e) => setListingForm({ ...listingForm, offer_type: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
-                          <option value="sale">للبيع</option>
-                          <option value="rent">للإيجار</option>
+                          <option value="sale">{pageConfig.offer_label_1 || 'للبيع'}</option>
+                          <option value="rent">{pageConfig.offer_label_2 || 'للإيجار'}</option>
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -1070,6 +1165,7 @@ export default function PageBuilderPage() {
                         <Label className="text-slate-400 text-xs">الموقع</Label>
                         <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="Dubai Marina" />
                       </div>
+                      {(!businessType || businessType === 'real_estate') && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">الغرف</Label>
                         <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="4" />
@@ -1082,6 +1178,7 @@ export default function PageBuilderPage() {
                         <Label className="text-slate-400 text-xs">المساحة (م²)</Label>
                         <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
                       </div>
+                      </>)}
                     </div>
                     <div className="col-span-2 space-y-1">
                       <Label className="text-slate-400 text-xs">صورة العقار الرئيسية</Label>
@@ -1204,7 +1301,7 @@ export default function PageBuilderPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white text-sm truncate">{listing.title}</p>
-                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString()} ر.س</p>
+                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString()} {pageConfig.currency || 'SAR'}</p>
                           <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
                             {listing.location && <span>{listing.location}</span>}
                             {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
@@ -1397,6 +1494,24 @@ export default function PageBuilderPage() {
                     />
                   </div>
                 </div>
+
+                {/* TikTok */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">TikTok</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-slate-300">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>
+                      </svg>
+                    </span>
+                    <Input
+                      value={profile.social_links?.tiktok || ''}
+                      onChange={(e) => updateSocial('tiktok', e.target.value)}
+                      placeholder="اسم المستخدم أو https://tiktok.com/@..."
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
               </div>
             </TabsContent>
 
@@ -1487,157 +1602,101 @@ export default function PageBuilderPage() {
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">معاينة مباشرة</span>
-              <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
-                يتحدث فورياً
-              </span>
+              <div className="flex items-center gap-3">
+                {dirty && (
+                  <span className="text-[10px] text-amber-400 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />
+                    احفظ لتحديث المعاينة
+                  </span>
+                )}
+                {!dirty && (
+                  <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
+                    محدّثة
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div className="px-3 py-2 flex items-center gap-2" style={{ backgroundColor: activeTheme.card, borderBottom: `1px solid ${previewIsDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb'}` }}>
+            <div className="px-3 py-2 flex items-center gap-2" style={{ backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div className="flex gap-1">
                 <span className="h-2 w-2 rounded-full bg-red-500/70 inline-block" />
                 <span className="h-2 w-2 rounded-full bg-yellow-500/70 inline-block" />
                 <span className="h-2 w-2 rounded-full bg-green-500/70 inline-block" />
               </div>
-              <div className="flex-1 rounded text-[10px] px-2 py-0.5 truncate font-mono" style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', color: previewIsDark ? '#94a3b8' : '#64748b' }}>
+              <div className="flex-1 rounded text-[10px] px-2 py-0.5 truncate font-mono bg-slate-800 text-slate-400">
                 {publicUrl}
               </div>
+              {/* Device toggle */}
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  title="معاينة الجوال"
+                  className={`p-1 rounded transition-colors ${previewDevice === 'mobile' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                    <path d="M8 16.25a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z" />
+                    <path fillRule="evenodd" d="M4 4a3 3 0 013-3h6a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V4zm4-1.5v.75c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V2.5h.25A1.5 1.5 0 0113.5 4v12a1.5 1.5 0 01-1.5 1.5H8A1.5 1.5 0 016.5 16V4A1.5 1.5 0 018 2.5h.25v-.75z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  title="معاينة سطح المكتب"
+                  className={`p-1 rounded transition-colors ${previewDevice === 'desktop' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                    <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5zm1.5 0v7.5c0 .414.336.75.75.75h11.5a.75.75 0 00.75-.75v-7.5a.75.75 0 00-.75-.75H4.25a.75.75 0 00-.75.75z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIframeKey(k => k + 1)}
+                title="تحديث المعاينة"
+                className="text-slate-500 hover:text-slate-300 transition-colors shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                  <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.389zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
 
-            <div className="overflow-y-auto transition-colors" style={{ maxHeight: 720, backgroundColor: activeTheme.bg }}>
-
-              {sections.hero && (
-                <div className="relative h-40 overflow-hidden">
-                  {profile.cover_url ? (
-                    <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${activeTheme.accent}dd, ${primaryColor}55)` }} />
-                  )}
-                  <div className="absolute inset-0 bg-black/40" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center">
-                    {profile.logo_url && (
-                      <img src={profile.logo_url} alt="Logo" className="w-12 h-12 rounded-lg object-cover mb-2 border-2 border-white/30 shadow-lg" />
-                    )}
-                    <p className="font-bold text-base leading-tight">
-                      {agencyName || data?.tenant?.name || 'اسم المنشأة'}
-                    </p>
-                    <p className="text-xs text-white/75 mt-1 line-clamp-2 max-w-md">{pageConfig.hero_headline || profile.tagline || 'مرحباً بكم'}</p>
-                  </div>
+            {/* Scaled full-page iframe */}
+            <div className="relative overflow-hidden bg-black" style={{ height: previewDevice === 'desktop' ? 700 : 680 }}>
+              {slug ? (
+                previewDevice === 'desktop' ? (
+                  <iframe
+                    key={`${iframeKey}-desktop`}
+                    src={publicPath}
+                    title="معاينة الصفحة"
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                  />
+                ) : (
+                  <iframe
+                    key={`${iframeKey}-mobile`}
+                    src={publicPath}
+                    title="معاينة الصفحة"
+                    style={{
+                      width: '390px',
+                      height: '844px',
+                      border: 'none',
+                      transformOrigin: 'top right',
+                      transform: 'scale(0.78)',
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                    }}
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                  />
+                )
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                  احفظ الإعدادات أولاً لتظهر المعاينة
                 </div>
               )}
-
-              <div className="p-4 space-y-4" dir="rtl">
-
-                {sections.listings && (
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: primaryColor }}>العروض</p>
-                    {pageConfig.show_listing_search && (
-                      <Input
-                        value={previewSearch}
-                        onChange={(e) => setPreviewSearch(e.target.value)}
-                        className="h-8 text-[11px] mb-2.5"
-                        placeholder="ابحث بالاسم أو الموقع"
-                      />
-                    )}
-                    {pageConfig.show_listing_filters && (
-                      <div className="flex gap-1.5 mb-2.5 text-[10px]">
-                        <span className="px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: primaryColor }}>الكل</span>
-                        <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>متاح</span>
-                        <span className={`px-2 py-0.5 rounded-full ${previewInactiveChipClass}`}>مباع</span>
-                      </div>
-                    )}
-                    <div className={`grid gap-1 ${pageConfig.listings_columns === 2 ? 'grid-cols-2' : pageConfig.listings_columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                      {previewListingsFiltered.slice(0, 8).map((listing) => (
-                        <div key={listing.id} className={`border rounded p-1.5 text-center ${previewBorderClass}`} style={{ backgroundColor: activeTheme.card }}>
-                          {getListingImage(listing) ? (
-                            <img
-                              src={getListingImage(listing)}
-                              alt={listing.title || 'listing'}
-                              className="w-full h-10 rounded object-cover mb-1"
-                            />
-                          ) : (
-                            <div className={`w-full h-10 rounded mb-1 flex items-center justify-center text-[9px] ${previewMutedClass}`} style={{ backgroundColor: previewIsDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}>
-                              بدون صورة
-                            </div>
-                          )}
-                          <p className={`text-[10px] truncate ${previewTextClass}`}>{listing.title}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {sections.about && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>من نحن</p>
-                  <p className={`text-xs leading-relaxed line-clamp-4 ${previewMutedClass}`}>
-                    {profile.bio || 'نبذة عن منشأتك ستظهر هنا...'}
-                  </p>
-                  {profile.licence_no && (
-                    <p className={`text-[10px] mt-1.5 flex items-center gap-0.5 ${previewMutedClass}`}>
-                      <Hash className="h-2.5 w-2.5 inline" /> رقم الترخيص: {profile.licence_no}
-                    </p>
-                  )}
-                </div>
-                )}
-
-                {sections.about && (profile.contact_email || profile.contact_phone || profile.contact_address) && (
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: primaryColor }}>التواصل</p>
-                    <div className="space-y-1">
-                      {profile.contact_phone && (
-                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
-                          <Phone className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
-                          {profile.contact_phone}
-                        </div>
-                      )}
-                      {profile.contact_email && (
-                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
-                          <Mail className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
-                          {profile.contact_email}
-                        </div>
-                      )}
-                      {profile.contact_address && (
-                        <div className={`flex items-center gap-1.5 text-[11px] ${previewMutedClass}`}>
-                          <MapPin className="h-3 w-3 shrink-0" style={{ color: primaryColor }} />
-                          {profile.contact_address}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {sections.footer && (profile.social_links?.whatsapp || profile.social_links?.instagram || profile.social_links?.x || profile.social_links?.linkedin) && (
-                  <div className="flex gap-1.5 pt-0.5">
-                    {profile.social_links?.whatsapp && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                        <MessageCircle className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                    {profile.social_links?.instagram && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                        <Instagram className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                    {profile.social_links?.x && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                        <Twitter className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                    {profile.social_links?.linkedin && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                        <Linkedin className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {sections.footer && (
-                  <div className="rounded-lg p-2.5 text-center text-white text-[11px] font-semibold mt-1" style={{ backgroundColor: primaryColor }}>
-                    استعرض عروضنا
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

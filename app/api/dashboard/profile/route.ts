@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 
 const emptyToNull = (v: unknown) => {
@@ -31,6 +32,7 @@ const ProfileDataSchema = z.object({
     linkedin: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     whatsapp: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
     snapchat: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    tiktok: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   }).optional().nullable(),
   working_hours: z.record(
     z.object({
@@ -47,6 +49,7 @@ const ProfileDataSchema = z.object({
     news: z.boolean().optional(),
     gallery: z.boolean().optional(),
     team: z.boolean().optional(),
+    contact: z.boolean().optional(),
     footer: z.boolean().optional(),
   }).optional(),
   page_config: z.object({
@@ -61,7 +64,10 @@ const ProfileDataSchema = z.object({
     seo_title: z.preprocess(emptyToNull, z.string().max(120).nullable().optional()),
     seo_description: z.preprocess(emptyToNull, z.string().max(160).nullable().optional()),
     announcement_text: z.preprocess(emptyToNull, z.string().max(300).nullable().optional()),
-    announcement_color: z.enum(['accent', 'yellow', 'green']).optional(),
+    announcement_color: z.enum(['accent', 'yellow', 'green', 'red', 'purple', 'orange', 'teal', 'dark']).optional(),
+    currency: z.preprocess(emptyToNull, z.string().max(10).nullable().optional()),
+    offer_label_1: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
+    offer_label_2: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
   }).optional(),
 }).optional()
 
@@ -69,6 +75,8 @@ const TenantDataSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   theme: z.string().max(20).optional(),
+  business_type: z.string().max(30).optional(),
+  custom_domain: z.string().max(253).optional(),
 }).optional()
 
 const PatchSchema = z.object({
@@ -148,5 +156,6 @@ export async function PATCH(request: NextRequest) {
   }
 
   const doc = await ref.get()
+  await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'profile', resourceId: session.tenantId, userId: session.uid })
   return NextResponse.json({ id: doc.id, ...doc.data() })
 }

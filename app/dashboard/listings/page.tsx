@@ -36,7 +36,50 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, MapPin, Bed, Bath, Maximize, Loader as Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Bed, Bath, Maximize, Loader as Loader2, X, Sparkles, ChevronLeft, ChevronRight, Search, Copy, Eye, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableImage({ url, index, onRemove }: { url: string; index: number; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: url + index });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <div ref={setNodeRef} style={style} className="relative group w-16 h-16">
+      <img src={url} alt={`Image ${index + 1}`} className="w-full h-full rounded object-cover border border-gray-700" />
+      <button
+        {...attributes}
+        {...listeners}
+        type="button"
+        className="absolute bottom-0 left-0 w-5 h-5 rounded-tr rounded-bl bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
+        aria-label="سحب للترتيب"
+      >
+        <GripVertical className="h-3 w-3 text-white" />
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        aria-label={`Remove image ${index + 1}`}
+      >
+        <X className="h-3 w-3 text-white" />
+      </button>
+    </div>
+  );
+}
+
 
 const demoListings: Post[] = [
   {
@@ -96,6 +139,65 @@ export default function ListingsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [formErrors, setFormErrors] = useState<{ title?: string; images?: string }>({});
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
+  const dndSensors = useSensors(useSensor(PointerSensor));
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const generateWithAI = async () => {
+    if (!form.title) return;
+    setAiGenerating(true);
+    try {
+      const result = await authFetch<{ english: string; arabic: string }>('/api/dashboard/ai/listing-copy', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: form.title,
+          price: form.price,
+          location: form.location,
+          bedrooms: form.bedrooms ? Number(form.bedrooms) : undefined,
+          bathrooms: form.bathrooms ? Number(form.bathrooms) : undefined,
+          area: form.area_sqm ? Number(form.area_sqm) : undefined,
+        }),
+      });
+      setForm(prev => ({ ...prev, body: result.arabic + '\n\n' + result.english }));
+    } catch {
+      toast({ title: 'AI Failed', description: 'فشل توليد النص بالذكاء الاصطناعي', variant: 'destructive' });
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const duplicateListing = async (listing: Post) => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    const payload = {
+      title: `نسخة من ${listing.title}`,
+      body: listing.body || '',
+      price: listing.price,
+      location: listing.location,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      area_sqm: listing.area_sqm,
+      listing_status: listing.listing_status || 'available',
+      published: false,
+      images: listing.images || [],
+      type: 'listing',
+    };
+    if (isDemo) {
+      const fake: Post = { ...listing, id: Date.now().toString(), title: payload.title, published: false, created_at: new Date().toISOString() };
+      setListings(prev => [fake, ...prev]);
+      toast({ title: 'تم نسخ العقار' });
+      return;
+    }
+    try {
+      const created = await authFetch<Post>('/api/dashboard/listings', { method: 'POST', body: JSON.stringify(payload) });
+      setListings(prev => [created, ...prev]);
+      toast({ title: 'تم نسخ العقار' });
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل نسخ العقار', variant: 'destructive' });
+    }
+  };
 
   const isValidUrl = (value: string) => {
     try {
@@ -120,6 +222,14 @@ export default function ListingsPage() {
   };
 
   useEffect(fetchListings, []);
+
+  useEffect(() => {
+    const isDemo = sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) return;
+    authFetch<Record<string, number>>('/api/dashboard/listings/views')
+      .then(setViewCounts)
+      .catch(() => {});
+  }, []);
 
   const openCreate = () => {
     setEditingId(null);
@@ -269,6 +379,15 @@ export default function ListingsPage() {
     );
   }
 
+  const filtered = searchQuery.trim()
+    ? listings.filter(l =>
+        `${l.title} ${l.location ?? ''}`.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : listings;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -289,8 +408,32 @@ export default function ListingsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map((listing) => (
+        <>
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+              placeholder="ابحث بالعنوان أو الموقع..."
+              dir="rtl"
+              className="bg-[#12121a] border-gray-700 text-white pr-10 placeholder:text-gray-500"
+            />
+            {searchQuery && (
+              <button onClick={() => { setSearchQuery(''); setPage(1); }} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-gray-400 px-1">
+            <span>
+              عرض {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} من {filtered.length}
+              {searchQuery && ` (مصفى من ${listings.length})`}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginated.map((listing) => (
             <Card
               key={listing.id}
               className="bg-[#12121a] border-gray-800 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
@@ -319,6 +462,12 @@ export default function ListingsPage() {
                   <Badge className="absolute top-2 right-2 bg-gray-500/20 text-gray-400">
                     Draft
                   </Badge>
+                )}
+                {viewCounts[listing.id] != null && viewCounts[listing.id] > 0 && (
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                    <Eye className="h-3 w-3" />
+                    <span>{viewCounts[listing.id].toLocaleString('ar-SA')}</span>
+                  </div>
                 )}
               </div>
               <CardContent className="p-4">
@@ -366,6 +515,16 @@ export default function ListingsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => duplicateListing(listing)}
+                    className="text-gray-400 hover:text-blue-400"
+                    aria-label={`Duplicate ${listing.title}`}
+                    title="نسخ العقار"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setDeleteId(listing.id)}
                     className="text-gray-400 hover:text-red-400"
                     aria-label={`Delete ${listing.title}`}
@@ -377,6 +536,43 @@ export default function ListingsPage() {
             </Card>
           ))}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-700 bg-[#12121a] text-gray-400 hover:text-white"
+              disabled={safePage === 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              aria-label="الصفحة السابقة"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <Button
+                key={p}
+                variant="outline"
+                size="icon"
+                className={`h-8 w-8 border-gray-700 ${p === safePage ? 'bg-blue-600 text-white border-blue-600' : 'bg-[#12121a] text-gray-400 hover:text-white'}`}
+                onClick={() => setPage(p)}
+                aria-current={p === safePage ? 'page' : undefined}
+              >
+                {p}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-gray-700 bg-[#12121a] text-gray-400 hover:text-white"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              aria-label="الصفحة التالية"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       {/* Create/Edit Modal */}
@@ -464,7 +660,20 @@ export default function ListingsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">Description</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-gray-300">Description</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs border-gray-700 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 gap-1"
+                  disabled={!form.title || aiGenerating}
+                  onClick={generateWithAI}
+                >
+                  {aiGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Generate with AI
+                </Button>
+              </div>
               <Textarea
                 value={form.body}
                 onChange={(e) => setForm({ ...form, body: e.target.value })}
@@ -499,24 +708,25 @@ export default function ListingsPage() {
               </div>
               {formErrors.images && <p className="text-xs text-red-400">{formErrors.images}</p>}
               {form.images.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {form.images.map((url, i) => (
-                    <div key={i} className="relative group">
-                      <img
-                        src={url}
-                        alt={`Image ${i + 1}`}
-                        className="w-16 h-16 rounded object-cover border border-gray-700"
-                      />
-                      <button
-                        onClick={() => removeImage(i)}
-                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-label={`Remove image ${i + 1}`}
-                      >
-                        <X className="h-3 w-3 text-white" />
-                      </button>
+                <DndContext
+                  sensors={dndSensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event: DragEndEvent) => {
+                    const { active, over } = event;
+                    if (!over || active.id === over.id) return;
+                    const oldIndex = form.images.findIndex((url, i) => url + i === active.id);
+                    const newIndex = form.images.findIndex((url, i) => url + i === over.id);
+                    setForm(prev => ({ ...prev, images: arrayMove(prev.images, oldIndex, newIndex) }));
+                  }}
+                >
+                  <SortableContext items={form.images.map((url, i) => url + i)} strategy={rectSortingStrategy}>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {form.images.map((url, i) => (
+                        <SortableImage key={url + i} url={url} index={i} onRemove={() => removeImage(i)} />
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           </div>

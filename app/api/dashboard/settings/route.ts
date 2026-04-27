@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 
 const SettingsSchema = z.object({
@@ -83,5 +84,6 @@ export async function PATCH(request: NextRequest) {
   }
 
   const updated = await settingsRef.get()
+  await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'profile', resourceId: 'settings', userId: session.uid })
   return NextResponse.json({ id: 'main', ...updated.data() })
 }

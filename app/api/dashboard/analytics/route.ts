@@ -7,31 +7,60 @@ export async function GET(request: NextRequest) {
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const period = request.nextUrl.searchParams.get('period') ?? '30d'
+
+  // Determine start date and grouping key
+  let startDate: Date
+  let groupKey: (d: Date) => string
+  let labelFormat: 'day' | 'month'
+
+  if (period === '7d') {
+    startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    groupKey = (d) => d.toISOString().slice(0, 10)
+    labelFormat = 'day'
+  } else if (period === '12m') {
+    startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+    groupKey = (d) => d.toISOString().slice(0, 7)
+    labelFormat = 'month'
+  } else {
+    // default 30d
+    startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    groupKey = (d) => d.toISOString().slice(0, 10)
+    labelFormat = 'day'
+  }
+
   const [pageViewsSnap, leadsSnap] = await Promise.all([
-    adminDb.collection('page_views').where('tenantId', '==', session.tenantId).get(),
+    adminDb.collection('page_views')
+      .where('tenantId', '==', session.tenantId)
+      .where('createdAt', '>=', startDate)
+      .get(),
     adminDb.collection('leads').where('tenantId', '==', session.tenantId).count().get(),
   ])
 
-  const monthMap: Record<string, number> = {}
+  const bucketMap: Record<string, number> = {}
   pageViewsSnap.docs.forEach(d => {
     const data = d.data()
     const date = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
-    const m = date.toISOString().slice(0, 7)
-    monthMap[m] = (monthMap[m] ?? 0) + 1
+    const k = groupKey(date)
+    bucketMap[k] = (bucketMap[k] ?? 0) + 1
   })
 
-  const pageViews = Object.entries(monthMap).sort().map(([date, views]) => ({ date, views }))
+  const pageViews = Object.entries(bucketMap).sort().map(([date, views]) => ({ date, views }))
 
-  // Add caching headers for better performance
+  const totalViewsSnap = await adminDb.collection('page_views')
+    .where('tenantId', '==', session.tenantId)
+    .count()
+    .get()
+
   const response = NextResponse.json({
     pageViews,
     listingViews: [],
-    totalViews: pageViewsSnap.size,
-    totalLeads: leadsSnap.data().count
+    totalViews: totalViewsSnap.data().count,
+    totalLeads: leadsSnap.data().count,
+    period,
+    labelFormat,
   })
 
-  // Cache for 5 minutes at the browser level, allow stale-while-revalidate
   response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=60')
-
   return response
 }

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 
 const UpdateLeadSchema = z.object({
@@ -48,6 +49,7 @@ export async function PATCH(
 
   const update = { ...body, updatedAt: new Date() }
   await ref.update(update)
+  await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'lead', resourceId: params.id, userId: session.uid })
   const updated = await ref.get()
   return NextResponse.json({ id: updated.id, ...updated.data() })
 }
@@ -66,6 +68,7 @@ export async function DELETE(
   }
 
   await adminDb.collection('leads').doc(params.id).delete()
+  await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'lead', resourceId: params.id, userId: session.uid })
   return NextResponse.json({ success: true })
 }
 

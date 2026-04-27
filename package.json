@@ -16,11 +16,13 @@
     "test:e2e:ui": "playwright test --ui",
     "seed": "ts-node --project tsconfig.json scripts/seed.ts",
     "deploy": "firebase deploy --only apphosting",
-    "db:migrate": "supabase db push",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.3",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -50,8 +52,6 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@sentry/nextjs": "^8.17.0",
-    "@supabase/ssr": "^0.4.0",
-    "@supabase/supabase-js": "^2.44.2",
     "@tanstack/react-table": "^8.19.3",
     "@tiptap/extension-placeholder": "^2.5.0",
     "@tiptap/react": "^2.5.0",

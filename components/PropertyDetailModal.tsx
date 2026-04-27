@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, Twitter, MessageCircle } from 'lucide-react';
 import { InquiryForm } from './InquiryForm';
 import type { Post } from '@/lib/types';
 
@@ -10,6 +10,7 @@ interface PropertyDetailModalProps {
   property: Post;
   onClose: () => void;
   slug: string;
+  tenantId?: string;
   accentColor?: string;
   bgColor?: string;
 }
@@ -18,11 +19,24 @@ export function PropertyDetailModal({
   property,
   onClose,
   slug,
+  tenantId,
   accentColor = '#2563eb',
   bgColor = '#0f0f0f',
 }: PropertyDetailModalProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Track listing view
+  useEffect(() => {
+    if (!tenantId || !property.id) return;
+    fetch(`/api/${slug}/analytics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenantId, listingId: property.id }),
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [property.id]);
 
   const images = property.images || [];
   const hasImages = images.length > 0;
@@ -35,6 +49,40 @@ export function PropertyDetailModal({
   const prevImage = () => {
     if (!hasImages) return;
     setCurrentImageIdx((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return '';
+    return `${window.location.origin}/${slug}#listing-${property.id}`;
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for browsers without clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = getShareUrl();
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleWhatsApp = () => {
+    const text = encodeURIComponent(`${property.title} - ${getShareUrl()}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleTwitter = () => {
+    const text = encodeURIComponent(property.title);
+    const url = encodeURIComponent(getShareUrl());
+    window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener,noreferrer');
   };
 
   const statusColor: Record<string, string> = {
@@ -237,6 +285,43 @@ export function PropertyDetailModal({
                   <CheckCircle className="h-4 w-4" style={{ color: accentColor }} />
                   <span className="text-gray-300 text-sm">أمان 24/7</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Share */}
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <p className="font-semibold text-white text-sm mb-3">مشاركة العقار</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleWhatsApp}
+                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-green-500/10 hover:border-green-500/40"
+                  title="مشاركة عبر واتساب"
+                >
+                  <MessageCircle className="h-4 w-4 mr-1.5 text-green-400" />
+                  واتساب
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white"
+                  title="نسخ الرابط"
+                >
+                  {copied ? <Check className="h-4 w-4 mr-1.5 text-green-400" /> : <Copy className="h-4 w-4 mr-1.5" />}
+                  {copied ? 'تم النسخ' : 'نسخ'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTwitter}
+                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-sky-500/10 hover:border-sky-500/40"
+                  title="مشاركة على X"
+                >
+                  <Twitter className="h-4 w-4 mr-1.5 text-sky-400" />
+                  X
+                </Button>
               </div>
             </div>
           </div>

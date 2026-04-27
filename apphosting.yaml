@@ -65,10 +65,6 @@ env:
     availability:
       - BUILD
       - RUNTIME
-  - variable: ADMIN_JWT_SECRET
-    secret: ADMIN_JWT_SECRET
-    availability:
-      - RUNTIME
   - variable: ADMIN_EMAIL
     secret: ADMIN_EMAIL
     availability:
@@ -77,20 +73,16 @@ env:
     secret: ADMIN_PASSWORD
     availability:
       - RUNTIME
-  - variable: UPSTASH_REDIS_REST_URL
-    secret: UPSTASH_REDIS_REST_URL
-    availability:
-      - RUNTIME
-  - variable: UPSTASH_REDIS_REST_TOKEN
-    secret: UPSTASH_REDIS_REST_TOKEN
-    availability:
-      - RUNTIME
   - variable: RESEND_API_KEY
     secret: RESEND_API_KEY
     availability:
       - RUNTIME
   - variable: RESEND_FROM_EMAIL
     secret: RESEND_FROM_EMAIL
+    availability:
+      - RUNTIME
+  - variable: EMAIL_FROM_ADDRESS
+    secret: EMAIL_FROM_ADDRESS
     availability:
       - RUNTIME
   - variable: ANTHROPIC_API_KEY

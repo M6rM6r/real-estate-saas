@@ -59,6 +59,8 @@ export type Tenant = {
   status: 'active' | 'suspended';
   primary_color?: string;
   theme?: string;
+  business_type?: string;
+  custom_domain?: string;
   created_at: string;
   features?: Record<string, boolean>;
 };
@@ -81,6 +83,7 @@ export type Profile = {
     linkedin?: string;
     whatsapp?: string;
     snapchat?: string;
+    tiktok?: string;
   };
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
   page_sections?: {
@@ -91,6 +94,7 @@ export type Profile = {
     news?: boolean;
     gallery?: boolean;
     team?: boolean;
+    contact?: boolean;
     footer?: boolean;
   };
   page_config?: {
@@ -105,7 +109,10 @@ export type Profile = {
     seo_title?: string;
     seo_description?: string;
     announcement_text?: string;
-    announcement_color?: 'accent' | 'yellow' | 'green';
+    announcement_color?: 'accent' | 'yellow' | 'green' | 'red' | 'purple' | 'orange' | 'teal' | 'dark';
+    currency?: string;
+    offer_label_1?: string;
+    offer_label_2?: string;
   };
 };
 
@@ -129,6 +136,7 @@ export type Post = {
   card_style?: 'standard' | 'featured' | 'compact' | null;
   published: boolean;
   published_at?: string;
+  publish_at?: string;
   created_at: string;
   updated_at?: string;
 };
@@ -144,7 +152,7 @@ export type Media = {
   created_at?: string;
 };
 
-export type LeadStatus = 'new' | 'contacted' | 'closed';
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed' | 'archived';
 
 export type Lead = {
   id: string;
@@ -155,6 +163,7 @@ export type Lead = {
   message?: string;
   listing_id?: string;
   status: LeadStatus;
+  notes?: string;
   created_at: string;
 };
 

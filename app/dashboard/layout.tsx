@@ -1,16 +1,24 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart3, LayoutTemplate, Settings, LogOut, Building2, Menu, X, Megaphone } from 'lucide-react';
+import { BarChart3, LayoutTemplate, Settings, LogOut, Building2, Menu, X, Megaphone, Home, Users, BarChart2, Images, Newspaper, ClipboardList, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { authFetch } from '@/lib/api';
+import type { Lead } from '@/lib/types';
 
 const navItems = [
   { href: '/dashboard', label: 'نظرة عامة', icon: BarChart3 },
   { href: '/dashboard/page-builder', label: 'منشئ الصفحة', icon: LayoutTemplate },
+  { href: '/dashboard/listings', label: 'العقارات', icon: Home },
+  { href: '/dashboard/leads', label: 'العملاء المحتملون', icon: Users },
+  { href: '/dashboard/analytics', label: 'الإحصائيات', icon: BarChart2 },
+  { href: '/dashboard/gallery', label: 'المعرض', icon: Images },
+  { href: '/dashboard/news', label: 'الأخبار', icon: Newspaper },
   { href: '/dashboard/announcements', label: 'الإعلانات', icon: Megaphone },
   { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
+  { href: '/dashboard/logs', label: 'السجلات', icon: ClipboardList },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +28,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [userInfo, setUserInfo] = useState<{ email: string; displayName: string | null } | null>(null);
+  const [notifBanner, setNotifBanner] = useState(false);
+  const lastLeadTime = useRef<number>(Date.now());
 
   useEffect(() => {
     const demoAuth = sessionStorage.getItem('demo_auth');
@@ -45,6 +55,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     })();
     return () => unsub?.();
   }, [router]);
+
+  // Show notification permission banner if not yet decided
+  useEffect(() => {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'default') setNotifBanner(true);
+  }, []);
+
+  // Poll for new leads every 60 seconds and fire browser notifications
+  useEffect(() => {
+    if (isDemo) return;
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+    const poll = async () => {
+      try {
+        const since = new Date(lastLeadTime.current).toISOString();
+        const leads = await authFetch<Lead[]>(`/api/dashboard/leads?since=${encodeURIComponent(since)}`);
+        if (leads.length > 0) {
+          lastLeadTime.current = Date.now();
+          leads.forEach(lead => {
+            new Notification('عميل جديد 🔔', { body: lead.name, icon: '/favicon.ico' });
+          });
+        }
+      } catch { /* ignore */ }
+    };
+    const id = setInterval(poll, 60_000);
+    return () => clearInterval(id);
+  }, [isDemo, authed]);
+
+  const requestNotifPermission = async () => {
+    setNotifBanner(false);
+    await Notification.requestPermission();
+  };
 
   const handleLogout = useCallback(async () => {
     sessionStorage.removeItem('demo_auth');
@@ -162,7 +204,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
           <div className="flex-1" />
         </header>
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+          {notifBanner && (
+            <div className="mb-4 flex items-center justify-between gap-3 bg-blue-600/15 border border-blue-500/30 rounded-lg px-4 py-3 text-sm">
+              <span className="flex items-center gap-2 text-blue-300">
+                <Bell className="h-4 w-4 shrink-0" />
+                فعِّل الإشعارات لتلقي تنبيهات فورية عند وصول عملاء جدد
+              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={requestNotifPermission}
+                  className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition-colors"
+                >
+                  تفعيل
+                </button>
+                <button
+                  onClick={() => setNotifBanner(false)}
+                  className="text-gray-500 hover:text-white transition-colors"
+                  aria-label="إغلاق"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          {children}
+        </main>
       </div>
     </div>
   );

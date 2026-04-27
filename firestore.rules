@@ -4,13 +4,108 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DEFAULT: deny everything not explicitly allowed
-    // All data access goes through the Next.js API routes which use the
-    // Firebase Admin SDK (bypasses these rules). These rules protect against
-    // direct client SDK access.
+    // HELPER FUNCTIONS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Is the requester signed in?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Does the authenticated user belong to a given tenant?
+    // The user's custom claim "tenantId" is set by the Admin SDK on login.
+    function ownsTenant(tenantId) {
+      return isSignedIn() && request.auth.token.tenantId == tenantId;
+    }
+
+    // Is the authenticated user a platform admin?
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEFAULT DENY — explicit allows below override this
+    // All server-side mutations go through the Next.js API (Admin SDK) and
+    // therefore bypass these rules entirely. These rules only protect against
+    // direct client-SDK access.
     // ─────────────────────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TENANTS  /tenants/{tenantId}
+    // ─────────────────────────────────────────────────────────────────────────
+    match /tenants/{tenantId} {
+      // Anyone can read a tenant doc (needed for public agency pages)
+      allow read: if true;
+      // Only the owner or a platform admin can write
+      allow write: if ownsTenant(tenantId) || isAdmin();
+
+      // ── Profile  /tenants/{tenantId}/profile/{docId} ──────────────────────
+      match /profile/{docId} {
+        allow read: if true;
+        allow write: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Posts (listings + news)  /tenants/{tenantId}/posts/{postId} ────────
+      match /posts/{postId} {
+        // Published posts are public; unpublished only visible to owner/admin
+        allow read: if resource.data.published == true
+                    || ownsTenant(tenantId)
+                    || isAdmin();
+        allow write: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Leads  /tenants/{tenantId}/leads/{leadId} ─────────────────────────
+      match /leads/{leadId} {
+        // Anyone can CREATE a lead (contact form submission)
+        allow create: if true;
+        // Only owner / admin can read or update leads
+        allow read, update, delete: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Media  /tenants/{tenantId}/media/{mediaId} ────────────────────────
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Announcements  /tenants/{tenantId}/announcements/{annId} ──────────
+      match /announcements/{annId} {
+        allow read: if true;
+        allow write: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Analytics  /tenants/{tenantId}/analytics/{docId} ──────────────────
+      match /analytics/{docId} {
+        // Page-view increments are written by the public page (no auth)
+        allow create, update: if true;
+        // Only owner / admin can read analytics data
+        allow read, delete: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Team  /tenants/{tenantId}/team/{memberId} ─────────────────────────
+      match /team/{memberId} {
+        allow read: if ownsTenant(tenantId) || isAdmin();
+        allow write: if ownsTenant(tenantId) || isAdmin();
+      }
+
+      // ── Audit logs  /tenants/{tenantId}/audit_logs/{logId} ────────────────
+      match /audit_logs/{logId} {
+        // Logs are written only by the Admin SDK (server-side); never by client
+        allow read: if ownsTenant(tenantId) || isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PLATFORM ADMIN LOGS  /admin_logs/{logId}
+    // ─────────────────────────────────────────────────────────────────────────
+    match /admin_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // written only via Admin SDK
+    }
+
   }
 }

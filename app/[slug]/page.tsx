@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
+import PageViewTracker from '@/components/PageViewTracker'
 
 export const revalidate = 60
 
@@ -165,6 +166,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <PageViewTracker slug={slug} tenantId={tenantId} />
       <PublicAgencyPage
         tenant={tenant}
         profile={profileData}

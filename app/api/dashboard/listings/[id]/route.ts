@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 import { z } from 'zod'
 
 const UpdateListingSchema = z.object({
@@ -52,6 +53,7 @@ export async function PATCH(
   }
 
   await adminDb.collection('posts').doc(params.id).update(updateData)
+  await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'listing', resourceId: params.id, userId: session.uid })
   return NextResponse.json({ id: params.id, ...updateData })
 }
 
@@ -68,6 +70,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'listing', resourceId: params.id, userId: session.uid })
   await adminDb.collection('posts').doc(params.id).delete()
   return NextResponse.json({ success: true })
 }

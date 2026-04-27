@@ -2,6 +2,14 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
 import { requireAdmin } from '@/lib/admin-auth'
+import { writeAdminLog } from '@/lib/audit'
+import { z } from 'zod'
+
+const UpdateTenantSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens').optional(),
+  status: z.enum(['active', 'suspended']).optional(),
+})
 
 export async function GET(
   request: NextRequest,
@@ -38,30 +46,20 @@ export async function PATCH(
   const denied = await requireAdmin(request)
   if (denied) return denied
   const { id } = params
-  let body: { name?: string; slug?: string; status?: string }
+  let body: z.infer<typeof UpdateTenantSchema>
   try {
-    body = await request.json()
+    body = UpdateTenantSchema.parse(await request.json())
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
   const updates: Record<string, string> = { updatedAt: new Date().toISOString() }
   if (body.name) updates.name = body.name
   if (body.slug) updates.slug = body.slug
-  if (body.status && ['active', 'suspended'].includes(body.status)) {
-    updates.status = body.status
-  }
+  if (body.status) updates.status = body.status
 
   await adminDb.collection('tenants').doc(id).update(updates)
-
-  await adminDb.collection('admin_logs').add({
-    action: 'tenant_updated',
-    targetId: id,
-    targetType: 'tenant',
-    performedBy: 'super_admin',
-    metadata: updates,
-    createdAt: new Date(),
-  })
+  await writeAdminLog('tenant_updated', 'super_admin', { targetId: id, targetType: 'tenant', metadata: updates })
 
   return NextResponse.json({ success: true })
 }
@@ -97,14 +95,7 @@ export async function DELETE(
   if (!usersSnap.empty) await userBatch.commit()
 
   await adminDb.collection('tenants').doc(id).delete()
-
-  await adminDb.collection('admin_logs').add({
-    action: 'tenant_deleted',
-    targetId: id,
-    targetType: 'tenant',
-    performedBy: 'super_admin',
-    createdAt: new Date(),
-  })
+  await writeAdminLog('tenant_deleted', 'super_admin', { targetId: id, targetType: 'tenant' })
 
   return NextResponse.json({ success: true })
 }

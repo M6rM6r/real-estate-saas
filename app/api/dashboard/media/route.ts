@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
+import { logMutation } from '@/lib/audit'
 
 export async function GET(request: NextRequest) {
   const session = await getFirebaseSession(request)
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     sort_order: sortOrder,
     createdAt: new Date(),
   })
-
+  await logMutation({ tenantId: session.tenantId, action: 'create', resource: 'gallery', resourceId: docRef.id, userId: session.uid })
   return NextResponse.json({ id: docRef.id, url, label, sort_order: sortOrder })
 }
 
@@ -74,5 +75,6 @@ export async function DELETE(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
   await adminDb.collection('media').doc(id).delete()
+  await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'gallery', resourceId: id, userId: session.uid })
   return NextResponse.json({ success: true })
 }

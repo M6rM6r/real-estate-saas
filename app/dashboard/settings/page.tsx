@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { Loader as Loader2, Save, ExternalLink, Copy, Check } from 'lucide-react';
+import { Loader as Loader2, Save, ExternalLink, Copy, Check, Lock } from 'lucide-react';
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 
 type ProfileResponse = {
   profile: Profile;
@@ -26,7 +27,11 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [customDomain, setCustomDomain] = useState('');
   const [errors, setErrors] = useState<{ email?: string; logoUrl?: string }>({});
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const isDemo = typeof window !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
 
   const isValidUrl = (value: string) => {
     try {
@@ -57,6 +62,7 @@ export default function SettingsPage() {
         setName(res.tenant.name);
         setEmail(res.profile.contact_email || '');
         setLogoUrl(res.profile.logo_url || '');
+        setCustomDomain(res.tenant.custom_domain || '');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -88,7 +94,7 @@ export default function SettingsPage() {
             contact_email: email,
             logo_url: logoUrl,
           },
-          tenant: { name },
+          tenant: { name, custom_domain: customDomain },
         }),
       });
       setSaved(true);
@@ -140,6 +146,40 @@ export default function SettingsPage() {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleChangePassword = async () => {
+    if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) {
+      toast({ title: 'جميع الحقول مطلوبة', variant: 'destructive' });
+      return;
+    }
+    if (pwdForm.next !== pwdForm.confirm) {
+      toast({ title: 'كلمتا المرور غير متطابقتين', variant: 'destructive' });
+      return;
+    }
+    if (pwdForm.next.length < 8) {
+      toast({ title: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', variant: 'destructive' });
+      return;
+    }
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      toast({ title: 'المستخدم غير مسجل', variant: 'destructive' });
+      return;
+    }
+    setPwdSaving(true);
+    try {
+      const cred = EmailAuthProvider.credential(user.email, pwdForm.current);
+      await reauthenticateWithCredential(user, cred);
+      await updatePassword(user, pwdForm.next);
+      setPwdForm({ current: '', next: '', confirm: '' });
+      toast({ title: 'تم تغيير كلمة المرور بنجاح' });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'فشل تغيير كلمة المرور';
+      toast({ title: 'خطأ', description: msg, variant: 'destructive' });
+    } finally {
+      setPwdSaving(false);
+    }
   };
 
   return (
@@ -220,6 +260,92 @@ export default function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      <Card className="bg-[#12121a] border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-lg">Custom Domain</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-400">Point your own domain to your public page.</p>
+          <div className="space-y-2">
+            <Label className="text-gray-300">Your Domain</Label>
+            <Input
+              value={customDomain}
+              onChange={(e) => setCustomDomain(e.target.value)}
+              placeholder="yourcompany.com"
+              className="bg-[#1a1a2e] border-gray-700 text-white"
+            />
+          </div>
+          <div className="bg-[#1a1a2e] border border-gray-700 rounded-md p-4 text-sm text-gray-400 space-y-2">
+            <p className="font-semibold text-gray-300">DNS Setup Instructions</p>
+            <p>Add a CNAME record in your DNS provider pointing to this app:</p>
+            <code className="block bg-black/40 rounded px-3 py-2 text-green-400 text-xs font-mono">{`CNAME  @  →  ${origin || 'your-app.vercel.app'}`}</code>
+            <p className="text-xs">Changes may take up to 48 hours to propagate globally.</p>
+          </div>
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            {saved ? 'Saved!' : 'Save Changes'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {!isDemo && (
+        <Card className="bg-[#12121a] border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Lock className="h-4 w-4" /> تغيير كلمة المرور
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-gray-300">كلمة المرور الحالية</Label>
+              <Input
+                type="password"
+                value={pwdForm.current}
+                onChange={(e) => setPwdForm((p) => ({ ...p, current: e.target.value }))}
+                className="bg-[#1a1a2e] border-gray-700 text-white"
+                autoComplete="current-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">كلمة المرور الجديدة</Label>
+              <Input
+                type="password"
+                value={pwdForm.next}
+                onChange={(e) => setPwdForm((p) => ({ ...p, next: e.target.value }))}
+                className="bg-[#1a1a2e] border-gray-700 text-white"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">تأكيد كلمة المرور الجديدة</Label>
+              <Input
+                type="password"
+                value={pwdForm.confirm}
+                onChange={(e) => setPwdForm((p) => ({ ...p, confirm: e.target.value }))}
+                className="bg-[#1a1a2e] border-gray-700 text-white"
+                autoComplete="new-password"
+              />
+            </div>
+            <Button
+              onClick={handleChangePassword}
+              disabled={pwdSaving}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {pwdSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
+              تغيير كلمة المرور
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
