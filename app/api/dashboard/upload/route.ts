@@ -9,6 +9,7 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_SIZE = 5 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
+  try {
   const session = await getFirebaseSession(request)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -52,5 +53,10 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ urls })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[upload] error:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }
 
