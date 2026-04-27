@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   if (!files.length) return NextResponse.json({ error: 'No files provided' }, { status: 400 })
 
-  const bucket = adminStorage.bucket()
+  const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET)
   const urls: string[] = []
 
   for (const file of files) {
