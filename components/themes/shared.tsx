@@ -41,6 +41,7 @@ export type Profile = {
     news?: boolean
     gallery?: boolean
     team?: boolean
+    contact?: boolean
     footer?: boolean
   } | null
   page_config?: {

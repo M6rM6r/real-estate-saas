@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { authFetch } from '@/lib/api';
+import PublicAgencyPage from '@/components/PublicAgencyPage';
 import type { Profile, Tenant } from '@/lib/types';
 import { PAGE_THEMES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -1603,18 +1604,10 @@ export default function PageBuilderPage() {
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">معاينة مباشرة</span>
               <div className="flex items-center gap-3">
-                {dirty && (
-                  <span className="text-[10px] text-amber-400 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />
-                    احفظ لتحديث المعاينة
+                <span className="flex items-center gap-1.5 text-[10px] text-green-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
+                    مباشر
                   </span>
-                )}
-                {!dirty && (
-                  <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
-                    محدّثة
-                  </span>
-                )}
               </div>
             </div>
 
@@ -1651,52 +1644,61 @@ export default function PageBuilderPage() {
                   </svg>
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIframeKey(k => k + 1)}
-                title="تحديث المعاينة"
-                className="text-slate-500 hover:text-slate-300 transition-colors shrink-0"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                  <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.389zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd" />
-                </svg>
-              </button>
             </div>
 
-            {/* Scaled full-page iframe */}
-            <div className="relative overflow-hidden bg-black" style={{ height: previewDevice === 'desktop' ? 700 : 680 }}>
-              {slug ? (
-                previewDevice === 'desktop' ? (
-                  <iframe
-                    key={`${iframeKey}-desktop`}
-                    src={publicPath}
-                    title="معاينة الصفحة"
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    sandbox="allow-scripts allow-same-origin allow-forms"
-                  />
-                ) : (
-                  <iframe
-                    key={`${iframeKey}-mobile`}
-                    src={publicPath}
-                    title="معاينة الصفحة"
-                    style={{
-                      width: '390px',
-                      height: '844px',
-                      border: 'none',
-                      transformOrigin: 'top right',
-                      transform: 'scale(0.78)',
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                    }}
-                    sandbox="allow-scripts allow-same-origin allow-forms"
-                  />
-                )
-              ) : (
-                <div className="flex items-center justify-center h-full text-slate-500 text-sm">
-                  احفظ الإعدادات أولاً لتظهر المعاينة
-                </div>
-              )}
+            {/* Live inline preview — renders theme component directly, no save needed */}
+            <div className="relative overflow-hidden bg-white" style={{ height: previewDevice === 'desktop' ? 700 : 680 }}>
+              <div
+                className="pointer-events-none overflow-hidden"
+                style={previewDevice === 'mobile' ? {
+                  width: '390px',
+                  height: '844px',
+                  transform: 'scale(0.78)',
+                  transformOrigin: 'top right',
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                } : {
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                }}
+              >
+                <PublicAgencyPage
+                  tenant={{
+                    id: data?.tenant?.id ?? 'preview',
+                    name: agencyName,
+                    slug: data?.tenant?.slug ?? '',
+                    primary_color: primaryColor,
+                    theme: selectedTheme,
+                    business_type: businessType,
+                  }}
+                  profile={profile as any}
+                  listings={listings
+                    .filter((l) => l.published !== false)
+                    .map((l) => ({
+                      id: l.id,
+                      title: l.title,
+                      body: null,
+                      image_url: l.images?.[0] ?? null,
+                      images: l.images ?? [],
+                      price: l.price ?? null,
+                      location: l.location ?? null,
+                      bedrooms: l.bedrooms ?? null,
+                      bathrooms: l.bathrooms ?? null,
+                      area_sqm: l.area_sqm ?? null,
+                      listing_status: l.listing_status ?? null,
+                      offer_type: l.offer_type ?? null,
+                      property_type: l.property_type ?? null,
+                      card_style: l.card_style ?? null,
+                      published: l.published !== false,
+                      created_at: l.created_at ?? new Date().toISOString(),
+                    }))}
+                  news={[]}
+                  gallery={[]}
+                  team={[]}
+                />
+              </div>
             </div>
           </div>
         </div>
