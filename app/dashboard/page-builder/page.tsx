@@ -1664,6 +1664,8 @@ export default function PageBuilderPage() {
                   overflow: 'hidden',
                 }}
               >
+                {/* CSS-var wrapper: overrides :root --primary instantly without save */}
+                <div style={{ '--primary': primaryColor, '--accent': primaryColor } as React.CSSProperties}>
                 <PublicAgencyPage
                   tenant={{
                     id: data?.tenant?.id ?? 'preview',
@@ -1698,6 +1700,7 @@ export default function PageBuilderPage() {
                   gallery={[]}
                   team={[]}
                 />
+                </div>
               </div>
             </div>
           </div>

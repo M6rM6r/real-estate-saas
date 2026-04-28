@@ -31,18 +31,30 @@ export async function POST(request: NextRequest) {
     ? envBucket.replace('.appspot.com', '.firebasestorage.app')
     : `${projectId}.appspot.com`
 
+  // Try an explicit bucket name list until one works
   async function resolveBucket() {
-    // Try default (env-configured) bucket first
-    const primary = getStorage().bucket()
-    try {
-      await primary.exists()
-      return primary
-    } catch {
-      // Default bucket inaccessible — try the alternate naming format
-      const fallback = getStorage().bucket(altBucket)
-      await fallback.exists()
-      return fallback
+    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
+    const candidates = Array.from(new Set([
+      envBucket,
+      `${projectId}.firebasestorage.app`,
+      `${projectId}.appspot.com`,
+      altBucket,
+    ].filter(Boolean))) as string[]
+
+    for (const name of candidates) {
+      try {
+        const b = name === envBucket ? getStorage().bucket() : getStorage().bucket(name)
+        const [exists] = await b.exists()
+        if (exists) return b
+      } catch {
+        // try next
+      }
     }
+    // None resolved — throw descriptive error
+    throw new Error(
+      `Firebase Storage bucket not found. Tried: ${candidates.join(', ')}. ` +
+      'Please enable Firebase Storage in the Firebase Console and set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET in .env.local.'
+    )
   }
 
   const bucket = await resolveBucket()
