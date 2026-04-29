@@ -986,7 +986,7 @@ export default function PageBuilderPage() {
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
                       className={`relative rounded-xl overflow-hidden cursor-pointer transition-all border-2 ${
-                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'border-transparent hover:border-slate-500 hover:scale-[1.01]'
+                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 hover:scale-[1.01]'
                       }`}
                       aria-label={`Select theme ${theme.label}`}
                       aria-pressed={selectedTheme === theme.id}
