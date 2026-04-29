@@ -1,13 +1,21 @@
 import './globals.css';
 import 'photoswipe/style.css';
 import type { Metadata, Viewport } from 'next';
-import { Cairo } from 'next/font/google';
+import { Cairo, Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
   display: 'swap',
   variable: '--font-cairo',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className={cairo.className}>
+      <body className={`${inter.variable} ${cairo.variable}`}>
         {children}
         <Toaster />
       </body>

@@ -15,8 +15,9 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['Cairo', 'Noto Sans Arabic', 'system-ui', 'sans-serif'],
-        arabic: ['Cairo', 'Noto Sans Arabic', 'sans-serif'],
+        sans: ['var(--font-inter)', 'var(--font-cairo)', 'system-ui', 'sans-serif'],
+        arabic: ['var(--font-cairo)', 'sans-serif'],
+        latin: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
