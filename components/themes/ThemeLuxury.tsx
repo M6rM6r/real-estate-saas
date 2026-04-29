@@ -61,6 +61,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
   const filtered = offerFilter === 'all' ? published : published.filter(l => l.offer_type === offerFilter)
   const featured = filtered[0] ?? null
   const rest = filtered.slice(1)
+  const colsClass = pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'
 
   return (
     <>
@@ -211,9 +212,9 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                 </button>
               )}
 
-              {/* Remaining listings — 2 column */}
+              {/* Remaining listings */}
               {rest.length > 0 && (
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className={`grid grid-cols-1 ${colsClass} gap-6`}>
                   {rest.map(l => (
                     <button key={l.id} className="text-right border overflow-hidden group transition-all hover:border-opacity-100 block"
                       style={{ borderColor: `${primary}30`, borderRadius: pageTheme.radius, backgroundColor: '#111' }}

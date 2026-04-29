@@ -59,6 +59,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const filtered = offerFilter === 'all' ? published : published.filter(l => l.offer_type === offerFilter)
   const featured = filtered[0] ?? null
   const compact = filtered.slice(1)
+  const colsClass = pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'
 
   const cardStyle = {
     backgroundColor: pageTheme.cardBg,
@@ -197,9 +198,9 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
               </div>
             </button>
 
-            {/* Remaining — 4 col compact */}
+            {/* Remaining listings */}
             {compact.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className={`grid grid-cols-1 ${colsClass} gap-4`}>
                 {compact.map(l => (
                   <button key={l.id} className="text-right border overflow-hidden group block hover:shadow-md transition-all"
                     style={{ borderColor: `${primary}30`, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}
