@@ -74,16 +74,25 @@ const nextConfig = {
   }),
 }
 
+const hasSentryCredentials =
+  process.env.SENTRY_ORG &&
+  process.env.SENTRY_ORG !== 'PLACEHOLDER' &&
+  process.env.SENTRY_PROJECT &&
+  process.env.SENTRY_PROJECT !== 'PLACEHOLDER' &&
+  process.env.SENTRY_AUTH_TOKEN &&
+  process.env.SENTRY_AUTH_TOKEN !== 'PLACEHOLDER'
+
 module.exports = withSentryConfig(nextConfig, {
-  // Sentry webpack plugin options
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  // Upload source maps in CI/production only
-  silent: !process.env.CI,
-  // Disable source map upload if auth token not set (local dev)
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  // Automatically tree-shake Sentry logger statements
+  silent: true,
   disableLogger: true,
-  // Hides Sentry SDK from client bundle in dev
   hideSourceMaps: true,
+  // Disable source map upload until real Sentry credentials are configured
+  sourcemaps: {
+    disable: !hasSentryCredentials,
+  },
+  // Skip release creation if credentials are placeholders
+  release: hasSentryCredentials ? undefined : { create: false, finalize: false },
 })
