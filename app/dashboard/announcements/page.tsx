@@ -124,6 +124,12 @@ export default function AnnouncementsPage() {
     if (form.images.some((img) => img && !isValidUrl(img))) {
       nextErrors.images = 'All image URLs must start with http:// or https://';
     }
+    if (!form.published && form.publish_at && new Date(form.publish_at) <= new Date()) {
+      nextErrors.title = nextErrors.title || undefined;
+      toast({ title: 'تاريخ غير صحيح', description: 'يجب أن يكون تاريخ النشر المجدول في المستقبل', variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
     setFormErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 

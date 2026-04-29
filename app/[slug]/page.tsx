@@ -156,7 +156,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
     '@type': 'RealEstateAgent',
     name: tenant.name,
     description: profileData?.bio ?? 'Professional real estate services',
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'}/${slug}`,
     ...(profileData?.logo_url ? { logo: profileData.logo_url } : {}),
     ...(profileData?.contact_phone ? { telephone: profileData.contact_phone } : {}),
     ...(profileData?.contact_address ? { address: { '@type': 'PostalAddress', streetAddress: profileData.contact_address } } : {}),

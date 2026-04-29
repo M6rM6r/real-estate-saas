@@ -44,6 +44,15 @@ export function InquiryForm({
     setStatus('loading');
     setErrorMessage('');
 
+    // Basic phone validation
+    const phoneRaw = formData.phone.replace(/\s/g, '');
+    if (!/^\+?[0-9\-\(\)]{7,20}$/.test(phoneRaw)) {
+      setStatus('error');
+      setErrorMessage('رقم الجوال غير صحيح — يرجى إدخال رقم صحيح');
+      setTimeout(() => setStatus('idle'), 4000);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/${slug}/leads`, {
         method: 'POST',

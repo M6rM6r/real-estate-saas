@@ -51,6 +51,7 @@ export default function ListingsSection({ listings }: ListingsSectionProps) {
               width={400}
               height={192}
               className="w-full h-48 object-cover mb-2"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority={false}
             />
             <h3 className="font-bold">{listing.title}</h3>
@@ -74,6 +75,7 @@ export default function ListingsSection({ listings }: ListingsSectionProps) {
                   width={300}
                   height={128}
                   className="w-full h-32 object-cover mb-2"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   priority={false}
                 />
                 <h3 className="font-bold">{listing.title}</h3>

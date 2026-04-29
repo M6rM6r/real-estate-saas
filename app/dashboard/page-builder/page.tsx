@@ -40,14 +40,25 @@ function ImageUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
+  const demoObjUrl = useRef<string | null>(null);
   const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+
+  // Revoke object URLs created in demo mode to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (demoObjUrl.current) URL.revokeObjectURL(demoObjUrl.current);
+    };
+  }, []);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file) return;
     setErr('');
     // Demo mode: create a local object URL
     if (isDemo) {
-      onChange(URL.createObjectURL(file));
+      if (demoObjUrl.current) URL.revokeObjectURL(demoObjUrl.current);
+      const url = URL.createObjectURL(file);
+      demoObjUrl.current = url;
+      onChange(url);
       return;
     }
     setUploading(true);
@@ -554,7 +565,7 @@ export default function PageBuilderPage() {
     if (!ctx) return;
     const svgData = new XMLSerializer().serializeToString(svg);
     const img = new Image();
-    img.onload = () => { ctx.drawImage(img, 0, 0, 360, 360); canvas.toBlob((blob) => { if (!blob) return; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `qr-${slug || 'page'}.png`; a.click(); }); };
+    img.onload = () => { ctx.drawImage(img, 0, 0, 360, 360); canvas.toBlob((blob) => { if (!blob) return; const a = document.createElement('a'); const objUrl = URL.createObjectURL(blob); a.href = objUrl; a.download = `qr-${slug || 'page'}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(objUrl), 1000); }); };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
   };
 

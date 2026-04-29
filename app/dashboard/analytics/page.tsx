@@ -61,6 +61,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [period, setPeriod] = useState<Period>('30d')
+  const [retryKey, setRetryKey] = useState(0)
   const [isDemo, setIsDemo] = useState(false)
   const [topListings, setTopListings] = useState<{ listingId: string; title: string; views: number }[]>([])
 
@@ -84,7 +85,7 @@ export default function AnalyticsPage() {
       .then(setAnalytics)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
-  }, [period])
+  }, [period, retryKey])
 
   useEffect(() => {
     const demo = sessionStorage.getItem('demo_auth') === 'true'
@@ -104,8 +105,14 @@ export default function AnalyticsPage() {
 
   if (error || !analytics) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
-        {error || 'فشل تحميل الإحصائيات'}
+      <div className="flex flex-col items-center justify-center h-64 gap-4 text-slate-400 text-sm">
+        <p>{error || 'فشل تحميل الإحصائيات'}</p>
+        <button
+          onClick={() => { setError(''); setRetryKey(k => k + 1) }}
+          className="px-4 py-2 text-xs rounded-lg border border-gray-700 bg-[#12121a] text-gray-300 hover:text-white hover:border-gray-500 transition-colors"
+        >
+          إعادة المحاولة
+        </button>
       </div>
     )
   }

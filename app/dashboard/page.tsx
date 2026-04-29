@@ -225,7 +225,7 @@ export default function DashboardOverview() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center shrink-0">
-                        <span className="text-xs font-bold text-blue-400">{lead.name.charAt(0)}</span>
+                        <span className="text-xs font-bold text-blue-400">{([...lead.name][0] || '?').toUpperCase()}</span>
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-white truncate">{lead.name}</p>

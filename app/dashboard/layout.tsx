@@ -175,7 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {userInfo && (
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-800/50">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                {(userInfo.displayName || userInfo.email).charAt(0).toUpperCase()}
+                {([...(userInfo.displayName || userInfo.email || '?')][0] || '?').toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-white font-medium truncate">{userInfo.displayName || userInfo.email.split('@')[0]}</p>

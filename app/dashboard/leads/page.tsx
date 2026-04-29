@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Lead, LeadStatus } from '@/lib/types';
 import { Card } from '@/components/ui/card';
@@ -67,13 +67,17 @@ export default function LeadsPage() {
       setLeads(leads.map((l) => (l.id === id ? { ...l, status } : l)));
       return;
     }
+    const prev = leads.find((l) => l.id === id)?.status;
+    setLeads(leads.map((l) => (l.id === id ? { ...l, status } : l)));
     try {
       await authFetch(`/api/dashboard/leads/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       });
-      setLeads(leads.map((l) => (l.id === id ? { ...l, status } : l)));
-    } catch {}
+    } catch {
+      // Revert on failure
+      if (prev) setLeads(leads.map((l) => (l.id === id ? { ...l, status: prev } : l)));
+    }
   };
 
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
