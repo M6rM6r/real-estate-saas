@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Profile, Tenant } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const [errors, setErrors] = useState<{ email?: string; logoUrl?: string }>({});
   const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
   const [pwdSaving, setPwdSaving] = useState(false);
+  const [hasUnsaved, setHasUnsaved] = useState(false);
   const isDemo = typeof window !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
 
   const isValidUrl = (value: string) => {
@@ -72,6 +73,15 @@ export default function SettingsPage() {
     setOrigin(window.location.origin);
   }, []);
 
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (hasUnsaved) { e.preventDefault(); e.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsaved]);
+
   const handleSave = async () => {
     const nextErrors: { email?: string; logoUrl?: string } = {};
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -98,6 +108,7 @@ export default function SettingsPage() {
         }),
       });
       setSaved(true);
+      setHasUnsaved(false);
       toast({ title: 'Saved', description: 'Settings updated successfully.' });
     } catch (e) {
       toast({
@@ -186,6 +197,16 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold">Settings</h1>
 
+      {/* Unsaved changes banner */}
+      {hasUnsaved && (
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-lg bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm">
+          <span className="text-amber-300">لديك تغييرات غير محفوظة</span>
+          <Button size="sm" onClick={handleSave} disabled={saving} aria-busy={saving} className="bg-amber-500 hover:bg-amber-400 text-black">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'حفظ الآن'}
+          </Button>
+        </div>
+      )}
+
       {publicUrl && (
         <Card className="bg-[#12121a] border-gray-800">
           <CardHeader>
@@ -217,7 +238,7 @@ export default function SettingsPage() {
             <Label className="text-gray-300">Agency Name</Label>
             <Input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); setHasUnsaved(true); }}
               className="bg-[#1a1a2e] border-gray-700 text-white"
             />
           </div>
@@ -229,6 +250,7 @@ export default function SettingsPage() {
               onChange={(e) => {
                 setEmail(e.target.value);
                 setErrors((prev) => ({ ...prev, email: undefined }));
+                setHasUnsaved(true);
               }}
               className="bg-[#1a1a2e] border-gray-700 text-white"
             />
@@ -241,6 +263,7 @@ export default function SettingsPage() {
               onChange={(e) => {
                 setLogoUrl(e.target.value);
                 setErrors((prev) => ({ ...prev, logoUrl: undefined }));
+                setHasUnsaved(true);
               }}
               className="bg-[#1a1a2e] border-gray-700 text-white"
             />

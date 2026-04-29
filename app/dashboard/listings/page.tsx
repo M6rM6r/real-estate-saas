@@ -399,11 +399,12 @@ export default function ListingsPage() {
 
       {listings.length === 0 ? (
         <Card className="bg-[#12121a] border-gray-800 border-dashed">
-          <CardContent className="py-16 text-center">
-            <p className="text-gray-300 font-medium">No listings yet.</p>
-            <p className="text-gray-500 text-sm mt-2">Create your first property to start showcasing your inventory.</p>
-            <Button onClick={openCreate} className="mt-5 bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" /> Add First Listing
+          <CardContent className="py-20 flex flex-col items-center justify-center text-center gap-3">
+            <span className="text-6xl" role="img" aria-label="منزل">🏠</span>
+            <p className="text-lg font-semibold text-gray-200">لا توجد عقارات بعد</p>
+            <p className="text-sm text-gray-500 max-w-xs">أضف أول عقار لك وابدأ في استقطاب العملاء وعرض مشاريعك</p>
+            <Button onClick={openCreate} className="mt-2 bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" /> إضافة عقار
             </Button>
           </CardContent>
         </Card>

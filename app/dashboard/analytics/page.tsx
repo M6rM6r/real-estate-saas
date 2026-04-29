@@ -125,10 +125,16 @@ export default function AnalyticsPage() {
           <p className="text-sm text-slate-400 mt-0.5">نظرة عامة على أداء صفحتك</p>
         </div>
         {/* Period toggle */}
-        <div className="flex rounded-lg overflow-hidden border border-slate-700 shrink-0">
+        <div
+          role="radiogroup"
+          aria-label="الفترة الزمنية"
+          className="flex rounded-lg overflow-hidden border border-slate-700 shrink-0"
+        >
           {PERIODS.map(p => (
             <button
               key={p.key}
+              role="radio"
+              aria-checked={period === p.key}
               onClick={() => setPeriod(p.key)}
               className={`px-3 py-1.5 text-xs font-medium transition-colors ${period === p.key ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'}`}
             >

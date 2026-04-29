@@ -110,17 +110,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex">
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Overlay */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/60 lg:hidden transition-opacity duration-300',
+          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside
         className={cn(
-          'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#0e0e18] border-r border-gray-800 flex flex-col transition-transform lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed lg:static inset-y-0 right-0 z-50 w-64 bg-[#0e0e18] border-l border-gray-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         <div className="flex items-center gap-3 px-6 h-16 border-b border-gray-800">
@@ -199,6 +202,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-gray-400 hover:text-white mr-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
             aria-label="فتح القائمة الجانبية"
+            aria-expanded={sidebarOpen}
           >
             <Menu className="h-6 w-6" />
           </button>

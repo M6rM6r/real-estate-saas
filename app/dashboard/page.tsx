@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authFetch } from '@/lib/api';
 import type { AnalyticsData, Lead, Post } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,7 +104,7 @@ export default function DashboardOverview() {
       </div>
 
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-blue-500/30 transition-all duration-200 hover:-translate-y-0.5">
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-blue-500/30 transition-all duration-200 hover:-translate-y-0.5 active:scale-95">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">
               إجمالي المشاهدات
@@ -117,7 +118,7 @@ export default function DashboardOverview() {
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-green-500/30 transition-all duration-200 hover:-translate-y-0.5">
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-green-500/30 transition-all duration-200 hover:-translate-y-0.5 active:scale-95">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">
               إجمالي العملاء المحتملين
@@ -129,7 +130,7 @@ export default function DashboardOverview() {
             <p className="mt-2 text-xs text-gray-400">استفسارات مؤهلة من جميع القنوات</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-violet-500/30 transition-all duration-200 hover:-translate-y-0.5 sm:col-span-2 xl:col-span-1">
+        <Card className="bg-gradient-to-br from-[#12121a] to-[#17172a] border-gray-800 hover:border-violet-500/30 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 sm:col-span-2 xl:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">
               معدل التحويل
@@ -157,7 +158,7 @@ export default function DashboardOverview() {
         </CardHeader>
         <CardContent>
           {chartData.length > 0 ? (
-            <div className="h-72 pt-2">
+            <div className="h-72 pt-2" role="img" aria-label="مخطط بياني لمشاهدات الصفحة عبر الزمن">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
@@ -203,12 +204,12 @@ export default function DashboardOverview() {
                 <Users className="h-4 w-4 text-green-400" />
                 أحدث العملاء
               </span>
-              <button
-                onClick={() => router.push('/dashboard/leads')}
+              <Link
+                href="/dashboard/leads"
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
               >
                 عرض الكل
-              </button>
+              </Link>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -251,12 +252,12 @@ export default function DashboardOverview() {
                 <MapPin className="h-4 w-4 text-orange-400" />
                 آخر العقارات
               </span>
-              <button
-                onClick={() => router.push('/dashboard/listings')}
+              <Link
+                href="/dashboard/listings"
                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
               >
                 عرض الكل
-              </button>
+              </Link>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

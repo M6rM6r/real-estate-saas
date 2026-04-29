@@ -248,9 +248,16 @@ export default function LeadsPage() {
       />
 
       {filtered.length === 0 ? (
-        <Card className="bg-[#12121a] border-gray-800 py-16 text-center">
-          <p className="text-gray-300 font-medium">لا يوجد عملاء محتملين</p>
-          <p className="text-gray-500 text-sm mt-2">جرب تغيير المرشحات أو مسح البحث.</p>
+        <Card className="bg-[#12121a] border-gray-800">
+          <div className="py-20 flex flex-col items-center justify-center text-center gap-3">
+            <span className="text-6xl" role="img" aria-label="مجموعة أشخاص">👥</span>
+            <p className="text-lg font-semibold text-gray-200">لا توجد عملاء محتملون</p>
+            <p className="text-sm text-gray-500 max-w-xs">
+              {query || filter !== 'all'
+                ? 'لا توجد نتائج مطابقة — جرب تغيير المرشحات أو مسح البحث'
+                : 'ستظهر هنا بيانات العملاء عند بدء استقبال الطلبات من صفحتك العامة'}
+            </p>
+          </div>
         </Card>
       ) : (
         <>

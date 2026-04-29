@@ -85,7 +85,9 @@ export function InquiryForm({
     <div className="w-full max-w-md">
       {showSuccess && (
         <div
-          className="mb-4 rounded-lg p-4 border-l-4 flex items-start gap-3"
+          role="alert"
+          aria-live="polite"
+          className="mb-4 rounded-lg p-4 border-r-4 flex items-start gap-3"
           style={{ backgroundColor: accentColor + '15', borderColor: accentColor }}
         >
           <Check className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: accentColor }} />
@@ -97,7 +99,7 @@ export function InquiryForm({
       )}
 
       {status === 'error' && (
-        <div className="mb-4 rounded-lg p-4 border-l-4 border-red-500 bg-red-500/10 flex items-start gap-3">
+        <div role="alert" aria-live="assertive" className="mb-4 rounded-lg p-4 border-r-4 border-red-500 bg-red-500/10 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5 text-red-500" />
           <p className="text-sm text-red-300">{errorMessage}</p>
         </div>
@@ -134,6 +136,7 @@ export function InquiryForm({
             id="phone"
             name="phone"
             type="tel"
+            inputMode="tel"
             value={formData.phone}
             onChange={handleChange}
             placeholder="+971 50 123 4567"

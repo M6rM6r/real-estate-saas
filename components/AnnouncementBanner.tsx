@@ -23,12 +23,13 @@ export function AnnouncementBanner({
   onDismiss,
 }: AnnouncementBannerProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(`announcement-${id}`);
-    if (dismissed) {
-      setIsVisible(false);
-    }
+    try {
+      const dismissed = localStorage.getItem(`announcement-${id}`);
+      if (dismissed) setIsVisible(false);
+    } catch {}
   }, [id]);
 
   useEffect(() => {
@@ -41,9 +42,12 @@ export function AnnouncementBanner({
   }, [autoClose, isVisible]);
 
   const handleDismiss = () => {
-    localStorage.setItem(`announcement-${id}`, 'true');
-    setIsVisible(false);
-    onDismiss?.();
+    setIsLeaving(true);
+    setTimeout(() => {
+      try { localStorage.setItem(`announcement-${id}`, 'true'); } catch {}
+      setIsVisible(false);
+      onDismiss?.();
+    }, 300);
   };
 
   if (!isVisible) return null;
@@ -80,7 +84,9 @@ export function AnnouncementBanner({
 
   return (
     <div
-      className={`${config.bg} ${config.border} border-l-4 p-4 rounded-lg flex items-start gap-4`}
+      role={type === 'error' || type === 'warning' ? 'alert' : 'status'}
+      aria-live={type === 'error' || type === 'warning' ? 'assertive' : 'polite'}
+      className={`${config.bg} ${config.border} border-r-4 p-4 rounded-lg flex items-start gap-4 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}
       dir="rtl"
     >
       <Icon className={`h-6 w-6 flex-shrink-0 mt-0.5 ${config.color}`} />
@@ -91,7 +97,8 @@ export function AnnouncementBanner({
       {dismissible && (
         <button
           onClick={handleDismiss}
-          className="text-gray-400 hover:text-gray-300 transition-colors flex-shrink-0 mt-0.5"
+          aria-label="إغلاق الإشعار"
+          className="text-gray-400 hover:text-gray-300 transition-colors flex-shrink-0 mt-0.5 p-1 -m-1 rounded"
         >
           <X className="h-5 w-5" />
         </button>
