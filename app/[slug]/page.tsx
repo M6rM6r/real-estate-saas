@@ -5,6 +5,8 @@ import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
 import PageViewTracker from '@/components/PageViewTracker'
 
+const DEMO_SLUG = 'luxury-homes-dubai'
+
 export const revalidate = 60
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,6 +23,9 @@ const serialize = (obj: any): any => {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
+  if (slug === DEMO_SLUG) {
+    return { title: 'Luxury Homes Dubai — عقارات', description: 'Premium luxury real estate in Dubai' }
+  }
   const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
   if (tenantsSnap.empty) return { title: 'Not Found' }
   const tenant = { id: tenantsSnap.docs[0].id, ...tenantsSnap.docs[0].data() } as { id: string; name: string; slug: string }
@@ -54,7 +59,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // ── Demo data shown when the slug has no Firestore tenant ────────────────────
-const DEMO_SLUG = 'luxury-homes-dubai'
 
 const DEMO_DATA = {
   tenant: {
