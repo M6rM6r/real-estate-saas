@@ -832,122 +832,153 @@ export default function PageBuilderPage() {
 
         {/* Left sidebar: sections & quick config */}
         <div className="space-y-4 lg:sticky lg:top-4 xl:max-w-[220px]">
+          {/* Unified smart control panel */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-bold text-white">إدارة أقسام الصفحة</p>
-            <p className="text-xs text-slate-500">تحكّم بما يراه عملاؤك مباشرة</p>
-            {([
-              ['hero', 'القسم الرئيسي'],
-              ['featured', 'المميز'],
-              ['listings', 'العروض'],
-              ['about', 'من نحن'],
-              ['news', 'الأخبار'],
-              ['gallery', 'المعرض'],
-              ['team', 'الفريق'],
-              ['contact', 'تواصل معنا'],
-              ['footer', 'التذييل'],
-            ] as const).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => toggleSection(key)}
-                className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white"
-                aria-label={`Toggle section ${label}`}
-                aria-pressed={sections[key]}
-              >
-                <span>{label}</span>
-                <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
-                </span>
-              </button>
-            ))}
-          </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-bold text-white">إعدادات العرض</p>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-400">العنوان الرئيسي</Label>
-              <Input
-                value={pageConfig.hero_headline || ''}
-                onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white text-sm"
-                placeholder="ابحث عن عقارك المثالي"
+            {/* Header with live section counter */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
+              <span className="text-[11px] font-mono bg-blue-600/20 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                {Object.values(sections).filter(Boolean).length}/{Object.values(sections).length}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-500"
+                style={{ width: `${(Object.values(sections).filter(Boolean).length / Object.values(sections).length) * 100}%` }}
               />
             </div>
 
-            {/* Hero Style Picker */}
+            {/* Section toggles with icons */}
+            {([
+              ['hero',     '🏠', 'القسم الرئيسي'],
+              ['featured', '⭐', 'المميز'],
+              ['listings', '🏢', 'العروض'],
+              ['about',    '👥', 'من نحن'],
+              ['news',     '📰', 'الأخبار'],
+              ['gallery',  '🖼️', 'المعرض'],
+              ['team',     '🤝', 'الفريق'],
+              ['contact',  '📞', 'تواصل معنا'],
+              ['footer',   '▬', 'التذييل'],
+            ] as const).map(([key, icon, label]) => (
+              <div key={key}>
+                <button
+                  type="button"
+                  onClick={() => toggleSection(key)}
+                  className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors"
+                  aria-label={`Toggle section ${label}`}
+                  aria-pressed={sections[key]}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-base leading-none w-5 text-center">{icon}</span>
+                    <span>{label}</span>
+                  </span>
+                  <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
+                  </span>
+                </button>
 
-            <div className="space-y-1 border-t border-slate-800 pt-3">
-              <Label className="text-xs text-slate-400">أعمدة شبكة العروض</Label>
-              <select
-                value={pageConfig.listings_columns || 3}
-                onChange={(e) => updatePageConfig({ listings_columns: Number(e.target.value) as 2 | 3 | 4 })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
-              >
-                <option value={2}>2 أعمدة</option>
-                <option value={3}>3 أعمدة</option>
-                <option value={4}>4 أعمدة</option>
-              </select>
-            </div>
-            <div className="space-y-1 border-t border-slate-800 pt-3">
-              <Label className="text-xs text-slate-400">عملة الأسعار</Label>
-              <select
-                value={pageConfig.currency || 'SAR'}
-                onChange={(e) => updatePageConfig({ currency: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
-              >
-                <option value="SAR">⃁ — ريال سعودي</option>
-                <option value="AED">د.إ — درهم إماراتي</option>
-                <option value="KWD">د.ك — دينار كويتي</option>
-                <option value="QAR">ر.ق — ريال قطري</option>
-                <option value="BHD">د.ب — دينار بحريني</option>
-                <option value="OMR">ر.ع — ريال عُماني</option>
-                <option value="EGP">ج.م — جنيه مصري</option>
-                <option value="USD">$ — دولار أمريكي</option>
-                <option value="EUR">€ — يورو</option>
-                <option value="GBP">£ — جنيه إسترليني</option>
-              </select>
-            </div>
-            <div className="space-y-1 border-t border-slate-800 pt-3">
-              <Label className="text-xs text-slate-400">تسمية نوع العرض (خيار 1 / خيار 2)</Label>
-              <div className="flex gap-2">
+                {/* Listings inline subsettings — only when active */}
+                {key === 'listings' && sections.listings && (
+                  <div className="mt-2 mr-7 space-y-2 border-r border-blue-600/30 pr-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">أعمدة</span>
+                      <div className="flex gap-1">
+                        {([2, 3, 4] as const).map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => updatePageConfig({ listings_columns: n })}
+                            className={`h-5 w-6 rounded text-[11px] font-bold transition-colors ${(pageConfig.listings_columns ?? 3) === n ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">فلاتر</span>
+                      <button
+                        type="button"
+                        onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })}
+                        aria-pressed={pageConfig.show_listing_filters}
+                      >
+                        <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                          <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                        </span>
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">بحث</span>
+                      <button
+                        type="button"
+                        onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })}
+                        aria-pressed={pageConfig.show_listing_search}
+                      >
+                        <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                          <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Divider + compact display settings */}
+            <div className="border-t border-slate-700 pt-3 space-y-3">
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">⚙️ إعدادات سريعة</p>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-slate-500">عنوان الهيرو</Label>
                 <Input
-                  value={pageConfig.offer_label_1 || ''}
-                  onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })}
-                  placeholder="للبيع"
-                  className="bg-slate-800 border-slate-700 text-white text-sm placeholder:text-slate-500"
-                />
-                <Input
-                  value={pageConfig.offer_label_2 || ''}
-                  onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })}
-                  placeholder="للإيجار"
-                  className="bg-slate-800 border-slate-700 text-white text-sm placeholder:text-slate-500"
+                  value={pageConfig.hero_headline || ''}
+                  onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white text-xs h-8"
+                  placeholder="ابحث عن عقارك المثالي"
                 />
               </div>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-slate-500">العملة</Label>
+                <select
+                  value={pageConfig.currency || 'SAR'}
+                  onChange={(e) => updatePageConfig({ currency: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white"
+                >
+                  <option value="SAR">⃁ ريال سعودي</option>
+                  <option value="AED">د.إ درهم إماراتي</option>
+                  <option value="KWD">د.ك دينار كويتي</option>
+                  <option value="QAR">ر.ق ريال قطري</option>
+                  <option value="BHD">د.ب دينار بحريني</option>
+                  <option value="OMR">ر.ع ريال عُماني</option>
+                  <option value="EGP">ج.م جنيه مصري</option>
+                  <option value="USD">$ دولار</option>
+                  <option value="EUR">€ يورو</option>
+                  <option value="GBP">£ جنيه إسترليني</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-slate-500">تسميات نوع العرض</Label>
+                <div className="flex gap-1.5">
+                  <Input
+                    value={pageConfig.offer_label_1 || ''}
+                    onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })}
+                    placeholder="للبيع"
+                    className="bg-slate-800 border-slate-700 text-white text-xs h-8 placeholder:text-slate-500"
+                  />
+                  <Input
+                    value={pageConfig.offer_label_2 || ''}
+                    onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })}
+                    placeholder="للإيجار"
+                    className="bg-slate-800 border-slate-700 text-white text-xs h-8 placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })}
-              className="w-full flex items-center justify-between text-sm text-slate-200"
-              aria-label="Toggle listing filters"
-              aria-pressed={pageConfig.show_listing_filters}
-            >
-              <span>إظهار الفلاتر</span>
-              <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-4' : 'translate-x-1'}`} />
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })}
-              className="w-full flex items-center justify-between text-sm text-slate-200"
-              aria-label="Toggle listing search"
-              aria-pressed={pageConfig.show_listing_search}
-            >
-              <span>إظهار البحث</span>
-              <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-4' : 'translate-x-1'}`} />
-              </span>
-            </button>
           </div>
         </div>
 
