@@ -135,6 +135,7 @@ export type Post = {
   offer_type?: 'sale' | 'rent' | null;
   property_type?: string | null;
   card_style?: 'standard' | 'featured' | 'compact' | null;
+  features?: string[];
   published: boolean;
   published_at?: string;
   publish_at?: string;

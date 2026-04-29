@@ -212,13 +212,12 @@ export function PropertyDetailModal({
             </div>
 
             {/* Description */}
+            {property.body && (
             <div className="mt-6">
               <h3 className="text-lg font-bold text-white mb-3">الوصف</h3>
-              <p className="text-gray-300 leading-relaxed">
-                {property.body ||
-                  'هذا عقار مميز يتميز بموقع استراتيجي وتصميم حديث يلبي جميع احتياجاتك'}
-              </p>
+              <p className="text-gray-300 leading-relaxed">{property.body}</p>
             </div>
+            )}
 
             {/* Location */}
             {property.location && (
@@ -265,27 +264,19 @@ export function PropertyDetailModal({
             )}
 
             {/* Features */}
+            {(property.features && property.features.length > 0) && (
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 space-y-2">
               <p className="font-semibold text-white text-sm mb-3">المميزات</p>
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" style={{ color: accentColor }} />
-                  <span className="text-gray-300 text-sm">موقع استراتيجي</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" style={{ color: accentColor }} />
-                  <span className="text-gray-300 text-sm">تصميم عصري</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" style={{ color: accentColor }} />
-                  <span className="text-gray-300 text-sm">مرافق متكاملة</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" style={{ color: accentColor }} />
-                  <span className="text-gray-300 text-sm">أمان 24/7</span>
-                </div>
+                {property.features.map((feat, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 shrink-0" style={{ color: accentColor }} />
+                    <span className="text-gray-300 text-sm">{feat}</span>
+                  </div>
+                ))}
               </div>
             </div>
+            )}
 
             {/* Share */}
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">

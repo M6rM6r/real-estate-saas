@@ -127,6 +127,7 @@ const emptyListing = {
   listing_status: 'available' as ListingStatus,
   published: true,
   images: [] as string[],
+  features: [] as string[],
 };
 
 export default function ListingsPage() {
@@ -252,6 +253,7 @@ export default function ListingsPage() {
       listing_status: listing.listing_status || 'available',
       published: listing.published,
       images: listing.images || [],
+      features: listing.features || [],
     });
     setFormErrors({});
     setImageUrl('');
@@ -280,6 +282,7 @@ export default function ListingsPage() {
         listing_status: form.listing_status,
         published: form.published,
         images: form.images,
+        features: form.features.filter(f => f.trim()),
       };
       const isDemo = sessionStorage.getItem('demo_auth') === 'true';
       if (isDemo) {
@@ -660,6 +663,50 @@ export default function ListingsPage() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Features */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-gray-300">المميزات (Features)</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs border-gray-700 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-1"
+                  onClick={() => setForm({ ...form, features: [...form.features, ''] })}
+                >
+                  <Plus className="h-3 w-3" /> إضافة ميزة
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {form.features.map((feat, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <Input
+                      value={feat}
+                      onChange={(e) => {
+                        const next = [...form.features];
+                        next[i] = e.target.value;
+                        setForm({ ...form, features: next });
+                      }}
+                      placeholder="مثال: موقع استراتيجي"
+                      className="bg-[#1a1a2e] border-gray-700 text-white text-sm h-8"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      onClick={() => setForm({ ...form, features: form.features.filter((_, j) => j !== i) })}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                {form.features.length === 0 && (
+                  <p className="text-xs text-gray-500">لا توجد مميزات — اضغط &quot;إضافة ميزة&quot; لإضافتها</p>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-gray-300">Description</Label>
