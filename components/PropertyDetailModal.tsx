@@ -224,11 +224,35 @@ export function PropertyDetailModal({
               <div className="mt-6 bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-gray-400 text-sm mb-1">الموقع</p>
                     <p className="text-white font-semibold">{property.location}</p>
+                    {property.location_url && (
+                      <a
+                        href={property.location_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <MapPin className="h-4 w-4" />
+                        عرض على الخريطة
+                      </a>
+                    )}
                   </div>
                 </div>
+              </div>
+            )}
+            {!property.location && property.location_url && (
+              <div className="mt-6 bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <a
+                  href={property.location_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <MapPin className="h-5 w-5" />
+                  عرض الموقع على الخريطة
+                </a>
               </div>
             )}
           </div>

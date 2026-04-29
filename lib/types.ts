@@ -128,6 +128,7 @@ export type Post = {
   images: string[];
   price?: number;
   location?: string;
+  location_url?: string;
   bedrooms?: number;
   bathrooms?: number;
   area_sqm?: number;

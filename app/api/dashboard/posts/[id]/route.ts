@@ -11,6 +11,7 @@ const UpdatePostSchema = z.object({
   images: z.array(z.string().url()).max(20).optional(),
   price: z.number().positive().optional().nullable(),
   location: z.string().max(300).optional().nullable(),
+  location_url: z.string().url().max(500).optional().nullable(),
   bedrooms: z.number().int().min(0).max(100).optional().nullable(),
   bathrooms: z.number().int().min(0).max(100).optional().nullable(),
   area_sqm: z.number().positive().optional().nullable(),

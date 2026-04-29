@@ -121,6 +121,7 @@ const emptyListing = {
   body: '',
   price: '',
   location: '',
+  location_url: '',
   bedrooms: '',
   bathrooms: '',
   area_sqm: '',
@@ -247,6 +248,7 @@ export default function ListingsPage() {
       body: listing.body || '',
       price: listing.price?.toString() || '',
       location: listing.location || '',
+      location_url: listing.location_url || '',
       bedrooms: listing.bedrooms?.toString() || '',
       bathrooms: listing.bathrooms?.toString() || '',
       area_sqm: listing.area_sqm?.toString() || '',
@@ -276,6 +278,7 @@ export default function ListingsPage() {
         body: form.body || undefined,
         price: form.price ? Number(form.price) : undefined,
         location: form.location || undefined,
+        location_url: form.location_url || undefined,
         bedrooms: form.bedrooms ? Number(form.bedrooms) : undefined,
         bathrooms: form.bathrooms ? Number(form.bathrooms) : undefined,
         area_sqm: form.area_sqm ? Number(form.area_sqm) : undefined,
@@ -613,6 +616,15 @@ export default function ListingsPage() {
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                   className="bg-[#1a1a2e] border-gray-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">رابط الموقع على الخريطة</Label>
+                <Input
+                  value={form.location_url}
+                  onChange={(e) => setForm({ ...form, location_url: e.target.value })}
+                  placeholder="https://maps.google.com/..."
+                  className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-600"
                 />
               </div>
             </div>
