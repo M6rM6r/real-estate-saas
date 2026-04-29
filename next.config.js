@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
-const { withSentryConfig } = require('@sentry/nextjs')
-// withSentryConfig is conditionally applied based on whether real Sentry credentials are set.
-// Sentry error capture still works at runtime via sentry.client.config.ts and instrumentation.ts.
-// To re-enable source map uploads: set SENTRY_ORG, SENTRY_PROJECT, and SENTRY_AUTH_TOKEN secrets.
+// NOTE: withSentryConfig is intentionally not applied until real Sentry credentials are configured.
+// Sentry error capture works at runtime via sentry.client.config.ts + instrumentation.ts.
+// To enable source-map uploads: wrap module.exports with withSentryConfig() and set
+// SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN secrets to real values.
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
