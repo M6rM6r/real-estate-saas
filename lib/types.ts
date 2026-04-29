@@ -49,6 +49,36 @@ export const PAGE_THEMES = {
     sectionAlt: '#150c01',
     headingFont: 'inherit',
   },
+  midnight: {
+    id: 'midnight', label: 'بنفسجي', labelEn: 'Midnight',
+    bg: '#0d0a1e', card: '#1a1433', accent: '#8b5cf6', dark: true,
+    navBg: 'rgba(13,10,30,0.97)', navBorder: '#2d2050',
+    heroOverlay: 'linear-gradient(to bottom, rgba(10,5,20,0.12), rgba(10,5,20,0.80))',
+    heroCardBg: 'rgba(30,20,60,0.65)', heroCardBorder: 'rgba(139,92,246,0.35)', heroCardBlur: true,
+    radius: '18px', cardBg: '#1a1433', cardBorder: '#2d2050', cardShadow: '0 2px 12px rgba(139,92,246,0.12)',
+    sectionAlt: '#120f28',
+    headingFont: 'inherit',
+  },
+  sunset: {
+    id: 'sunset', label: 'فجري', labelEn: 'Sunrise',
+    bg: '#fffaf7', card: '#ffffff', accent: '#f97316', dark: false,
+    navBg: 'rgba(255,250,247,0.97)', navBorder: '#fde8d5',
+    heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.58))',
+    heroCardBg: 'rgba(255,250,247,0.88)', heroCardBorder: 'rgba(249,115,22,0.28)', heroCardBlur: true,
+    radius: '14px', cardBg: '#ffffff', cardBorder: '#f3e8df', cardShadow: '0 4px 16px rgba(0,0,0,0.07)',
+    sectionAlt: '#fff5ee',
+    headingFont: 'inherit',
+  },
+  slate: {
+    id: 'slate', label: 'نظيف', labelEn: 'Clean',
+    bg: '#f8f9fa', card: '#ffffff', accent: '#334155', dark: false,
+    navBg: 'rgba(248,249,250,0.97)', navBorder: '#e2e8f0',
+    heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.62))',
+    heroCardBg: 'rgba(248,249,250,0.92)', heroCardBorder: 'rgba(51,65,85,0.22)', heroCardBlur: true,
+    radius: '8px', cardBg: '#ffffff', cardBorder: '#e2e8f0', cardShadow: '0 1px 8px rgba(0,0,0,0.06)',
+    sectionAlt: '#f1f5f9',
+    headingFont: 'inherit',
+  },
 } as const;
 export type ThemeId = keyof typeof PAGE_THEMES;
 
