@@ -83,7 +83,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         .ocn-chip-active { background: var(--ocn-primary); color: #fff; border-color: var(--ocn-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#0c2340' }}>
+      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
 
         {/* Announcement */}
         {hasBanner && (
@@ -94,7 +94,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Sticky nav */}
         <nav className={`fixed inset-x-0 z-40 transition-all duration-300 ${hasBanner ? 'top-8' : 'top-0'} ${scrolled ? 'shadow-lg border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: '#f0f9ff', borderColor: `${primary}30` } : undefined}>
+          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
           <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile?.logo_url ? (
@@ -104,7 +104,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                   {tenant.name.charAt(0)}
                 </div>
               )}
-              <span className="font-bold text-sm sm:text-base" style={{ color: scrolled ? '#0c2340' : 'white', textShadow: scrolled ? 'none' : '0 1px 3px rgba(0,0,0,0.4)' }}>
+              <span className="font-bold text-sm sm:text-base text-white" style={{ textShadow: scrolled ? 'none' : '0 1px 3px rgba(0,0,0,0.4)' }}>
                 {tenant.name}
               </span>
             </div>
@@ -159,7 +159,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                     <span className="text-2xl">{s.icon}</span>
                     <div>
                       <div className="text-xl font-bold ocn-text">{s.value}</div>
-                      <div className="text-xs text-gray-500">{s.label}</div>
+                      <div className="text-xs text-gray-400">{s.label}</div>
                     </div>
                   </div>
                 ))}
@@ -175,14 +175,14 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
               {(['all', 'sale', 'rent'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setOfferFilter(f)}
-                  className={`shrink-0 px-4 py-2 text-sm font-medium border transition-all active:scale-95 ${offerFilter === f ? 'ocn-chip-active' : 'bg-white text-gray-600 border-gray-200 hover:border-cyan-300'}`}
+                  className={`shrink-0 px-4 py-2 text-sm font-medium border transition-all active:scale-95 ${offerFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
                   style={{ borderRadius: '999px' }}>
                   {f === 'all' ? 'الكل' : f === 'sale' ? 'للبيع' : 'للإيجار'}
                 </button>
               ))}
               {(['all', 'available', 'sold', 'rented'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setStatusFilter(f)}
-                  className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${statusFilter === f ? 'ocn-chip-active' : 'bg-white text-gray-500 border-gray-200 hover:border-cyan-300'}`}
+                  className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${statusFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
                   style={{ borderRadius: '999px' }}>
                   {f === 'all' ? 'كل الحالات' : STATUS_LABELS[f]}
                 </button>
@@ -193,7 +193,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map(l => (
-                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-gray-900" mutedClass="text-gray-500" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
+                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-gray-100" mutedClass="text-gray-400" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
                 ))}
               </div>
             )}
@@ -214,7 +214,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                     )}
                     <div className="p-6">
                       <p className="text-xs text-gray-400 mb-2">{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                      <h3 className="text-lg font-bold mb-2" style={{ color: '#0c2340' }}>{item.title}</h3>
+                      <h3 className="text-lg font-bold mb-2" style={{ color: '#e0f2fe' }}>{item.title}</h3>
                       {item.body && <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{item.body}</p>}
                     </div>
                   </div>
@@ -242,8 +242,13 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.about && (
           <section className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
-            {profile?.bio && <p className="text-gray-600 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
-            {profile?.licence_no && <p className="mt-4 text-sm font-mono text-gray-400">رقم الترخيص: {profile.licence_no}</p>}
+            {profile?.bio && <p className="text-gray-400 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
+            {(profile?.licence_numbers && profile.licence_numbers.length > 0)
+              ? profile.licence_numbers.map((l, i) => (
+                  <p key={i} className="mt-2 text-xs font-mono text-gray-400">{l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}</p>
+                ))
+              : profile?.licence_no && <p className="mt-4 text-sm font-mono text-gray-400">رقم الترخيص: {profile.licence_no}</p>
+            }
           </section>
         )}
 
@@ -253,10 +258,10 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
               <p className="text-sm mb-8 text-gray-400">نسعد بخدمتك — تواصل معنا عبر:</p>
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
-                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
+                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
               </div>
             </div>
           </section>

@@ -1,12 +1,12 @@
 export const PAGE_THEMES = {
   modern: {
     id: 'modern', label: 'عصري', labelEn: 'Modern',
-    bg: '#ffffff', card: '#f8fafc', accent: '#2563eb', dark: false,
-    navBg: 'rgba(255,255,255,0.95)', navBorder: '#e2e8f0',
+    bg: '#0f1117', card: '#1a1d27', accent: '#2563eb', dark: true,
+    navBg: 'rgba(15,17,23,0.97)', navBorder: '#2a2e3e',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0.72))',
-    heroCardBg: 'rgba(255,255,255,0.12)', heroCardBorder: 'rgba(255,255,255,0.22)', heroCardBlur: true,
-    radius: '16px', cardBg: '#ffffff', cardBorder: '#e2e8f0', cardShadow: '0 1px 4px rgba(0,0,0,0.07)',
-    sectionAlt: '#f8fafc',
+    heroCardBg: 'rgba(15,17,23,0.65)', heroCardBorder: 'rgba(255,255,255,0.15)', heroCardBlur: true,
+    radius: '16px', cardBg: '#1a1d27', cardBorder: '#2a2e3e', cardShadow: '0 1px 4px rgba(0,0,0,0.4)',
+    sectionAlt: '#13161e',
     headingFont: 'inherit',
   },
   luxury: {
@@ -21,32 +21,32 @@ export const PAGE_THEMES = {
   },
   nature: {
     id: 'nature', label: 'طبيعي', labelEn: 'Nature',
-    bg: '#f0fdf4', card: '#ffffff', accent: '#16a34a', dark: false,
-    navBg: 'rgba(240,253,244,0.96)', navBorder: '#bbf7d0',
-    heroOverlay: 'linear-gradient(to bottom, rgba(0,40,10,0.12), rgba(0,40,10,0.70))',
-    heroCardBg: 'rgba(20,83,45,0.15)', heroCardBorder: 'rgba(187,247,208,0.35)', heroCardBlur: true,
-    radius: '26px', cardBg: '#ffffff', cardBorder: '#bbf7d0', cardShadow: '0 2px 8px rgba(22,163,74,0.08)',
-    sectionAlt: '#dcfce7',
+    bg: '#0a1a0e', card: '#162419', accent: '#16a34a', dark: true,
+    navBg: 'rgba(10,26,14,0.97)', navBorder: '#2d4a32',
+    heroOverlay: 'linear-gradient(to bottom, rgba(0,40,10,0.25), rgba(0,40,10,0.80))',
+    heroCardBg: 'rgba(10,26,14,0.82)', heroCardBorder: 'rgba(45,74,50,0.60)', heroCardBlur: true,
+    radius: '26px', cardBg: '#162419', cardBorder: '#2d4a32', cardShadow: '0 2px 8px rgba(0,0,0,0.4)',
+    sectionAlt: '#0e2113',
     headingFont: 'inherit',
   },
   ocean: {
     id: 'ocean', label: 'بحري', labelEn: 'Ocean',
-    bg: '#f0f9ff', card: '#ffffff', accent: '#0891b2', dark: false,
-    navBg: 'rgba(240,249,255,0.96)', navBorder: '#bae6fd',
+    bg: '#060e1e', card: '#0d1b30', accent: '#0891b2', dark: true,
+    navBg: 'rgba(6,14,30,0.97)', navBorder: '#1a3356',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,20,50,0.15), rgba(0,20,50,0.75))',
     heroCardBg: 'rgba(8,145,178,0.12)', heroCardBorder: 'rgba(186,230,253,0.40)', heroCardBlur: true,
-    radius: '20px', cardBg: '#ffffff', cardBorder: '#bae6fd', cardShadow: '0 2px 8px rgba(8,145,178,0.09)',
-    sectionAlt: '#e0f2fe',
+    radius: '20px', cardBg: '#0d1b30', cardBorder: '#1a3356', cardShadow: '0 2px 8px rgba(0,0,0,0.4)',
+    sectionAlt: '#091526',
     headingFont: 'inherit',
   },
   desert: {
     id: 'desert', label: 'صحراوي', labelEn: 'Desert',
-    bg: '#fffbeb', card: '#ffffff', accent: '#d97706', dark: false,
-    navBg: 'rgba(255,251,235,0.96)', navBorder: '#fde68a',
+    bg: '#1a0f02', card: '#241505', accent: '#d97706', dark: true,
+    navBg: 'rgba(26,15,2,0.97)', navBorder: '#3d2810',
     heroOverlay: 'linear-gradient(to bottom, rgba(60,25,0,0.18), rgba(60,25,0,0.74))',
     heroCardBg: 'rgba(120,53,15,0.14)', heroCardBorder: 'rgba(253,230,138,0.40)', heroCardBlur: true,
-    radius: '12px', cardBg: '#ffffff', cardBorder: '#fde68a', cardShadow: '0 2px 8px rgba(217,119,6,0.09)',
-    sectionAlt: '#fef3c7',
+    radius: '12px', cardBg: '#241505', cardBorder: '#3d2810', cardShadow: '0 2px 8px rgba(0,0,0,0.4)',
+    sectionAlt: '#150c01',
     headingFont: 'inherit',
   },
 } as const;
@@ -72,6 +72,7 @@ export type Profile = {
   bio?: string;
   tagline?: string;
   licence_no?: string;
+  licence_numbers?: { label: string; number: string }[];
   primary_color?: string;
   contact_email?: string;
   contact_phone?: string;

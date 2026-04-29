@@ -47,9 +47,7 @@ export async function POST(request: NextRequest) {
   const passwordMatch = timingSafeEqual(password, validPassword)
 
   if (!emailMatch || !passwordMatch) {
-    await writeAdminLog('admin_login_failed', email, {
-      metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' },
-    })
+    try { await writeAdminLog('admin_login_failed', email, { metadata: { ip: request.headers.get('x-forwarded-for') ?? 'unknown' } }) } catch {}
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
     .setExpirationTime('8h')
     .sign(ADMIN_JWT_SECRET)
 
-  await writeAdminLog('admin_login_success', email)
+  try { await writeAdminLog('admin_login_success', email) } catch {}
 
   const response = NextResponse.json({ success: true })
   response.cookies.set('admin_session', token, {

@@ -282,11 +282,18 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
               <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                 &ldquo;{profile.bio}&rdquo;
               </p>
-              {profile.licence_no && (
-                <p className="mt-8 text-xs tracking-widest uppercase text-gray-600 font-mono">
-                  رقم الترخيص: {profile.licence_no}
-                </p>
-              )}
+              {(profile.licence_numbers && profile.licence_numbers.length > 0)
+                ? profile.licence_numbers.map((l, i) => (
+                    <p key={i} className="mt-4 text-xs tracking-widest uppercase text-gray-600 font-mono">
+                      {l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}
+                    </p>
+                  ))
+                : profile.licence_no && (
+                    <p className="mt-8 text-xs tracking-widest uppercase text-gray-600 font-mono">
+                      رقم الترخيص: {profile.licence_no}
+                    </p>
+                  )
+              }
               <div className="w-12 h-px mx-auto mt-8" style={{ backgroundColor: primary }} />
             </div>
           </section>
@@ -299,7 +306,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
               تواصل معنا
             </h2>
             <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: `${primary}60` }} />
-            <div className="space-y-3">
+            <div className="space-y-3" dir="ltr">
               {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 text-sm text-gray-400 hover:text-white transition-colors"><WaIcon className="w-4 h-4 shrink-0" /> {waDisplay}</a>}
               {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
               {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}

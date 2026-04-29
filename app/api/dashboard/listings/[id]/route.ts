@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
@@ -54,6 +55,9 @@ export async function PATCH(
 
   await adminDb.collection('posts').doc(params.id).update(updateData)
   await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'listing', resourceId: params.id, userId: session.uid })
+  const tenantDoc = await adminDb.collection('tenants').doc(session.tenantId).get()
+  const slug = tenantDoc.data()?.slug as string | undefined
+  if (slug) revalidatePath(`/${slug}`)
   return NextResponse.json({ id: params.id, ...updateData })
 }
 
@@ -72,5 +76,8 @@ export async function DELETE(
 
   await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'listing', resourceId: params.id, userId: session.uid })
   await adminDb.collection('posts').doc(params.id).delete()
+  const tenantDoc2 = await adminDb.collection('tenants').doc(session.tenantId).get()
+  const slug2 = tenantDoc2.data()?.slug as string | undefined
+  if (slug2) revalidatePath(`/${slug2}`)
   return NextResponse.json({ success: true })
 }

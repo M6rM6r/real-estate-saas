@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
@@ -62,6 +63,9 @@ export async function POST(request: NextRequest) {
     }
     await adminDb.collection('posts').doc(id).set(doc)
     await logMutation({ tenantId: session.tenantId, action: 'create', resource: 'listing', resourceId: id, userId: session.uid, after: doc as Record<string, unknown> })
+    const tenantDoc = await adminDb.collection('tenants').doc(session.tenantId).get()
+    const slug = tenantDoc.data()?.slug as string | undefined
+    if (slug) revalidatePath(`/${slug}`)
     return NextResponse.json({ id, ...doc }, { status: 201 })
   } catch (err) {
     console.error('[POST /api/dashboard/listings]', err)

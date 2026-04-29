@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Loader2, Users, Search, ExternalLink, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Users, Search, ExternalLink, AlertCircle, Copy, Check, KeyRound } from 'lucide-react';
 
 type Tenant = {
   id: string;
@@ -52,6 +52,8 @@ export default function AdminTenantsPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [credentials, setCredentials] = useState<{ name: string; slug: string; email: string; password: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const fetchData = () => {
     setError(null);
@@ -116,6 +118,9 @@ export default function AdminTenantsPage() {
         return;
       }
       setModalOpen(false);
+      if (!editId) {
+        setCredentials({ name: form.name, slug: form.slug, email: form.email, password: form.tempPassword });
+      }
       fetchData();
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : 'Save failed');
@@ -432,6 +437,68 @@ export default function AdminTenantsPage() {
             >
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credential Card Modal */}
+      <Dialog open={!!credentials} onOpenChange={() => { setCredentials(null); setCopied(false); }}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-emerald-400" />
+              Account Created — Hand Over to Client
+            </DialogTitle>
+          </DialogHeader>
+          {credentials && (
+            <div className="space-y-4 py-2">
+              <p className="text-slate-400 text-sm">Screenshot this or copy the info below before closing.</p>
+              <div className="bg-slate-950 border border-slate-700 rounded-xl p-4 space-y-3 font-mono text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Agency</span>
+                  <span className="text-white font-semibold">{credentials.name}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Public Page</span>
+                  <a href={`/${credentials.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                    /{credentials.slug}
+                  </a>
+                </div>
+                <div className="h-px bg-slate-800" />
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Login URL</span>
+                  <span className="text-slate-300">{typeof window !== 'undefined' ? window.location.origin : ''}/login</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Email</span>
+                  <span className="text-white">{credentials.email}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Password</span>
+                  <span className="text-emerald-400 font-bold tracking-widest">{credentials.password}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const text = `Agency: ${credentials.name}\nPublic Page: ${typeof window !== 'undefined' ? window.location.origin : ''}/${credentials.slug}\nLogin: ${typeof window !== 'undefined' ? window.location.origin : ''}/login\nEmail: ${credentials.email}\nPassword: ${credentials.password}`;
+                  navigator.clipboard.writeText(text);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 text-sm font-medium transition-colors"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? 'Copied!' : 'Copy All Credentials'}
+              </button>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => { setCredentials(null); setCopied(false); }}
+              className="bg-slate-700 hover:bg-slate-600 text-white w-full"
+            >
+              Done
             </Button>
           </DialogFooter>
         </DialogContent>

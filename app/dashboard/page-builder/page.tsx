@@ -177,6 +177,7 @@ const EMPTY_PROFILE: Profile = {
   bio: '',
   tagline: '',
   licence_no: '',
+  licence_numbers: [],
   contact_email: '',
   contact_phone: '',
   extra_phones: [],
@@ -256,6 +257,7 @@ export default function PageBuilderPage() {
   const [selectedTheme, setSelectedTheme] = useState<string>('modern');
   const [businessType, setBusinessType] = useState<string>('real_estate');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingImageAutoSave = useRef(false);
   const [listings, setListings] = useState<any[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
@@ -339,6 +341,9 @@ export default function PageBuilderPage() {
   const updateProfile = (patch: Partial<Profile>) => {
     setProfile((prev) => ({ ...prev, ...patch }));
     markDirty();
+    if ('logo_url' in patch || 'cover_url' in patch) {
+      pendingImageAutoSave.current = true;
+    }
   };
 
   const updateSocial = (key: string, value: string) => {
@@ -515,6 +520,14 @@ export default function PageBuilderPage() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [dirty, saveStatus, handleSave]);
+
+  // Auto-save immediately when a profile image (logo or cover) is uploaded
+  useEffect(() => {
+    if (!pendingImageAutoSave.current || loading || saveStatus === 'saving') return;
+    pendingImageAutoSave.current = false;
+    void handleSave();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.logo_url, profile.cover_url]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -1109,16 +1122,60 @@ export default function PageBuilderPage() {
                   <p className="text-[11px] text-slate-500 text-left">{(profile.bio || '').length}/2000</p>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1">
-                    <Hash className="h-3 w-3" /> رقم الترخيص
-                  </Label>
-                  <Input
-                    value={profile.licence_no || ''}
-                    onChange={(e) => updateProfile({ licence_no: e.target.value })}
-                    placeholder="مثال: RE-12345"
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1">
+                      <Hash className="h-3 w-3" /> أرقام التراخيص
+                    </Label>
+                    {(profile.licence_numbers?.length ?? 0) < 6 && (
+                      <button
+                        type="button"
+                        onClick={() => updateProfile({ licence_numbers: [...(profile.licence_numbers ?? []), { label: '', number: '' }] })}
+                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <Plus className="h-3 w-3" /> إضافة رقم ترخيص
+                      </button>
+                    )}
+                  </div>
+                  {(profile.licence_numbers ?? []).length === 0 && (
+                    <p className="text-xs text-slate-500 italic">لا توجد أرقام ترخيص — اضغط &quot;إضافة&quot; لإضافة رقم</p>
+                  )}
+                  {(profile.licence_numbers ?? []).map((entry, idx) => (
+                    <div key={idx} className="flex gap-2 items-start">
+                      <div className="flex flex-col gap-1 flex-1">
+                        <Input
+                          value={entry.label}
+                          onChange={(e) => {
+                            const updated = [...(profile.licence_numbers ?? [])];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            updateProfile({ licence_numbers: updated });
+                          }}
+                          placeholder="نوع الترخيص (مثال: وساطة عقارية)"
+                          className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                        <Input
+                          value={entry.number}
+                          onChange={(e) => {
+                            const updated = [...(profile.licence_numbers ?? [])];
+                            updated[idx] = { ...updated[idx], number: e.target.value };
+                            updateProfile({ licence_numbers: updated });
+                          }}
+                          placeholder="رقم الترخيص (مثال: RE-12345)"
+                          className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (profile.licence_numbers ?? []).filter((_, i) => i !== idx);
+                          updateProfile({ licence_numbers: updated });
+                        }}
+                        className="mt-1 text-slate-500 hover:text-red-400 transition-colors shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </TabsContent>
@@ -1648,8 +1705,10 @@ export default function PageBuilderPage() {
 
             {/* Live inline preview — renders theme component directly, no save needed */}
             <div className="relative overflow-hidden bg-white" style={{ height: previewDevice === 'desktop' ? 700 : 680 }}>
+              {/* onClick capture blocks link navigation; scroll still works */}
               <div
-                className="pointer-events-none overflow-hidden"
+                className="overflow-y-auto overflow-x-hidden"
+                onClick={(e) => e.preventDefault()}
                 style={previewDevice === 'mobile' ? {
                   width: '390px',
                   height: '844px',
@@ -1661,7 +1720,6 @@ export default function PageBuilderPage() {
                 } : {
                   width: '100%',
                   height: '100%',
-                  overflow: 'hidden',
                 }}
               >
                 {/* CSS-var wrapper: overrides :root --primary instantly without save */}

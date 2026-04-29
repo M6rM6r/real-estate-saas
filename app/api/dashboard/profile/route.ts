@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
@@ -22,6 +23,12 @@ const ProfileDataSchema = z.object({
   bio: z.preprocess(emptyToNull, z.string().max(2000).nullable().optional()),
   tagline: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   licence_no: z.preprocess(emptyToNull, z.string().max(100).nullable().optional()),
+  licence_numbers: z.array(
+    z.object({
+      label: z.string().max(100),
+      number: z.string().max(100),
+    })
+  ).max(6).optional(),
   contact_email: z.preprocess(emptyToNull, z.string().email().max(200).nullable().optional()),
   contact_phone: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
   extra_phones: z.array(z.string().max(30)).max(5).optional(),
@@ -155,7 +162,12 @@ export async function PATCH(request: NextRequest) {
     await adminDb.collection('tenants').doc(session.tenantId).update(tenantUpdate)
   }
 
-  const doc = await ref.get()
+  const [doc, tenantDoc] = await Promise.all([
+    ref.get(),
+    adminDb.collection('tenants').doc(session.tenantId).get(),
+  ])
+  const slug = tenantDoc.data()?.slug as string | undefined
+  if (slug) revalidatePath(`/${slug}`)
   await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'profile', resourceId: session.tenantId, userId: session.uid })
   return NextResponse.json({ id: doc.id, ...doc.data() })
 }

@@ -19,6 +19,7 @@ export type Profile = {
   cover_url?: string | null
   bio?: string | null
   licence_no?: string | null
+  licence_numbers?: { label: string; number: string }[] | null
   tagline?: string | null
   contact_email?: string | null
   contact_phone?: string | null

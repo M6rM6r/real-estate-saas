@@ -23,41 +23,9 @@ export async function POST(request: NextRequest) {
 
   if (!files.length) return NextResponse.json({ error: 'No files provided' }, { status: 400 })
 
-  // Resolve bucket: try the configured default, then fall back to alternate name format
-  // Firebase projects use either {id}.firebasestorage.app (new) or {id}.appspot.com (legacy)
-  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-  const envBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-  const altBucket = envBucket?.endsWith('.appspot.com')
-    ? envBucket.replace('.appspot.com', '.firebasestorage.app')
-    : `${projectId}.appspot.com`
-
-  // Try an explicit bucket name list until one works
-  async function resolveBucket() {
-    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''
-    const candidates = Array.from(new Set([
-      envBucket,
-      `${projectId}.firebasestorage.app`,
-      `${projectId}.appspot.com`,
-      altBucket,
-    ].filter(Boolean))) as string[]
-
-    for (const name of candidates) {
-      try {
-        const b = name === envBucket ? getStorage().bucket() : getStorage().bucket(name)
-        const [exists] = await b.exists()
-        if (exists) return b
-      } catch {
-        // try next
-      }
-    }
-    // None resolved — throw descriptive error
-    throw new Error(
-      `Firebase Storage bucket not found. Tried: ${candidates.join(', ')}. ` +
-      'Please enable Firebase Storage in the Firebase Console and set NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET in .env.local.'
-    )
-  }
-
-  const bucket = await resolveBucket()
+  // Use bucket directly — skip exists() check (requires extra IAM perms)
+  // The bucket name comes from NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET set in firebase-admin init
+  const bucket = getStorage().bucket()
   const urls: string[] = []
 
   for (const file of files) {
@@ -94,7 +62,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ urls })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[upload] error:', msg)
+    console.error('[upload] error:', msg, err)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

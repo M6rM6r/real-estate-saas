@@ -78,7 +78,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         .dsr-chip-active { background: var(--dsr-primary); color: #fff; border-color: var(--dsr-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#2d1a0a' }}>
+      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
 
         {/* Announcement */}
         {hasBanner && (
@@ -89,7 +89,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Navbar — minimal */}
         <nav className={`fixed inset-x-0 z-40 transition-all duration-400 ${hasBanner ? 'top-8' : 'top-0'} ${scrolled ? 'shadow border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: '#fefce8', borderColor: `${primary}30` } : undefined}>
+          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
           <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile?.logo_url ? (
@@ -99,7 +99,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   {tenant.name.charAt(0)}
                 </div>
               )}
-              <span className="font-black text-sm sm:text-base tracking-wide" style={{ color: scrolled ? '#2d1a0a' : 'white', textShadow: scrolled ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>
+              <span className="font-black text-sm sm:text-base tracking-wide text-white" style={{ textShadow: scrolled ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>
                 {tenant.name}
               </span>
             </div>
@@ -152,7 +152,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', 'sale', 'rent'] as const).map(f => (
                   <button key={f} type="button" onClick={() => setOfferFilter(f)}
-                    className={`shrink-0 px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 ${offerFilter === f ? 'dsr-chip-active' : 'border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100'}`}
+                    className={`shrink-0 px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 ${offerFilter === f ? 'dsr-chip-active' : 'border-amber-800 text-amber-300 bg-transparent hover:bg-amber-900/30'}`}
                     style={{ borderRadius: btnRadius }}>
                     {f === 'all' ? 'الكل' : f === 'sale' ? 'بيع' : 'إيجار'}
                   </button>
@@ -170,11 +170,11 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   {featured.images[0] ? (
                     <Image src={featured.images[0]} alt={featured.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   ) : (
-                    <div className="w-full h-full" style={{ backgroundColor: '#f5e6c8' }} />
+                    <div className="w-full h-full" style={{ backgroundColor: pageTheme.cardBorder }} />
                   )}
                   <ListingBadges listing={featured} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
                 </div>
-                {/* Details on left */}
+                {/* Details on left */}}
                 <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
                   <span className="text-xs font-bold tracking-widest uppercase mb-3 dsr-text">عقار مميز</span>
                   <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{featured.title}</h3>
@@ -183,8 +183,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                       {featured.price.toLocaleString('ar-SA')} {CURRENCY_SYMBOLS[currency] ?? currency}
                     </p>
                   )}
-                  {featured.location && <p className="text-sm text-gray-500 mb-4">📍 {featured.location}</p>}
-                  <div className="flex gap-4 text-sm text-gray-500 mb-5">
+                  {featured.location && <p className="text-sm text-gray-400 mb-4">📍 {featured.location}</p>}
+                  <div className="flex gap-4 text-sm text-gray-400 mb-5">
                     {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
                     {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
                     {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
@@ -213,7 +213,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                       <ListingBadges listing={l} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
                     </div>
                     <div className="p-3">
-                      <h3 className="text-sm font-bold mb-1 line-clamp-1 text-gray-800">{l.title}</h3>
+                      <h3 className="text-sm font-bold mb-1 line-clamp-1 text-gray-100">{l.title}</h3>
                       {l.price != null && <p className="text-sm font-black dsr-text">{l.price.toLocaleString('ar-SA')}</p>}
                       {l.location && <p className="text-xs text-gray-400 mt-1 line-clamp-1">📍 {l.location}</p>}
                     </div>
@@ -226,24 +226,31 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* About — warm card */}
         {sections.about && (
-          <section className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: '#fef9f0' }}>
+          <section className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-5xl mx-auto">
-              <div className="border p-8 sm:p-10" style={{ borderColor: `${primary}30`, borderRadius: pageTheme.radius, backgroundColor: '#fff' }}>
+              <div className="border p-8 sm:p-10" style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
                 <div className="flex flex-col sm:flex-row items-start gap-8">
                   {profile?.logo_url && (
                     <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-24 h-24 rounded-full object-contain shadow border shrink-0" style={{ borderColor: `${primary}40` }} />
                   )}
                   <div className="flex-1">
                     <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
-                    {profile?.bio && <p className="text-gray-600 leading-relaxed mb-4">{profile.bio}</p>}
+                    {profile?.bio && <p className="text-gray-400 leading-relaxed mb-4">{profile.bio}</p>}
                     <div className="flex flex-wrap gap-3">
-                      {profile?.licence_no && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: `${primary}18`, color: primary }}>
-                          🏛 رقم الترخيص: {profile.licence_no}
-                        </span>
-                      )}
+                      {(profile?.licence_numbers && profile.licence_numbers.length > 0)
+                        ? profile.licence_numbers.map((l, i) => (
+                            <span key={i} className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: `${primary}18`, color: primary }}>
+                              🏙 {l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}
+                            </span>
+                          ))
+                        : profile?.licence_no && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: `${primary}18`, color: primary }}>
+                              🏙 رقم الترخيص: {profile.licence_no}
+                            </span>
+                          )
+                      }
                       {profile?.contact_address && (
-                        <span className="text-xs text-gray-500 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {profile.contact_address}</span>
+                        <span className="text-xs text-gray-400 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {profile.contact_address}</span>
                       )}
                     </div>
                     {(profile?.contact_phone || profile?.contact_email) && (
@@ -271,8 +278,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   )}
                   <div className="p-5">
                     <p className="text-xs text-gray-400 mb-2 font-mono">{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    <h3 className="font-black text-gray-800 mb-2">{item.title}</h3>
-                    {item.body && <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{item.body}</p>}
+                      <h3 className="font-black text-gray-100 mb-2">{item.title}</h3>
+                    {item.body && <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{item.body}</p>}
                   </div>
                 </div>
               ))}
@@ -282,11 +289,11 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section className="dsr-reveal py-14 px-4" style={{ backgroundColor: '#fef9f0' }}>
+          <section className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
               <p className="text-sm mb-8 text-gray-400">نرحب بتواصلك — تواصل معنا عبر:</p>
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
