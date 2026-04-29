@@ -1866,6 +1866,7 @@ export default function PageBuilderPage() {
                   news={[]}
                   gallery={[]}
                   team={[]}
+                  isPreview={true}
                 />
                 </div>
               </div>

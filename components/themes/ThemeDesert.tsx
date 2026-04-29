@@ -23,7 +23,7 @@ import {
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, DAY_LABELS_AR,
 } from './shared'
 
-export default function ThemeDesert({ tenant, profile, listings, news, gallery: _gallery, team: _team }: ThemePageProps) {
+export default function ThemeDesert({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#d97706'
   const pageTheme = PAGE_THEMES['desert'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
@@ -342,7 +342,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
           </footer>
         )}
 
-        <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />
+        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

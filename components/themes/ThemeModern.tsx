@@ -12,7 +12,7 @@ import {
   SocialLinks, WorkingHours, PropertyCard, DAY_LABELS_AR,
 } from './shared'
 
-export default function ThemeModern({ tenant, profile, listings, news, gallery: _gallery, team: _team }: ThemePageProps) {
+export default function ThemeModern({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#2563eb'
   const pageTheme = PAGE_THEMES[(tenant.theme as keyof typeof PAGE_THEMES) ?? 'modern'] ?? PAGE_THEMES.modern
   const isDark = pageTheme.dark
@@ -88,7 +88,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
       <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
 
         {/* Header */}
-        <header className="fixed top-0 inset-x-0 z-40 flex flex-col">
+        <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
           {hasBanner && (
             <div className="w-full flex items-center justify-center gap-2 py-1.5 px-4 text-xs sm:text-[13px] font-medium relative overflow-hidden" style={{ backgroundColor: annBg, color: '#fff' }}>
               <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.08) 50%,transparent 100%)' }} />
@@ -326,7 +326,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
           </footer>
         )}
 
-        <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />
+        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

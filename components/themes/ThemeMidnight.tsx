@@ -12,7 +12,7 @@ import {
   SocialLinks, WorkingHours, PropertyCard, DAY_LABELS_AR,
 } from './shared'
 
-export default function ThemeMidnight({ tenant, profile, listings, news, gallery: _gallery, team: _team }: ThemePageProps) {
+export default function ThemeMidnight({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#8b5cf6'
   const pageTheme = PAGE_THEMES['midnight'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
@@ -84,7 +84,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
       <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
 
         {/* Header */}
-        <header className="fixed top-0 inset-x-0 z-40 flex flex-col">
+        <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
           {hasBanner && (
             <div className="w-full flex items-center justify-center gap-2 py-1.5 px-4 text-xs font-medium" style={{ backgroundColor: annBg, color: '#fff' }}>
               <span>{pageConfig.announcement_text}</span>
@@ -331,7 +331,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           </footer>
         )}
 
-        <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />
+        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

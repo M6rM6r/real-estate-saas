@@ -106,6 +106,7 @@ export interface ThemePageProps {
   news: Post[]
   gallery: Media[]
   team: TeamMember[]
+  isPreview?: boolean
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────

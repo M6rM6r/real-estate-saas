@@ -25,7 +25,7 @@ import {
   SocialLinks, WorkingHours, WaIcon, ListingBadges, DAY_LABELS_AR,
 } from './shared'
 
-export default function ThemeLuxury({ tenant, profile, listings, news, gallery: _gallery, team: _team }: ThemePageProps) {
+export default function ThemeLuxury({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#c9a84c'
   const pageTheme = PAGE_THEMES['luxury'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
@@ -344,7 +344,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           </footer>
         )}
 
-        <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />
+        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}
