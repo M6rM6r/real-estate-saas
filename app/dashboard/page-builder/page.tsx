@@ -1704,7 +1704,7 @@ export default function PageBuilderPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 onClick={handleSave}
-                disabled={saveStatus === 'saving' || !dirty}
+                disabled={saveStatus === 'saving'}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
               >
                 {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
