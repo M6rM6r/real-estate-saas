@@ -128,7 +128,7 @@ export const DAY_LABELS_AR: Record<string, string> = {
 }
 
 export const CURRENCY_SYMBOLS: Record<string, string> = {
-  SAR: 'ر.س', AED: 'د.إ', KWD: 'د.ك', QAR: 'ر.ق',
+  SAR: '⃁', AED: 'د.إ', KWD: 'د.ك', QAR: 'ر.ق',
   BHD: 'د.ب', OMR: 'ر.ع', EGP: 'ج.م',
   USD: '$', EUR: '€', GBP: '£',
 }

@@ -895,7 +895,7 @@ export default function PageBuilderPage() {
                 onChange={(e) => updatePageConfig({ currency: e.target.value })}
                 className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
               >
-                <option value="SAR">ر.س — ريال سعودي</option>
+                <option value="SAR">⃁ — ريال سعودي</option>
                 <option value="AED">د.إ — درهم إماراتي</option>
                 <option value="KWD">د.ك — دينار كويتي</option>
                 <option value="QAR">ر.ق — ريال قطري</option>
