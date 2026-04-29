@@ -17,13 +17,105 @@ import {
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
-  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop,
 } from 'lucide-react';
+import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 type ProfileResponse = {
   profile: Profile | null;
   tenant: (Tenant & { primary_color?: string; theme?: string }) | null;
 };
+
+/* ── helpers for crop ── */
+function centerAspectCrop(imgW: number, imgH: number, aspect: number): CropType {
+  return centerCrop(makeAspectCrop({ unit: '%', width: 90 }, aspect, imgW, imgH), imgW, imgH);
+}
+
+async function getCroppedBlob(imgEl: HTMLImageElement, pixelCrop: PixelCrop, mimeType = 'image/jpeg'): Promise<Blob> {
+  const canvas = document.createElement('canvas');
+  const scaleX = imgEl.naturalWidth / imgEl.width;
+  const scaleY = imgEl.naturalHeight / imgEl.height;
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(imgEl, pixelCrop.x * scaleX, pixelCrop.y * scaleY, pixelCrop.width * scaleX, pixelCrop.height * scaleY, 0, 0, pixelCrop.width, pixelCrop.height);
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas is empty')), mimeType, 0.92);
+  });
+}
+
+/* ── Crop modal ── */
+function CropModal({
+  src,
+  aspectRatio,
+  onConfirm,
+  onCancel,
+}: {
+  src: string;
+  aspectRatio: number;
+  onConfirm: (blob: Blob) => void;
+  onCancel: () => void;
+}) {
+  const [crop, setCrop] = useState<CropType>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    setCrop(centerAspectCrop(width, height, aspectRatio));
+  };
+
+  const handleConfirm = async () => {
+    if (!completedCrop || !imgRef.current) return;
+    try {
+      const blob = await getCroppedBlob(imgRef.current, completedCrop);
+      onConfirm(blob);
+    } catch {
+      onCancel();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="bg-[#12121a] border border-slate-700 rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4">
+        <div className="flex items-center gap-2 text-white font-semibold">
+          <Crop className="h-4 w-4 text-blue-400" />
+          <span>اقتصاص الصورة</span>
+        </div>
+        <div className="overflow-auto max-h-[60vh] flex justify-center">
+          <ReactCrop
+            crop={crop}
+            onChange={(c) => setCrop(c)}
+            onComplete={(c) => setCompletedCrop(c)}
+            aspect={aspectRatio}
+            minWidth={50}
+            minHeight={50}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img ref={imgRef} src={src} alt="crop preview" onLoad={onImageLoad} style={{ maxHeight: '56vh', maxWidth: '100%' }} />
+          </ReactCrop>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+          >
+            تأكيد الاقتصاص
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Reusable image uploader ── */
 function ImageUploader({
@@ -40,23 +132,36 @@ function ImageUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const demoObjUrl = useRef<string | null>(null);
   const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
 
-  // Revoke object URLs created in demo mode to prevent memory leaks
+  const aspectRatio = aspect === 'square' ? 1 : 16 / 9;
+
   useEffect(() => {
     return () => {
       if (demoObjUrl.current) URL.revokeObjectURL(demoObjUrl.current);
     };
   }, []);
 
-  const handleFile = useCallback(async (file: File) => {
+  // Open crop modal when a file is selected
+  const handleFile = useCallback((file: File) => {
     if (!file) return;
     setErr('');
-    // Demo mode: create a local object URL
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setPendingFile(file);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const uploadBlob = useCallback(async (blob: Blob, originalFile: File) => {
+    setErr('');
     if (isDemo) {
       if (demoObjUrl.current) URL.revokeObjectURL(demoObjUrl.current);
-      const url = URL.createObjectURL(file);
+      const url = URL.createObjectURL(blob);
       demoObjUrl.current = url;
       onChange(url);
       return;
@@ -64,7 +169,8 @@ function ImageUploader({
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('files', file);
+      const ext = originalFile.name.split('.').pop() ?? 'jpg';
+      fd.append('files', new File([blob], `upload.${ext}`, { type: blob.type || 'image/jpeg' }));
       const { auth } = await import('@/lib/firebase');
       const token = await auth.currentUser?.getIdToken() ?? null;
       const headers: Record<string, string> = {};
@@ -83,73 +189,94 @@ function ImageUploader({
     }
   }, [isDemo, onChange]);
 
+  const handleCropConfirm = useCallback(async (blob: Blob) => {
+    setCropSrc(null);
+    if (pendingFile) await uploadBlob(blob, pendingFile);
+    setPendingFile(null);
+  }, [pendingFile, uploadBlob]);
+
+  const handleCropCancel = useCallback(() => {
+    setCropSrc(null);
+    setPendingFile(null);
+  }, []);
+
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
   }, [handleFile]);
 
-  if (aspect === 'square') {
-    return (
-      <div className="flex gap-3 items-start">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden hover:border-blue-500 transition-colors relative"
-          title={label ?? 'رفع صورة'}
-        >
-          {uploading ? (
-            <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
-          ) : value ? (
-            <img src={value} alt="preview" className="w-full h-full object-cover" />
-          ) : (
-            <ImageIcon className="h-6 w-6 text-slate-600" />
-          )}
-          {value && !uploading && (
-            <span className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-medium">تغيير</span>
-          )}
-        </button>
-        <div className="flex-1 space-y-1">
-          <p className="text-xs text-slate-400">{label ?? 'اضغط لاختيار صورة'}</p>
-          <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
-          {err && <p className="text-[11px] text-red-400">{err}</p>}
-        </div>
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
-      </div>
-    );
-  }
-
-  // cover / wide
   return (
-    <div
-      onDrop={onDrop}
-      onDragOver={(e) => e.preventDefault()}
-      onClick={() => !uploading && inputRef.current?.click()}
-      className="w-full cursor-pointer group"
-    >
-      {value ? (
-        <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
-          <img src={value} alt="cover preview" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
-            {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> تغيير الصورة</>}
+    <>
+      {cropSrc && (
+        <CropModal
+          src={cropSrc}
+          aspectRatio={aspectRatio}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
+      )}
+
+      {aspect === 'square' ? (
+        <div className="flex gap-3 items-start">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-colors relative"
+              title={label ?? 'رفع صورة'}
+            >
+              {uploading ? (
+                <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
+              ) : value ? (
+                <img src={value} alt="preview" className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon className="h-6 w-6 text-slate-600" />
+              )}
+              {value && !uploading && (
+                <span className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-medium">تغيير</span>
+              )}
+            </button>
           </div>
+          <div className="flex-1 space-y-1">
+            <p className="text-xs text-slate-400">{label ?? 'اضغط لاختيار صورة'}</p>
+            <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+            {err && <p className="text-[11px] text-red-400">{err}</p>}
+          </div>
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
         </div>
       ) : (
-        <div className="w-full h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
-          {uploading ? (
-            <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+        <div
+          onDrop={onDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => !uploading && inputRef.current?.click()}
+          className="w-full cursor-pointer group"
+        >
+          {value ? (
+            <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
+              <img src={value} alt="cover preview" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> تغيير الصورة</>}
+              </div>
+            </div>
           ) : (
-            <>
-              <ImageIcon className="h-6 w-6 text-slate-500" />
-              <p className="text-xs text-slate-400">اضغط أو اسحب صورة هنا</p>
-              <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
-            </>
+            <div className="w-full h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
+              {uploading ? (
+                <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+              ) : (
+                <>
+                  <ImageIcon className="h-6 w-6 text-slate-500" />
+                  <p className="text-xs text-slate-400">اضغط أو اسحب صورة هنا</p>
+                  <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+                </>
+              )}
+            </div>
           )}
+          {err && <p className="text-[11px] text-red-400 mt-1">{err}</p>}
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
         </div>
       )}
-      {err && <p className="text-[11px] text-red-400 mt-1">{err}</p>}
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
-    </div>
+    </>
   );
 }
 
