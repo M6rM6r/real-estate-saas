@@ -1819,10 +1819,14 @@ export default function PageBuilderPage() {
                   height: '844px',
                   transform: 'scale(0.78)',
                   transformOrigin: 'top right',
+                  isolation: 'isolate',
                   position: 'absolute',
                   top: 0,
                   right: 0,
                 } : {
+                  position: 'relative',
+                  isolation: 'isolate',
+                  transform: 'translateZ(0)',
                   width: '100%',
                   height: '100%',
                 }}
