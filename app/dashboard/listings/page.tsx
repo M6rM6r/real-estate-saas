@@ -473,7 +473,7 @@ export default function ListingsPage() {
                 {viewCounts[listing.id] != null && viewCounts[listing.id] > 0 && (
                   <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
                     <Eye className="h-3 w-3" />
-                    <span>{viewCounts[listing.id].toLocaleString('ar-SA')}</span>
+                    <span>{viewCounts[listing.id].toLocaleString('en-US')}</span>
                   </div>
                 )}
               </div>
@@ -483,7 +483,7 @@ export default function ListingsPage() {
                 </h3>
                 {listing.price != null && (
                   <p className="inline-flex items-center bg-blue-600/15 text-blue-400 font-bold text-base px-2.5 py-0.5 rounded-full mb-2">
-                    {listing.price.toLocaleString()} SAR
+                    {listing.price.toLocaleString('en-US')} SAR
                   </p>
                 )}
                 {listing.location && (

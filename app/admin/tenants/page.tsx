@@ -259,7 +259,7 @@ export default function AdminTenantsPage() {
                     <td className="px-6 py-4 text-[#00ff41]/60">{t.agentCount ?? 0}</td>
                     <td className="px-6 py-4 text-[#00ff41]/60">{t.postCount ?? 0}</td>
                     <td className="px-6 py-4 text-[#00ff41]/40 text-xs">
-                      {t.created_at ? new Date(t.created_at).toLocaleDateString() : ''}
+                      {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US') : ''}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end items-center gap-1">

@@ -51,7 +51,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" dir="ltr">
       {/* Left decorative panel */}
       <div aria-hidden="true" className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#1a2f5a] to-[#0a0a1f]">
         <div
@@ -76,7 +76,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12">
+      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12 text-left">
         <div className="w-full max-w-md space-y-6">
 
           {/* ── Demo CTA — primary face of the app ── */}
@@ -91,8 +91,8 @@ export default function LoginPage() {
                 </span>
                 <span className="text-white/60 text-xs">No account needed</span>
               </div>
-              <h2 className="text-xl font-bold mb-1">Try the Live Demo</h2>
-              <p className="text-white/70 text-sm mb-5 leading-relaxed">
+              <h2 className="text-xl font-bold mb-1 text-left">Try the Live Demo</h2>
+              <p className="text-white/70 text-sm mb-5 leading-relaxed text-left">
                 Explore the full dashboard — listings, leads, analytics, and your public agency page — with sample data.
               </p>
               <button
@@ -110,27 +110,28 @@ export default function LoginPage() {
           {/* ── Sign-in form ── */}
           <Card className="bg-[#12121a] border-gray-800">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg text-white">Agency Sign In</CardTitle>
-              <CardDescription className="text-gray-500 text-sm">
+              <CardTitle className="text-lg text-white text-left">Agency Sign In</CardTitle>
+              <CardDescription className="text-gray-500 text-sm text-left">
                 Already have an account? Sign in below.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
+                  <Label htmlFor="email" className="text-gray-300 text-left block">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500"
+                    dir="ltr"
+                    className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left"
                     placeholder="you@agency.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-300">Password</Label>
+                  <Label htmlFor="password" className="text-gray-300 text-left block">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -138,7 +139,8 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 pr-10"
+                      dir="ltr"
+                      className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left pl-10"
                       placeholder="Enter your password"
                       aria-describedby={error ? 'login-error' : undefined}
                     />

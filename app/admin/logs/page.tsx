@@ -101,7 +101,7 @@ export default function AdminLogsPage() {
                       </code>
                     </td>
                     <td className="px-6 py-4 text-[#00ff41]/40 text-xs">
-                      {new Date(log.created_at).toLocaleString()}
+                      {new Date(log.created_at).toLocaleString('en-US')}
                     </td>
                   </tr>
                 ))}

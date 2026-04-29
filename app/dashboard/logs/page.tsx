@@ -88,7 +88,7 @@ export default function LogsPage() {
                     <tr key={log.id} className="border-b border-gray-800/50 hover:bg-white/5">
                       <td className="py-2 pr-2 text-gray-400 whitespace-nowrap">
                         {log.created_at
-                          ? new Date(log.created_at).toLocaleString('ar-SA', {
+                          ? new Date(log.created_at).toLocaleString('en-US', {
                               dateStyle: 'short',
                               timeStyle: 'short',
                             })

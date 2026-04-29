@@ -33,6 +33,21 @@
     overflow-x: hidden;
   }
 
+  /* Keep technical input content readable in RTL documents */
+  [dir='rtl'] input[type='email'],
+  [dir='rtl'] input[type='url'],
+  [dir='rtl'] input[type='tel'],
+  [dir='rtl'] input[type='password'],
+  [dir='rtl'] input[data-ltr='true'] {
+    direction: ltr;
+    text-align: left;
+  }
+
+  /* Force English (Latin) numerals everywhere regardless of lang/locale */
+  * {
+    font-variant-numeric: normal;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;

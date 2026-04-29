@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
                     <td className="px-6 py-3 text-[#00ff41] font-medium">{a.name}</td>
                     <td className="px-6 py-3 text-[#00ff41]/60">{a.postCount}</td>
                     <td className="px-6 py-3 text-[#00ff41]/60">
-                      {new Date(a.created_at).toLocaleDateString()}
+                      {new Date(a.created_at).toLocaleDateString('en-US')}
                     </td>
                     <td className="px-6 py-3 text-right">
                       <a

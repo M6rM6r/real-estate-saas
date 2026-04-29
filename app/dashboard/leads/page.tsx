@@ -128,7 +128,7 @@ export default function LeadsPage() {
     const rows = [
       ['التاريخ', 'الاسم', 'الهاتف', 'البريد الإلكتروني', 'الرسالة', 'الحالة'],
       ...filtered.map((l) => [
-        new Date(l.created_at).toLocaleDateString('ar-SA'),
+        new Date(l.created_at).toLocaleDateString('en-US'),
         l.name,
         l.phone,
         l.email ?? '',
@@ -322,7 +322,7 @@ export default function LeadsPage() {
                       <td className="px-4 py-3 text-gray-400">
                         <div className="flex items-center gap-1.5">
                           <Clock className="h-3.5 w-3.5" />
-                          {new Date(lead.created_at).toLocaleDateString()}
+                          {new Date(lead.created_at).toLocaleDateString('en-US')}
                         </div>
                       </td>
                     </tr>
@@ -478,7 +478,7 @@ export default function LeadsPage() {
               {/* Date */}
               <p className="text-xs text-gray-600 flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                {new Date(selectedLead.created_at).toLocaleString('ar-SA')}
+                {new Date(selectedLead.created_at).toLocaleString('en-US')}
               </p>
             </div>
           )}

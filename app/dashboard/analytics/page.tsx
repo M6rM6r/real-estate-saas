@@ -25,7 +25,7 @@ const PERIODS: { key: Period; label: string }[] = [
 function formatXLabel(date: string, fmt: 'day' | 'month' | undefined) {
   if (!fmt || fmt === 'month') {
     const [y, m] = date.split('-')
-    return new Date(Number(y), Number(m) - 1).toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
+    return new Date(Number(y), Number(m) - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
   }
   const [, m, d] = date.split('-')
   return `${d}/${m}`
@@ -159,7 +159,7 @@ export default function AnalyticsPage() {
           </div>
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي المشاهدات</p>
-            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalViews.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalViews.toLocaleString('en-US')}</p>
           </div>
         </div>
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-3">
@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
           </div>
           <div>
             <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي العملاء المحتملين</p>
-            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalLeads.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalLeads.toLocaleString('en-US')}</p>
           </div>
         </div>
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-3">

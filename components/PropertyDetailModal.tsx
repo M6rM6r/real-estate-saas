@@ -262,7 +262,7 @@ export function PropertyDetailModal({
             {/* Price */}
             <div className="bg-gradient-to-br rounded-xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}11)`, borderColor: accentColor, borderWidth: '1px' }}>
               <p className="text-gray-300 text-sm mb-2">السعر</p>
-              <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString() : 'غير محدد'}</p>
+              <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString('en-US') : 'غير محدد'}</p>
               <p className="text-gray-300 text-sm mt-2">ر.س</p>
             </div>
 

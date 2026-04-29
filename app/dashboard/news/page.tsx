@@ -298,13 +298,13 @@ export default function NewsPage() {
                     )}
                     {!item.published && item.publish_at && (
                       <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">
-                        مجدول · {new Date(item.publish_at).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        مجدول · {new Date(item.publish_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </Badge>
                     )}
                   </div>
                   <p className="text-gray-400 text-sm line-clamp-2">{item.body || 'No content'}</p>
                   <p className="text-gray-600 text-xs mt-1">
-                    {new Date(item.created_at).toLocaleDateString()}
+                    {new Date(item.created_at).toLocaleDateString('en-US')}
                   </p>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">

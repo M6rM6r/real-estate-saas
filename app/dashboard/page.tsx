@@ -112,7 +112,7 @@ export default function DashboardOverview() {
             <Eye className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{data.totalViews.toLocaleString()}</p>
+            <p className="text-3xl font-bold">{data.totalViews.toLocaleString('en-US')}</p>
             <p className={`mt-2 text-xs ${viewsTrend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {viewsTrend >= 0 ? '+' : ''}{viewsTrend}% مقارنة بالفترة السابقة
             </p>
@@ -126,7 +126,7 @@ export default function DashboardOverview() {
             <Users className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{data.totalLeads.toLocaleString()}</p>
+            <p className="text-3xl font-bold">{data.totalLeads.toLocaleString('en-US')}</p>
             <p className="mt-2 text-xs text-gray-400">استفسارات مؤهلة من جميع القنوات</p>
           </CardContent>
         </Card>
@@ -274,7 +274,7 @@ export default function DashboardOverview() {
                     <div className="min-w-0 flex-1 pr-2">
                       <p className="text-sm font-medium text-white truncate">{listing.title}</p>
                       {listing.price != null && (
-                        <p className="text-xs text-blue-400 font-semibold">{listing.price.toLocaleString()} SAR</p>
+                        <p className="text-xs text-blue-400 font-semibold">{listing.price.toLocaleString('en-US')} SAR</p>
                       )}
                     </div>
                     <Badge className={`text-xs shrink-0 ${listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>

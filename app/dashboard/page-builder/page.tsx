@@ -828,7 +828,7 @@ export default function PageBuilderPage() {
       </div>
 
       {/* Main three-panel layout */}
-      <div className="grid xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] lg:grid-cols-[220px_minmax(300px,0.88fr)_minmax(440px,1.12fr)] gap-5 items-start">
+      <div className="grid xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] lg:grid-cols-[220px_minmax(320px,1fr)] gap-5 items-start">
 
         {/* Left sidebar: sections & quick config */}
         <div className="space-y-4 lg:sticky lg:top-4 xl:max-w-[220px]">
@@ -952,7 +952,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Editor panel */}
-        <div className="space-y-5 min-w-0 xl:max-w-[560px]">
+        <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-7 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
@@ -1430,7 +1430,7 @@ export default function PageBuilderPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white text-sm truncate">{listing.title}</p>
-                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString()} {pageConfig.currency || 'SAR'}</p>
+                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString('en-US')} {pageConfig.currency || 'SAR'}</p>
                           <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
                             {listing.location && <span>{listing.location}</span>}
                             {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
@@ -1729,7 +1729,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Live Preview */}
-        <div className="lg:sticky lg:top-4 self-start min-w-0">
+        <div className="lg:sticky lg:top-4 self-start min-w-0 lg:col-span-2 xl:col-span-1 relative z-0">
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
