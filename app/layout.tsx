@@ -11,8 +11,8 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: 'Rew | منصة العقارات الاحترافية',
-  description: 'منصة احترافية لإدارة وعرض العقارات',
+  title: 'منصة Rew',
+  description: 'منصة إحترافية لإدارة وعرض المنتجات\الخدمات',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app'),
 };
 
