@@ -81,10 +81,6 @@ env:
     secret: RESEND_FROM_EMAIL
     availability:
       - RUNTIME
-  - variable: EMAIL_FROM_ADDRESS
-    secret: EMAIL_FROM_ADDRESS
-    availability:
-      - RUNTIME
   - variable: ANTHROPIC_API_KEY
     secret: ANTHROPIC_API_KEY
     availability:
