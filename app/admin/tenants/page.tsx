@@ -152,24 +152,24 @@ export default function AdminTenantsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-[#00ff41]/60 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Tenants</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-[#00ff41]">{'>'} Tenants_</h1>
+          <p className="text-[#00ff41]/40 text-sm mt-1">
             {tenants.length} {tenants.length === 1 ? 'agency' : 'agencies'} registered
           </p>
         </div>
         <Button
           onClick={openCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+          className="bg-[#00ff41]/20 hover:bg-[#00ff41]/40 text-[#00ff41] font-medium border border-[#00ff41]/40"
         >
           <Plus className="h-4 w-4 mr-2" /> New Tenant
         </Button>
@@ -188,12 +188,12 @@ export default function AdminTenantsPage() {
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#00ff41]/40" />
         <Input
           placeholder="Search tenants..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500"
+          className="pl-9 bg-[#0d0d0d] border border-[#00ff41]/20 text-[#00ff41] placeholder:text-[#00ff41]/30 focus:border-[#00ff41]/40 font-mono"
         />
       </div>
 
@@ -203,88 +203,88 @@ export default function AdminTenantsPage() {
           <Users className="h-12 w-12 mb-4 text-slate-700" />
           <p className="text-sm">
             {search
-              ? 'No tenants match your search.'
-              : 'No tenants yet. Create one to get started.'}
-          </p>
-        </div>
-      ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-800">
-                  {['Agency', 'Slug', 'Status', 'Agents', 'Posts', 'Joined', 'Actions'].map((h) => (
-                    <th
-                      key={h}
-                      className={`px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide ${h === 'Actions' ? 'text-right' : 'text-left'}`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((t) => (
-                  <tr
-                    key={t.id}
-                    className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                          {t.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-white font-medium">{t.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <code className="text-slate-400 text-xs bg-slate-800 px-2 py-0.5 rounded">
-                        {t.slug}
-                      </code>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          t.status === 'active'
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-amber-500/10 text-amber-400'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            t.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'
-                          }`}
-                        />
-                        {t.status === 'active' ? 'Active' : 'Suspended'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-400">{t.agentCount ?? 0}</td>
-                    <td className="px-6 py-4 text-slate-400">{t.postCount ?? 0}</td>
-                    <td className="px-6 py-4 text-slate-500 text-xs">
-                      {t.created_at ? new Date(t.created_at).toLocaleDateString() : '—'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end items-center gap-1">
-                        <a
-                          href={`/${t.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-400/10 transition-colors"
-                          title="View public page"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
                         <button
                           type="button"
-                          onClick={() => openEdit(t)}
-                          aria-label={`تعديل ${t.name}`}
-                          className="p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
+              {filtered.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-[#00ff41]/30">
+                  <Users className="h-12 w-12 mb-4 text-[#00ff41]/20" />
+                  <p className="text-sm">
+                    {search
+                      ? '> no tenants match your search'
+                      : '> no tenants yet. create one to get started.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-[#0d0d0d] border border-[#00ff41]/20 rounded-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#00ff41]/10">
+                          {['Agency', 'Slug', 'Status', 'Agents', 'Posts', 'Joined', 'Actions'].map((h) => (
+                            <th
+                              key={h}
+                              className={`px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase tracking-wide ${h === 'Actions' ? 'text-right' : 'text-left'}`}
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map((t) => (
+                          <tr
+                            key={t.id}
+                            className="border-b border-[#00ff41]/10 hover:bg-[#00ff41]/5 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-[#00ff41]/20 border border-[#00ff41]/40 flex items-center justify-center text-[#00ff41] text-xs font-bold shrink-0">
+                                  {t.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-[#00ff41] font-medium">{t.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <code className="text-[#00ff41]/60 text-xs bg-[#00ff41]/5 border border-[#00ff41]/10 px-2 py-0.5 rounded">
+                                {t.slug}
+                              </code>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
+                                  t.status === 'active'
+                                    ? 'bg-[#00ff41]/10 text-[#00ff41] border border-[#00ff41]/30'
+                                    : 'bg-[#ffb441]/10 text-[#ffb441] border border-[#ffb441]/30'
+                                }`}
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    t.status === 'active' ? 'bg-[#00ff41] animate-pulse' : 'bg-[#ffb441]'
+                                  }`}
+                                />
+                                {t.status === 'active' ? 'Active' : 'Suspended'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-[#00ff41]/60">{t.agentCount ?? 0}</td>
+                            <td className="px-6 py-4 text-[#00ff41]/60">{t.postCount ?? 0}</td>
+                            <td className="px-6 py-4 text-[#00ff41]/40 text-xs">
+                              {t.created_at ? new Date(t.created_at).toLocaleDateString() : ''}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-end items-center gap-1">
+                                <a
+                                  href={`/${t.slug}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1.5 rounded-md text-[#00ff41]/40 hover:text-[#00ff41] hover:bg-[#00ff41]/10 border border-transparent transition-colors"
+                                  title="View public page"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => openEdit(t)}
+                                  aria-label={`تعديل ${t.name}`}
                           onClick={() => setDeleteId(t.id)}
                           aria-label={`حذف ${t.name}`}
                           className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
