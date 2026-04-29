@@ -17,7 +17,7 @@ function getAdminApp() {
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID!,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n').trim(),
+      privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/^"|"$/g, '').replace(/\\n/g, '\n').trim(),
     }),
     // Prefer explicit env var; fall back to the modern Firebase Storage domain
     storageBucket:
