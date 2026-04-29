@@ -132,6 +132,7 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
   SAR: '⃁', AED: 'د.إ', KWD: 'د.ك', QAR: 'ر.ق',
   BHD: 'د.ب', OMR: 'ر.ع', EGP: 'ج.م',
   USD: '$', EUR: '€', GBP: '£',
+  'ر.س': '⃁',
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

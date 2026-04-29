@@ -341,6 +341,19 @@ const COLOR_PRESETS = [
   '#e11d48', '#c026d3', '#0284c7', '#14b8a6',
 ];
 
+const CURRENCY_OPTIONS = [
+  { code: 'SAR', symbol: '⃁', nameAr: 'ريال سعودي' },
+  { code: 'AED', symbol: 'د.إ', nameAr: 'درهم إماراتي' },
+  { code: 'KWD', symbol: 'د.ك', nameAr: 'دينار كويتي' },
+  { code: 'QAR', symbol: 'ر.ق', nameAr: 'ريال قطري' },
+  { code: 'BHD', symbol: 'د.ب', nameAr: 'دينار بحريني' },
+  { code: 'OMR', symbol: 'ر.ع', nameAr: 'ريال عُماني' },
+  { code: 'EGP', symbol: 'ج.م', nameAr: 'جنيه مصري' },
+  { code: 'USD', symbol: '$', nameAr: 'دولار' },
+  { code: 'EUR', symbol: '€', nameAr: 'يورو' },
+  { code: 'GBP', symbol: '£', nameAr: 'جنيه إسترليني' },
+] as const;
+
 const demoListings = [
   { id: '1', title: 'فيلا فاخرة في الخليج', price: 2500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 3, area_sqm: 450, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
   { id: '2', title: 'شقة حديثة مع إطلالة', price: 1200000, location: 'Downtown Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 200, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
@@ -729,6 +742,7 @@ export default function PageBuilderPage() {
   const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
   const pageConfig = { ...DEFAULT_PAGE_CONFIG, ...(profile.page_config ?? {}) };
   const activeTheme = PAGE_THEMES[selectedTheme as keyof typeof PAGE_THEMES] ?? PAGE_THEMES.modern;
+  const displayCurrency = pageConfig.currency === 'SAR' || pageConfig.currency === 'ر.س' ? '⃁' : (pageConfig.currency || 'SAR');
 
   return (
     <div className="space-y-5 pb-10" dir="rtl">
@@ -948,16 +962,11 @@ export default function PageBuilderPage() {
                   onChange={(e) => updatePageConfig({ currency: e.target.value })}
                   className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white"
                 >
-                  <option value="SAR">⃁ ريال سعودي</option>
-                  <option value="AED">د.إ درهم إماراتي</option>
-                  <option value="KWD">د.ك دينار كويتي</option>
-                  <option value="QAR">ر.ق ريال قطري</option>
-                  <option value="BHD">د.ب دينار بحريني</option>
-                  <option value="OMR">ر.ع ريال عُماني</option>
-                  <option value="EGP">ج.م جنيه مصري</option>
-                  <option value="USD">$ دولار</option>
-                  <option value="EUR">€ يورو</option>
-                  <option value="GBP">£ جنيه إسترليني</option>
+                  {CURRENCY_OPTIONS.map((currencyOption) => (
+                    <option key={currencyOption.code} value={currencyOption.code}>
+                      {`${currencyOption.symbol} ${currencyOption.code} · ${currencyOption.nameAr}`}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1012,7 +1021,7 @@ export default function PageBuilderPage() {
                 <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
                 <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.values(PAGE_THEMES).map((theme) => (
+                  {Object.values(PAGE_THEMES).filter((theme) => theme.dark).map((theme) => (
                     <button
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
@@ -1461,7 +1470,7 @@ export default function PageBuilderPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white text-sm truncate">{listing.title}</p>
-                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString('en-US')} {pageConfig.currency || 'SAR'}</p>
+                          <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString('en-US')} {displayCurrency}</p>
                           <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
                             {listing.location && <span>{listing.location}</span>}
                             {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
