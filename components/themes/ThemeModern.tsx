@@ -283,6 +283,16 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
           </section>
         )}
 
+        {/* Working Hours */}
+        {profile?.working_hours && Object.values(profile.working_hours).some(h => h?.enabled) && (
+          <section className="reveal py-10 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg }}>
+            <div className="max-w-sm mx-auto">
+              <h3 className="text-center text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: primary }}>ساعات العمل</h3>
+              <WorkingHours hours={profile.working_hours} />
+            </div>
+          </section>
+        )}
+
         {/* Footer */}
         {sections.footer && (
           <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb">
