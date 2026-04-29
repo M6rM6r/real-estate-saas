@@ -2,18 +2,25 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { NextRequest, NextResponse } from 'next/server'
 
-const hasUpstash =
-  process.env.UPSTASH_REDIS_REST_URL &&
-  !process.env.UPSTASH_REDIS_REST_URL.includes('your-redis') &&
-  process.env.UPSTASH_REDIS_REST_TOKEN &&
-  !process.env.UPSTASH_REDIS_REST_TOKEN.includes('your-upstash')
+const _redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim() ?? ''
+const _redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() ?? ''
 
-const redis = hasUpstash
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
-  : null
+const hasUpstash =
+  _redisUrl &&
+  !_redisUrl.includes('your-redis') &&
+  !_redisUrl.includes('placeholder') &&
+  _redisToken &&
+  !_redisToken.includes('your-upstash') &&
+  !_redisToken.includes('placeholder')
+
+let redis: Redis | null = null
+if (hasUpstash) {
+  try {
+    redis = new Redis({ url: _redisUrl, token: _redisToken })
+  } catch {
+    redis = null
+  }
+}
 
 const limiter = redis
   ? new Ratelimit({
