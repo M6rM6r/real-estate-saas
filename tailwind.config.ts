@@ -15,7 +15,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'var(--font-cairo)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-cairo)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
         arabic: ['var(--font-cairo)', 'sans-serif'],
         latin: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },

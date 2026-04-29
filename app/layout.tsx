@@ -36,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className={`${inter.variable} ${cairo.variable}`}>
+      <body className={`${inter.variable} ${cairo.variable} font-sans`}>
         {children}
         <Toaster />
       </body>
