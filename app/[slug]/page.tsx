@@ -9,7 +9,6 @@ const DEMO_SLUG = 'luxury-homes-dubai'
 
 export const revalidate = 60
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const serialize = (obj: any): any => {
   if (obj === null || obj === undefined) return obj
   if (typeof obj?.toDate === 'function') return obj.toDate().toISOString()

@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <p className="text-sm font-semibold text-white">Admin Panel</p>
-            <p className="text-xs text-slate-500">rewrew7</p>
+            <p className="text-xs text-slate-500">{process.env.NEXT_PUBLIC_APP_NAME ?? 'لوحة التحكم'}</p>
           </div>
           <button
             type="button"

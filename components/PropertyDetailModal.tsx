@@ -35,8 +35,7 @@ export function PropertyDetailModal({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tenantId, listingId: property.id }),
     }).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [property.id]);
+  }, [property.id, tenantId, slug]);
 
   const images = property.images || [];
   const hasImages = images.length > 0;

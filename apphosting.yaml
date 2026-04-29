@@ -85,3 +85,24 @@ env:
     secret: ANTHROPIC_API_KEY
     availability:
       - RUNTIME
+  - variable: NEXT_PUBLIC_SENTRY_DSN
+    secret: NEXT_PUBLIC_SENTRY_DSN
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SENTRY_DSN
+    secret: SENTRY_DSN
+    availability:
+      - RUNTIME
+  - variable: SENTRY_AUTH_TOKEN
+    secret: SENTRY_AUTH_TOKEN
+    availability:
+      - BUILD
+  - variable: SENTRY_ORG
+    secret: SENTRY_ORG
+    availability:
+      - BUILD
+  - variable: SENTRY_PROJECT
+    secret: SENTRY_PROJECT
+    availability:
+      - BUILD

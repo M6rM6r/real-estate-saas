@@ -32,10 +32,8 @@ export async function POST(request: NextRequest) {
       path: '/',
     })
     return response
-  } catch (err) {
-    console.error('[session] error:', err)
-    const msg = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.json({ error: msg }, { status: 401 })
+  } catch {
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 }
 

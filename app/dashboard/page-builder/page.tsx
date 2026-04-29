@@ -257,6 +257,9 @@ export default function PageBuilderPage() {
   const [selectedTheme, setSelectedTheme] = useState<string>('modern');
   const [businessType, setBusinessType] = useState<string>('real_estate');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveTrigger = useRef(false);
+  const [autoSavePending, setAutoSavePending] = useState(0);
   const pendingImageAutoSave = useRef(false);
   const [listings, setListings] = useState<any[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
@@ -322,20 +325,18 @@ export default function PageBuilderPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!dirty) return;
-      event.preventDefault();
-      event.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirty]);
-
   const markDirty = () => {
     setDirty(true);
     setSaveStatus('idle');
     setSaveError('');
+    // Debounced auto-save: fires 2.5 s after the last change
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      // handleSave is stable after its own useCallback, read via ref below
+      autoSaveTimer.current = null;
+      autoSaveTrigger.current = true;
+      setAutoSavePending((v) => v + 1);
+    }, 2500);
   };
 
   const updateProfile = (patch: Partial<Profile>) => {
@@ -502,6 +503,7 @@ export default function PageBuilderPage() {
       setIframeKey(k => k + 1);
       if (savedTimer.current) clearTimeout(savedTimer.current);
       savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      if (autoSaveTimer.current) { clearTimeout(autoSaveTimer.current); autoSaveTimer.current = null; }
     } catch (e) {
       setSaveStatus('error');
       setSaveError(e instanceof Error ? e.message : 'Save failed. Please try again.');
@@ -520,6 +522,14 @@ export default function PageBuilderPage() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [dirty, saveStatus, handleSave]);
+
+  // Fire the debounced auto-save when the timer triggers
+  useEffect(() => {
+    if (!autoSaveTrigger.current || saveStatus === 'saving') return;
+    autoSaveTrigger.current = false;
+    void handleSave();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSavePending]);
 
   // Auto-save immediately when a profile image (logo or cover) is uploaded
   useEffect(() => {
@@ -646,10 +656,22 @@ export default function PageBuilderPage() {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {dirty && (
+          {dirty && saveStatus !== 'saving' && (
             <span className="text-xs text-amber-400 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-              تغييرات غير محفوظة
+              حفظ تلقائي خلال ثوانٍ...
+            </span>
+          )}
+          {saveStatus === 'saving' && (
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              جاري الحفظ...
+            </span>
+          )}
+          {saveStatus === 'saved' && !dirty && (
+            <span className="text-xs text-green-400 flex items-center gap-1.5">
+              <Check className="h-3 w-3" />
+              تم الحفظ
             </span>
           )}
           <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
@@ -885,13 +907,13 @@ export default function PageBuilderPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-7 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
-                { value: 'themes',   icon: Layout,         label: 'التصميم'  },
-                { value: 'branding', icon: Palette,        label: 'الهوية'   },
-                { value: 'content',  icon: FileText,       label: 'المحتوى'  },
-                { value: 'posts',    icon: Building2,      label: 'العروض'   },
-                { value: 'contact',  icon: Phone,          label: 'التواصل' },
-                { value: 'social',   icon: Globe,          label: 'سوشيال'  },
-                { value: 'seo',      icon: Search,         label: 'SEO'      },
+                { value: 'themes',   icon: Layout,         label: '🎨 التصميم'  },
+                { value: 'branding', icon: Palette,        label: '🏷️ الهوية'   },
+                { value: 'content',  icon: FileText,       label: '📝 المحتوى'  },
+                { value: 'posts',    icon: Building2,      label: '🏠 العروض'   },
+                { value: 'contact',  icon: Phone,          label: '📞 التواصل' },
+                { value: 'social',   icon: Globe,          label: '🌐 سوشال'   },
+                { value: 'seo',      icon: Search,         label: '🔍 SEO'      },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -996,7 +1018,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Building2 className="h-4 w-4 text-blue-400" /> اسم المنشأة
+                  🏢 اسم المنشأة
                 </p>
                 <Input
                   value={agencyName}
@@ -1008,7 +1030,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Building2 className="h-4 w-4 text-blue-400" /> نوع النشاط التجاري
+                  💼 نوع النشاط التجاري
                 </p>
                 <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
                 <select
@@ -1027,7 +1049,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Palette className="h-4 w-4 text-blue-400" /> لون العلامة التجارية
+                  🎨 لون العلامة التجارية
                 </p>
                 <div className="flex flex-wrap gap-2 mb-1">
                   {COLOR_PRESETS.map((c) => (
@@ -1067,7 +1089,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <ImageIcon className="h-4 w-4 text-blue-400" /> الشعار (Logo)
+                  🖼️ الشعار (Logo)
                 </p>
                 <ImageUploader
                   value={profile.logo_url || ''}
@@ -1079,7 +1101,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <ImageIcon className="h-4 w-4 text-blue-400" /> صورة الغلاف
+                  🖼️ صورة الغلاف
                 </p>
                 <ImageUploader
                   value={profile.cover_url || ''}
@@ -1094,7 +1116,7 @@ export default function PageBuilderPage() {
             <TabsContent value="content" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <FileText className="h-4 w-4 text-blue-400" /> محتوى الصفحة
+                  ✍️ محتوى الصفحة
                 </p>
 
                 <div className="space-y-1.5">
@@ -1388,7 +1410,7 @@ export default function PageBuilderPage() {
             <TabsContent value="contact" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Phone className="h-4 w-4 text-blue-400" /> بيانات التواصل
+                  📞 بيانات التواصل
                 </p>
 
                 {([
@@ -1457,7 +1479,7 @@ export default function PageBuilderPage() {
               {/* Working hours */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Clock className="h-4 w-4 text-blue-400" /> ساعات العمل
+                  🕐 ساعات العمل
                 </p>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-slate-500">أيام معطلة يمكن تعطيلها، والأيام المفعلة يجب أن تحتوي وقت فتح/إغلاق صحيح.</p>
@@ -1515,7 +1537,7 @@ export default function PageBuilderPage() {
             <TabsContent value="social" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Globe className="h-4 w-4 text-blue-400" /> روابط التواصل الاجتماعي
+                  🌐 روابط التواصل الاجتماعي
                 </p>
                 <p className="text-xs text-slate-500">الصق روابط ملفاتك الشخصية — ستظهر كأيقونات في صفحتك</p>
 
@@ -1577,7 +1599,7 @@ export default function PageBuilderPage() {
             <TabsContent value="seo" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  <Search className="h-4 w-4 text-blue-400" /> محركات البحث والمشاركة
+                  🔍 محركات البحث والمشاركة
                 </p>
                 <p className="text-xs text-slate-500">هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل</p>
 
@@ -1637,18 +1659,21 @@ export default function PageBuilderPage() {
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
               >
                 {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-                {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ الآن'}
               </Button>
 
               {saveStatus === 'saved' && (
                 <span className="flex items-center gap-1.5 text-sm text-green-400">
-                  <CheckCircle2 className="h-4 w-4" /> تم الحفظ بنجاح!
+                  <CheckCircle2 className="h-4 w-4" /> تم الحفظ تلقائياً
                 </span>
               )}
               {saveStatus === 'error' && (
                 <span className="flex items-center gap-1.5 text-sm text-red-400">
                   <AlertCircle className="h-4 w-4" /> {saveError}
                 </span>
+              )}
+              {dirty && saveStatus === 'idle' && (
+                <span className="text-xs text-slate-500">يُحفظ تلقائياً بعد 2.5 ثانية من آخر تغيير</span>
               )}
             </div>
           </div>

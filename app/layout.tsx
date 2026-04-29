@@ -1,14 +1,24 @@
 import './globals.css';
 import 'photoswipe/style.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Cairo } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 
-const inter = Inter({ subsets: ['latin'] });
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  display: 'swap',
+  variable: '--font-cairo',
+});
 
 export const metadata: Metadata = {
-  title: 'RealEstate SaaS',
-  description: 'Professional real estate platform',
+  title: 'Rew | منصة العقارات الاحترافية',
+  description: 'منصة احترافية لإدارة وعرض العقارات',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app'),
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -17,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="ar" dir="rtl">
+      <body className={cairo.className}>
         {children}
         <Toaster />
       </body>

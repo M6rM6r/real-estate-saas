@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const { withSentryConfig } = require('@sentry/nextjs')
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -10,9 +11,6 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       {
@@ -48,6 +46,8 @@ const nextConfig = {
         hostname: 'images.pexels.com',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
   },
   experimental: {
     serverComponentsExternalPackages: ['sharp', 'firebase-admin', '@google-cloud/storage', '@google-cloud/firestore', 'google-auth-library'],
@@ -74,4 +74,16 @@ const nextConfig = {
   }),
 }
 
-module.exports = nextConfig
+module.exports = withSentryConfig(nextConfig, {
+  // Sentry webpack plugin options
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Upload source maps in CI/production only
+  silent: !process.env.CI,
+  // Disable source map upload if auth token not set (local dev)
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Automatically tree-shake Sentry logger statements
+  disableLogger: true,
+  // Hides Sentry SDK from client bundle in dev
+  hideSourceMaps: true,
+})

@@ -9,16 +9,16 @@ import { authFetch } from '@/lib/api';
 import type { Lead } from '@/lib/types';
 
 const navItems = [
-  { href: '/dashboard', label: 'نظرة عامة', icon: BarChart3 },
-  { href: '/dashboard/page-builder', label: 'منشئ الصفحة', icon: LayoutTemplate },
-  { href: '/dashboard/listings', label: 'العقارات', icon: Home },
-  { href: '/dashboard/leads', label: 'العملاء المحتملون', icon: Users },
-  { href: '/dashboard/analytics', label: 'الإحصائيات', icon: BarChart2 },
-  { href: '/dashboard/gallery', label: 'المعرض', icon: Images },
-  { href: '/dashboard/news', label: 'الأخبار', icon: Newspaper },
-  { href: '/dashboard/announcements', label: 'الإعلانات', icon: Megaphone },
-  { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
-  { href: '/dashboard/logs', label: 'السجلات', icon: ClipboardList },
+  { href: '/dashboard',               label: '📊 نظرة عامة',         icon: BarChart3      },
+  { href: '/dashboard/page-builder',  label: '🎨 منشئ الصفحة',       icon: LayoutTemplate },
+  { href: '/dashboard/listings',      label: '🏠 العقارات',           icon: Home           },
+  { href: '/dashboard/leads',         label: '👥 العملاء المحتملون',  icon: Users          },
+  { href: '/dashboard/analytics',     label: '📈 الإحصائيات',         icon: BarChart2      },
+  { href: '/dashboard/gallery',       label: '🖼️ المعرض',             icon: Images         },
+  { href: '/dashboard/news',          label: '📰 الأخبار',            icon: Newspaper      },
+  { href: '/dashboard/announcements', label: '📢 الإعلانات',          icon: Megaphone      },
+  { href: '/dashboard/settings',      label: '⚙️ الإعدادات',          icon: Settings       },
+  { href: '/dashboard/logs',          label: '📋 السجلات',            icon: ClipboardList  },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
