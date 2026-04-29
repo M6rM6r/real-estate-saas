@@ -174,7 +174,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   )}
                   <ListingBadges listing={featured} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
                 </div>
-                {/* Details on left */}}
+                {/* Details on left */}
                 <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
                   <span className="text-xs font-bold tracking-widest uppercase mb-3 dsr-text">عقار مميز</span>
                   <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{featured.title}</h3>
