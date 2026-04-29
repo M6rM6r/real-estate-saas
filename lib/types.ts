@@ -59,26 +59,6 @@ export const PAGE_THEMES = {
     sectionAlt: '#120f28',
     headingFont: 'inherit',
   },
-  sunset: {
-    id: 'sunset', label: 'فجري', labelEn: 'Sunrise',
-    bg: '#fffaf7', card: '#ffffff', accent: '#f97316', dark: false,
-    navBg: 'rgba(255,250,247,0.97)', navBorder: '#fde8d5',
-    heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.58))',
-    heroCardBg: 'rgba(255,250,247,0.88)', heroCardBorder: 'rgba(249,115,22,0.28)', heroCardBlur: true,
-    radius: '14px', cardBg: '#ffffff', cardBorder: '#f3e8df', cardShadow: '0 4px 16px rgba(0,0,0,0.07)',
-    sectionAlt: '#fff5ee',
-    headingFont: 'inherit',
-  },
-  slate: {
-    id: 'slate', label: 'نظيف', labelEn: 'Clean',
-    bg: '#f8f9fa', card: '#ffffff', accent: '#334155', dark: false,
-    navBg: 'rgba(248,249,250,0.97)', navBorder: '#e2e8f0',
-    heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.62))',
-    heroCardBg: 'rgba(248,249,250,0.92)', heroCardBorder: 'rgba(51,65,85,0.22)', heroCardBlur: true,
-    radius: '8px', cardBg: '#ffffff', cardBorder: '#e2e8f0', cardShadow: '0 1px 8px rgba(0,0,0,0.06)',
-    sectionAlt: '#f1f5f9',
-    headingFont: 'inherit',
-  },
 } as const;
 export type ThemeId = keyof typeof PAGE_THEMES;
 
