@@ -3,14 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart3, LayoutTemplate, Settings, LogOut, Building2, Menu, X, ClipboardList } from 'lucide-react';
+import { LayoutTemplate, LogOut, Building2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { authFetch } from '@/lib/api';
 const navItems = [
-  { href: '/dashboard',               label: '📊 نظرة عامة',   icon: BarChart3      },
   { href: '/dashboard/page-builder',  label: '🎨 منشئ الصفحة', icon: LayoutTemplate },
-  { href: '/dashboard/settings',      label: '⚙️ الإعدادات',   icon: Settings       },
-  { href: '/dashboard/logs',          label: '📋 السجلات',      icon: ClipboardList  },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

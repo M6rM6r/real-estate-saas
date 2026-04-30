@@ -17,7 +17,7 @@ import {
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
-  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, Lock, Settings,
 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -424,6 +424,9 @@ export default function PageBuilderPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
+  const [customDomain, setCustomDomain] = useState('');
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwdSaving, setPwdSaving] = useState(false);
 
   const profileCompletionItems = [
     { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
@@ -471,6 +474,7 @@ export default function PageBuilderPage() {
         setSelectedTheme(profileRes.tenant?.theme || 'modern');
         setBusinessType((profileRes.tenant as any)?.business_type || 'real_estate');
         setListings(listingsRes.data ?? []);
+        setCustomDomain((profileRes.tenant as any)?.custom_domain || '');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -695,6 +699,46 @@ export default function PageBuilderPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+    const handleChangePassword = async () => {
+      if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) return;
+      if (pwdForm.next !== pwdForm.confirm) return;
+      if (pwdForm.next.length < 8) return;
+      const { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } = await import('firebase/auth');
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user || !user.email) return;
+      setPwdSaving(true);
+      try {
+        const cred = EmailAuthProvider.credential(user.email, pwdForm.current);
+        await reauthenticateWithCredential(user, cred);
+        await updatePassword(user, pwdForm.next);
+        setPwdForm({ current: '', next: '', confirm: '' });
+        setSaveStatus('saved');
+        if (savedTimer.current) clearTimeout(savedTimer.current);
+        savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      } catch {
+        setSaveStatus('error');
+        setSaveError('فشل تغيير كلمة المرور. تأكد من كلمة المرور الحالية.');
+      } finally {
+        setPwdSaving(false);
+      }
+    };
+
+    const handleSaveDomain = async () => {
+      try {
+        await authFetch('/api/dashboard/profile', {
+          method: 'PATCH',
+          body: JSON.stringify({ tenant: { custom_domain: customDomain } }),
+        });
+        setSaveStatus('saved');
+        if (savedTimer.current) clearTimeout(savedTimer.current);
+        savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      } catch {
+        setSaveStatus('error');
+        setSaveError('فشل حفظ الدومين.');
+      }
+    };
 
   const downloadQr = () => {
     const svg = document.getElementById('qr-svg');
@@ -984,12 +1028,13 @@ export default function PageBuilderPage() {
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-4 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+            <TabsList className="w-full grid grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
                 { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
                 { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
                 { value: 'posts',    icon: Building2, label: '🏠 العروض' },
                 { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
+                { value: 'account',  icon: Settings, label: '⚙️ حساب'   },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -1715,6 +1760,105 @@ export default function PageBuilderPage() {
                 </div>
               </div>
             </TabsContent>
+              {/* ── ACCOUNT: domain + password ── */}
+              <TabsContent value="account" className="mt-4 space-y-4">
+
+                {/* Public URL */}
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                  <p className="flex items-center gap-2 text-sm font-medium text-white">
+                    🔗 رابط صفحتك العامة
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-blue-400 font-mono truncate">
+                      {publicUrl}
+                    </div>
+                    <Button size="sm" variant="ghost" className="shrink-0 text-slate-400 hover:text-white" onClick={copyLink} aria-label="نسخ الرابط">
+                      {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                    <Button size="sm" variant="ghost" className="shrink-0 text-slate-400 hover:text-white" onClick={() => window.open(publicUrl, '_blank')} aria-label="فتح الصفحة">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Custom Domain */}
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                  <p className="flex items-center gap-2 text-sm font-medium text-white">
+                    🌐 دومين مخصص
+                  </p>
+                  <p className="text-xs text-slate-500">اربط نطاقك الخاص بصفحتك العامة</p>
+                  <Input
+                    value={customDomain}
+                    onChange={(e) => setCustomDomain(e.target.value)}
+                    placeholder="yourcompany.com"
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs text-slate-400 space-y-1.5">
+                    <p className="text-slate-300 font-medium">إعداد DNS</p>
+                    <p>أضف سجل CNAME في مزود النطاق يشير إلى:</p>
+                    <code className="block bg-black/40 rounded px-2 py-1.5 text-green-400 font-mono">{`CNAME  @  →  ${typeof window !== 'undefined' ? window.location.hostname : 'your-app.hosted.app'}`}</code>
+                    <p className="text-slate-500">قد يستغرق الأمر 48 ساعة للانتشار.</p>
+                  </div>
+                  <Button onClick={handleSaveDomain} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    حفظ الدومين
+                  </Button>
+                </div>
+
+                {/* Change Password */}
+                {!(typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true') && (
+                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <p className="flex items-center gap-2 text-sm font-medium text-white">
+                      <Lock className="h-4 w-4" /> تغيير كلمة المرور
+                    </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-slate-400 text-xs uppercase tracking-wider">كلمة المرور الحالية</Label>
+                      <Input
+                        type="password"
+                        value={pwdForm.current}
+                        onChange={(e) => setPwdForm((p) => ({ ...p, current: e.target.value }))}
+                        autoComplete="current-password"
+                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-slate-400 text-xs uppercase tracking-wider">كلمة المرور الجديدة</Label>
+                      <Input
+                        type="password"
+                        value={pwdForm.next}
+                        onChange={(e) => setPwdForm((p) => ({ ...p, next: e.target.value }))}
+                        autoComplete="new-password"
+                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-slate-400 text-xs uppercase tracking-wider">تأكيد كلمة المرور الجديدة</Label>
+                      <Input
+                        type="password"
+                        value={pwdForm.confirm}
+                        onChange={(e) => setPwdForm((p) => ({ ...p, confirm: e.target.value }))}
+                        autoComplete="new-password"
+                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleChangePassword}
+                      disabled={pwdSaving || !pwdForm.current || !pwdForm.next || pwdForm.next !== pwdForm.confirm || pwdForm.next.length < 8}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white gap-2 disabled:opacity-50"
+                    >
+                      {pwdSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+                      تغيير كلمة المرور
+                    </Button>
+                    {pwdForm.next && pwdForm.confirm && pwdForm.next !== pwdForm.confirm && (
+                      <p className="text-xs text-red-400">كلمتا المرور غير متطابقتين</p>
+                    )}
+                    {pwdForm.next && pwdForm.next.length < 8 && (
+                      <p className="text-xs text-amber-400">يجب أن تكون 8 أحرف على الأقل</p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+
           </Tabs>
 
           {/* Save button + status + completion checklist */}
