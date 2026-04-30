@@ -355,9 +355,11 @@ const CURRENCY_OPTIONS = [
 ] as const;
 
 const demoListings = [
-  { id: '1', title: 'فيلا فاخرة في الخليج', price: 2500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 3, area_sqm: 450, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
-  { id: '2', title: 'شقة حديثة مع إطلالة', price: 1200000, location: 'Downtown Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 200, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
-  { id: '3', title: 'أرض للاستثمار العقاري', price: 800000, location: 'Business Bay', bedrooms: 0, bathrooms: 0, area_sqm: 1000, listing_status: 'available' as const, images: ['https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg'] },
+  { id: '1', title: 'فيلا فاخرة في بالم جميرا', price: 12000000, location: 'Palm Jumeirah, Dubai', bedrooms: 5, bathrooms: 6, area_sqm: 820, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
+  { id: '2', title: 'شقة بإطلالة برج خليفة', price: 2800000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 145, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
+  { id: '3', title: 'استوديو بإطلالة قناة مائية', price: 750000, location: 'Business Bay, Dubai', bedrooms: 0, bathrooms: 1, area_sqm: 48, listing_status: 'sold' as const, type: 'sale', images: ['https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg'] },
+  { id: '4', title: 'بنتهاوس في دبي مارينا', price: 8500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 4, area_sqm: 560, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'] },
+  { id: '5', title: 'شقة للإيجار في جي بي آر', price: 180000, location: 'JBR, Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 185, listing_status: 'available' as const, type: 'rent', images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'] },
 ];
 
 const DAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -464,12 +466,67 @@ export default function PageBuilderPage() {
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
     if (isDemo) {
-      const d = { profile: { tenant_id: 'demo', logo_url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=100', cover_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200', bio: 'وكالة عقارية رائدة متخصصة في العقارات الفاخرة بدبي. بخبرة تمتد أكثر من 15 عامًا، نساعدك على إيجاد منزل أحلامك في أرقى المواقع.', tagline: 'حيث تلتقي الفخامة بالمنزل', contact_email: 'info@luxuryhomesdubai.com', contact_phone: '+971 4 123 4567', contact_address: 'برج A، بزنس باي، دبي، الإمارات', licence_no: 'RE-12345', social_links: { instagram: 'https://instagram.com/luxuryhomesdubai', x: 'https://x.com/luxuryhomesdubai', linkedin: 'https://linkedin.com/company/luxuryhomesdubai', whatsapp: 'https://wa.me/971501234567' } }, tenant: { id: 'demo', slug: 'luxury-homes-dubai', name: 'Luxury Homes Dubai', status: 'active' as const, created_at: '2025-10-15T10:00:00Z', primary_color: '#0ea5e9', theme: 'modern' } };
+      const d = {
+        profile: {
+          tenant_id: 'demo',
+          logo_url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=100',
+          cover_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200',
+          bio: 'وكالة عقارية رائدة متخصصة في العقارات الفاخرة بدبي. بخبرة تمتد أكثر من 15 عامًا، نساعدك على إيجاد منزل أحلامك في أرقى المواقع.',
+          tagline: 'حيث تلتقي الفخامة بالمنزل',
+          contact_email: 'info@luxuryhomesdubai.com',
+          contact_phone: '+971 4 123 4567',
+          extra_phones: ['+971 50 123 4567'],
+          contact_address: 'برج A، بزنس باي، دبي، الإمارات',
+          licence_no: 'RE-12345',
+          licence_numbers: [{ label: 'رقم الرخصة', number: 'RE-12345' }],
+          social_links: {
+            instagram: 'https://instagram.com/luxuryhomesdubai',
+            x: 'https://x.com/luxuryhomesdubai',
+            linkedin: 'https://linkedin.com/company/luxuryhomesdubai',
+            whatsapp: 'https://wa.me/971501234567',
+            snapchat: 'https://snapchat.com/add/luxuryhomesdubai',
+            tiktok: 'https://tiktok.com/@luxuryhomesdubai',
+          },
+          working_hours: {
+            sun: { enabled: true,  open: '09:00', close: '18:00' },
+            mon: { enabled: true,  open: '09:00', close: '18:00' },
+            tue: { enabled: true,  open: '09:00', close: '18:00' },
+            wed: { enabled: true,  open: '09:00', close: '18:00' },
+            thu: { enabled: true,  open: '09:00', close: '18:00' },
+            fri: { enabled: true,  open: '14:00', close: '20:00' },
+            sat: { enabled: false, open: '09:00', close: '17:00' },
+          },
+        },
+        tenant: {
+          id: 'demo',
+          slug: 'luxury-homes-dubai',
+          name: 'Luxury Homes Dubai',
+          status: 'active' as const,
+          created_at: '2025-10-15T10:00:00Z',
+          primary_color: '#0ea5e9',
+          theme: 'modern',
+          business_type: 'real_estate',
+        },
+      };
       setData(d);
       setProfile({
         ...d.profile,
         page_sections: DEFAULT_PAGE_SECTIONS,
-        page_config: DEFAULT_PAGE_CONFIG,
+        page_config: {
+          ...DEFAULT_PAGE_CONFIG,
+          hero_headline: 'اكتشف منزل أحلامك في دبي',
+          hero_style: 'split',
+          hero_cta_text: 'تواصل عبر واتساب',
+          button_shape: 'pill',
+          currency: 'AED',
+          offer_label_1: 'للبيع',
+          offer_label_2: 'للإيجار',
+          announcement_text: '🎉 عروض حصرية على فلل بالم جميرا — تواصل معنا الآن!',
+          announcement_color: 'accent',
+          listings_columns: 3,
+          show_listing_filters: true,
+          show_listing_search: true,
+        },
       });
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
