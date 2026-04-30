@@ -422,17 +422,17 @@ export default function PageBuilderPage() {
   const [iframeKey, setIframeKey] = useState(0);
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('desktop');
   const [showQrModal, setShowQrModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('themes');
+  const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
 
   const profileCompletionItems = [
-    { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'branding' },
-    { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'branding' },
-    { key: 'cover',     label: 'صورة الغلاف',          done: Boolean(profile.cover_url),         tab: 'branding' },
-    { key: 'bio',       label: 'نبذة عن المنشأة',      done: Boolean(profile.bio),               tab: 'content'  },
-    { key: 'whatsapp',  label: 'رقم واتساب',           done: Boolean(profile.social_links?.whatsapp), tab: 'social' },
+    { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
+    { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'design'   },
+    { key: 'cover',     label: 'صورة الغلاف',          done: Boolean(profile.cover_url),         tab: 'design'   },
+    { key: 'bio',       label: 'نبذة عن المنشأة',      done: Boolean(profile.bio),               tab: 'identity' },
+    { key: 'whatsapp',  label: 'رقم واتساب',           done: Boolean(profile.social_links?.whatsapp), tab: 'connect' },
     { key: 'listing',   label: 'عرض واحد على الأقل',   done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
-    { key: 'theme',     label: 'تصميم مخصص',           done: selectedTheme !== 'modern',         tab: 'themes'   },
+    { key: 'theme',     label: 'تصميم مخصص',           done: selectedTheme !== 'modern',         tab: 'design'   },
   ];
 
   useEffect(() => {
@@ -984,15 +984,12 @@ export default function PageBuilderPage() {
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-7 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+            <TabsList className="w-full grid grid-cols-4 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
-                { value: 'themes',   icon: Layout,         label: '🎨 التصميم'  },
-                { value: 'branding', icon: Palette,        label: '🏷️ الهوية'   },
-                { value: 'content',  icon: FileText,       label: '📝 المحتوى'  },
-                { value: 'posts',    icon: Building2,      label: '🏠 العروض'   },
-                { value: 'contact',  icon: Phone,          label: '📞 التواصل' },
-                { value: 'social',   icon: Globe,          label: '🌐 سوشال'   },
-                { value: 'seo',      icon: Search,         label: '🔍 SEO'      },
+                { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
+                { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
+                { value: 'posts',    icon: Building2, label: '🏠 العروض' },
+                { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -1005,8 +1002,8 @@ export default function PageBuilderPage() {
               ))}
             </TabsList>
 
-            {/* THEMES */}
-            <TabsContent value="themes" className="mt-4 space-y-4">
+            {/* ── DESIGN: themes + visual brand ── */}
+            <TabsContent value="design" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 xl:p-5">
                 <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
                 <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ</p>
@@ -1090,41 +1087,6 @@ export default function PageBuilderPage() {
                   ))}
                 </div>
               </div>
-            </TabsContent>
-
-            {/* BRANDING */}
-            <TabsContent value="branding" className="mt-4 space-y-4">
-
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🏢 اسم المنشأة
-                </p>
-                <Input
-                  value={agencyName}
-                  onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
-                  placeholder="مثال: مطعم الواحة، مكتب الأفق، صالون نور..."
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  💼 نوع النشاط التجاري
-                </p>
-                <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
-                <select
-                  value={businessType}
-                  onChange={(e) => { setBusinessType(e.target.value); markDirty(); }}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
-                >
-                  <option value="real_estate">🏠 عقارات</option>
-                  <option value="restaurant">🍽️ مطعم / كافيه</option>
-                  <option value="salon">✂️ صالون / سبا</option>
-                  <option value="retail">🛍️ متجر / بيع بالتجزئة</option>
-                  <option value="services">⚙️ خدمات</option>
-                  <option value="other">📋 أخرى</option>
-                </select>
-              </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
@@ -1191,8 +1153,40 @@ export default function PageBuilderPage() {
               </div>
             </TabsContent>
 
-            {/* CONTENT */}
-            <TabsContent value="content" className="mt-4 space-y-4">
+            {/* ── IDENTITY: name + biz type + tagline + bio + licences ── */}
+            <TabsContent value="identity" className="mt-4 space-y-4">
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  🏢 اسم المنشأة
+                </p>
+                <Input
+                  value={agencyName}
+                  onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
+                  placeholder="مثال: مطعم الواحة، مكتب الأفق، صالون نور..."
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  💼 نوع النشاط التجاري
+                </p>
+                <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
+                <select
+                  value={businessType}
+                  onChange={(e) => { setBusinessType(e.target.value); markDirty(); }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+                >
+                  <option value="real_estate">🏠 عقارات</option>
+                  <option value="restaurant">🍽️ مطعم / كافيه</option>
+                  <option value="salon">✂️ صالون / سبا</option>
+                  <option value="retail">🛍️ متجر / بيع بالتجزئة</option>
+                  <option value="services">⚙️ خدمات</option>
+                  <option value="other">📋 أخرى</option>
+                </select>
+              </div>
+
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   ✍️ محتوى الصفحة
@@ -1485,8 +1479,8 @@ export default function PageBuilderPage() {
               </div>
             </TabsContent>
 
-            {/* CONTACT */}
-            <TabsContent value="contact" className="mt-4 space-y-4">
+            {/* ── CONNECT: contact + social + SEO ── */}
+            <TabsContent value="connect" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   📞 بيانات التواصل
@@ -1612,8 +1606,6 @@ export default function PageBuilderPage() {
                   );
                 })}
               </div>
-            </TabsContent>
-            <TabsContent value="social" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   🌐 روابط التواصل الاجتماعي
@@ -1672,10 +1664,6 @@ export default function PageBuilderPage() {
                   </div>
                 </div>
               </div>
-            </TabsContent>
-
-            {/* SEO */}
-            <TabsContent value="seo" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   🔍 محركات البحث والمشاركة
