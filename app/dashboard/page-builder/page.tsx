@@ -885,11 +885,12 @@ export default function PageBuilderPage() {
         </div>
       </div>
 
-      {/* Main three-panel layout */}
-      <div className="grid xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] lg:grid-cols-[220px_minmax(320px,1fr)] gap-5 items-start">
+      {/* Main artistic square workspace */}
+      <div className="relative w-full rounded-3xl border border-slate-800 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.14),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.12),transparent_32%),#020617] p-3 md:p-4 xl:aspect-square overflow-hidden">
+        <div className="grid h-full xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] gap-4 items-stretch">
 
         {/* Left sidebar: unified smart control panel */}
-        <div className="space-y-4 lg:sticky lg:top-4 xl:max-w-[220px]">
+        <div className="space-y-4 xl:max-w-[220px] xl:h-full xl:overflow-y-auto xl:pr-1">
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
 
             {/* Header */}
@@ -1026,7 +1027,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Editor panel */}
-        <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20">
+        <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20 xl:h-full xl:overflow-y-auto xl:pr-1">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
               {([
@@ -1891,8 +1892,8 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Live Preview */}
-        <div className="lg:sticky lg:top-4 self-start min-w-0 lg:col-span-2 xl:col-span-1 relative z-0">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="min-w-0 relative z-0 xl:h-full">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden h-full flex flex-col">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">معاينة مباشرة</span>
@@ -1940,7 +1941,7 @@ export default function PageBuilderPage() {
             </div>
 
             {/* Live inline preview — renders theme component directly, no save needed */}
-            <div className="relative overflow-hidden bg-white" style={{ height: previewDevice === 'desktop' ? 700 : 680 }}>
+            <div className="relative overflow-hidden bg-white flex-1 min-h-0">
               {/* onClick capture blocks link navigation; scroll still works */}
               <div
                 className="overflow-y-auto overflow-x-hidden"
@@ -2004,6 +2005,7 @@ export default function PageBuilderPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
