@@ -114,7 +114,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Hero — full screen with wave */}
         {sections.hero && (
-          <section className="relative" style={{ minHeight: '100vh' }}>
+          <section data-section="hero" className="relative" style={{ minHeight: '100vh' }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
@@ -170,7 +170,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
               {(['all', 'sale', 'rent'] as const).map(f => (
@@ -202,7 +202,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* News — 2 large side by side */}
         {sections.news && news.length > 0 && (
-          <section className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
               {/* First 2 as large cards */}
@@ -240,7 +240,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* About */}
         {sections.about && (
-          <section className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center">
+          <section data-section="about" className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
             {profile?.bio && <p className="text-gray-400 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
@@ -254,7 +254,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Contact */}
         {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
               <p className="text-sm mb-8 text-gray-400">نسعد بخدمتك — تواصل معنا عبر:</p>

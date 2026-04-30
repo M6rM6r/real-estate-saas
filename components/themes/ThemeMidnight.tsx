@@ -109,7 +109,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
+          <section data-section="hero" className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
             <div className="relative flex-1 min-h-[40vh] lg:min-h-screen">
               {profile?.cover_url
                 ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
@@ -129,7 +129,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section className={`pb-16 px-4 text-center ${hasBanner ? 'pt-[128px] sm:pt-[140px]' : 'pt-28 sm:pt-32'}`} style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className={`pb-16 px-4 text-center ${hasBanner ? 'pt-[128px] sm:pt-[140px]' : 'pt-28 sm:pt-32'}`} style={{ backgroundColor: pageTheme.sectionAlt }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -140,7 +140,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section className={`relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center ${hasBanner ? 'pt-[124px] sm:pt-[136px]' : 'pt-24 sm:pt-28'}`}
+          <section data-section="hero" className={`relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center ${hasBanner ? 'pt-[124px] sm:pt-[136px]' : 'pt-24 sm:pt-28'}`}
             style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
@@ -163,7 +163,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
               <h2 className="text-2xl sm:text-3xl font-bold text-white">قائمة العقارات</h2>
@@ -230,7 +230,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section className="mid-reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="mid-reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
@@ -254,7 +254,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* About */}
         {sections.about && (
-          <section className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
+          <section data-section="about" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
             <div className="flex items-center gap-3 mb-6 justify-center">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
               <h2 className="text-2xl sm:text-3xl font-bold text-white">من نحن</h2>
@@ -269,7 +269,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Contact */}
         {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <div className="flex items-center gap-3 mb-6 justify-center">
                 <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />

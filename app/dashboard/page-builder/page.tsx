@@ -17,7 +17,7 @@ import {
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
-  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, Lock, Settings,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, Lock, Settings, SlidersHorizontal,
 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -428,6 +428,29 @@ export default function PageBuilderPage() {
   const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
   const [pwdSaving, setPwdSaving] = useState(false);
 
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Scroll preview to the section matching the active editor tab
+  useEffect(() => {
+    const sectionMap: Record<string, string> = {
+      control:  'hero',
+      design:   'hero',
+      identity: 'about',
+      posts:    'listings',
+      connect:  'contact',
+    };
+    const sectionId = sectionMap[activeTab];
+    const container = previewRef.current;
+    if (!container) return;
+    if (!sectionId) { container.scrollTop = 0; return; }
+    const el = container.querySelector(`[data-section="${sectionId}"]`);
+    if (el) {
+      (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      container.scrollTop = 0;
+    }
+  }, [activeTab]);
+
   const profileCompletionItems = [
     { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
     { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'design'   },
@@ -789,7 +812,7 @@ export default function PageBuilderPage() {
   const displayCurrency = pageConfig.currency === 'SAR' || pageConfig.currency === 'ر.س' ? '⃁' : (pageConfig.currency || 'SAR');
 
   return (
-    <div className="space-y-5 pb-10" dir="rtl">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6 pb-10" dir="rtl">
 
       {/* QR Code Dialog */}
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
@@ -829,12 +852,12 @@ export default function PageBuilderPage() {
         </DialogContent>
       </Dialog>
       <div className="mb-1">
-        <h1 className="text-xl font-bold text-white">منشئ الصفحة</h1>
+        <h1 className="text-2xl font-bold text-white">منشئ الصفحة</h1>
         <p className="text-sm text-slate-400">خصّص صفحتك العامة التي يراها عملاؤك</p>
       </div>
 
       {/* Top bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-xl p-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5">
         <div className="min-w-0">
           <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">رابط صفحتك العامة</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
@@ -851,7 +874,7 @@ export default function PageBuilderPage() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {dirty && saveStatus !== 'saving' && (
             <span className="text-xs text-amber-400 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
@@ -886,151 +909,15 @@ export default function PageBuilderPage() {
       </div>
 
       {/* Main artistic square workspace */}
-      <div className="relative w-full rounded-3xl border border-slate-800 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.14),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.12),transparent_32%),#020617] p-3 md:p-4 xl:aspect-square overflow-hidden">
-        <div className="grid h-full xl:grid-cols-[220px_minmax(320px,0.82fr)_minmax(520px,1.18fr)] gap-4 items-stretch">
-
-        {/* Left sidebar: unified smart control panel */}
-        <div className="space-y-4 xl:max-w-[220px] xl:h-full xl:overflow-y-auto xl:pr-1">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-
-            {/* Header */}
-            <div className="px-4 pt-4 pb-3 border-b border-slate-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
-                <span className="text-[11px] font-mono bg-blue-600/20 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
-                  {Object.values(sections).filter(Boolean).length}/{Object.values(sections).length}
-                </span>
-              </div>
-              <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-500"
-                  style={{ width: `${(Object.values(sections).filter(Boolean).length / Object.values(sections).length) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Section rows — each with contextual inline settings */}
-            <div className="divide-y divide-slate-800/60">
-
-              {/* Hero — with headline input inline */}
-              <div className="px-4 py-2.5 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => toggleSection('hero')}
-                  className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors"
-                  aria-pressed={sections.hero}
-                >
-                  <span className="flex items-center gap-2"><span className="w-5 text-center">🏠</span><span>القسم الرئيسي</span></span>
-                  <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.hero ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                    <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.hero ? 'translate-x-4' : 'translate-x-1'}`} />
-                  </span>
-                </button>
-                {sections.hero && (
-                  <Input
-                    value={pageConfig.hero_headline || ''}
-                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white text-xs h-7 placeholder:text-slate-500"
-                    placeholder="ابحث عن عقارك المثالي"
-                  />
-                )}
-              </div>
-
-              {/* Featured */}
-              <div className="px-4 py-2.5">
-                <button type="button" onClick={() => toggleSection('featured')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.featured}>
-                  <span className="flex items-center gap-2"><span className="w-5 text-center">⭐</span><span>المميز</span></span>
-                  <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.featured ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                    <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.featured ? 'translate-x-4' : 'translate-x-1'}`} />
-                  </span>
-                </button>
-              </div>
-
-              {/* Listings — with columns / filters / search / currency / offer labels inline */}
-              <div className="px-4 py-2.5 space-y-2">
-                <button type="button" onClick={() => toggleSection('listings')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.listings}>
-                  <span className="flex items-center gap-2"><span className="w-5 text-center">🏢</span><span>العروض</span></span>
-                  <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.listings ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                    <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.listings ? 'translate-x-4' : 'translate-x-1'}`} />
-                  </span>
-                </button>
-                {sections.listings && (
-                  <div className="space-y-2 pr-2 border-r-2 border-blue-600/30 mr-1">
-                    {/* Columns */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">أعمدة</span>
-                      <div className="flex gap-1">
-                        {([2, 3, 4] as const).map((n) => (
-                          <button key={n} type="button" onClick={() => updatePageConfig({ listings_columns: n })}
-                            className={`h-5 w-6 rounded text-[11px] font-bold transition-colors ${(pageConfig.listings_columns ?? 3) === n ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
-                            {n}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Filters + Search in one row */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">فلاتر</span>
-                      <button type="button" onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })} aria-pressed={pageConfig.show_listing_filters}>
-                        <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                          <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                        </span>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">بحث</span>
-                      <button type="button" onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })} aria-pressed={pageConfig.show_listing_search}>
-                        <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                          <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                        </span>
-                      </button>
-                    </div>
-                    {/* Currency */}
-                    <select
-                      value={pageConfig.currency || 'SAR'}
-                      onChange={(e) => updatePageConfig({ currency: e.target.value })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-[11px] text-white"
-                    >
-                      {CURRENCY_OPTIONS.map((o) => (
-                        <option key={o.code} value={o.code}>{`${o.symbol} ${o.code} · ${o.nameAr}`}</option>
-                      ))}
-                    </select>
-                    {/* Offer labels */}
-                    <div className="flex gap-1">
-                      <Input value={pageConfig.offer_label_1 || ''} onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })} placeholder="للبيع" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
-                      <Input value={pageConfig.offer_label_2 || ''} onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })} placeholder="للإيجار" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Remaining sections — simple toggles */}
-              {([
-                ['about',   '👥', 'من نحن'],
-                ['news',    '📰', 'الأخبار'],
-                ['gallery', '🖼️', 'المعرض'],
-                ['team',    '🤝', 'الفريق'],
-                ['contact', '📞', 'تواصل معنا'],
-                ['footer',  '▬',  'التذييل'],
-              ] as const).map(([key, icon, label]) => (
-                <div key={key} className="px-4 py-2.5">
-                  <button type="button" onClick={() => toggleSection(key)} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections[key]}>
-                    <span className="flex items-center gap-2"><span className="w-5 text-center">{icon}</span><span>{label}</span></span>
-                    <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
-                    </span>
-                  </button>
-                </div>
-              ))}
-
-            </div>
-          </div>
-        </div>
+      <div className="relative w-full rounded-3xl border border-slate-800 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.14),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.12),transparent_32%),#020617] p-3 md:p-4 lg:p-5 overflow-hidden xl:min-h-[820px]">
+        <div className="grid h-full xl:grid-cols-[minmax(500px,1fr)_minmax(620px,1.2fr)] gap-4 lg:gap-5 items-stretch">
 
         {/* Editor panel */}
-        <div className="space-y-5 min-w-0 xl:max-w-[560px] relative z-20 xl:h-full xl:overflow-y-auto xl:pr-1">
+        <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-1.5">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1 h-auto">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
               {([
+                { value: 'control', icon: SlidersHorizontal, label: '🎛️ تحكم' },
                 { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
                 { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
                 { value: 'posts',    icon: Building2, label: '🏠 العروض' },
@@ -1040,13 +927,137 @@ export default function PageBuilderPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="flex items-center gap-1.5 text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 hover:text-white rounded-lg py-2 transition-all"
+                  className="flex items-center justify-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 hover:text-white rounded-lg py-2 transition-all"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{label}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
+
+            {/* ── CONTROL: unified page control panel ── */}
+            <TabsContent value="control" className="mt-4 space-y-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="px-4 pt-4 pb-3 border-b border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
+                    <span className="text-[11px] font-mono bg-blue-600/20 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                      {Object.values(sections).filter(Boolean).length}/{Object.values(sections).length}
+                    </span>
+                  </div>
+                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-500"
+                      style={{ width: `${(Object.values(sections).filter(Boolean).length / Object.values(sections).length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="divide-y divide-slate-800/60">
+                  <div className="px-4 py-2.5 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection('hero')}
+                      className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors"
+                      aria-pressed={sections.hero}
+                    >
+                      <span className="flex items-center gap-2"><span className="w-5 text-center">🏠</span><span>القسم الرئيسي</span></span>
+                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.hero ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.hero ? 'translate-x-4' : 'translate-x-1'}`} />
+                      </span>
+                    </button>
+                    {sections.hero && (
+                      <Input
+                        value={pageConfig.hero_headline || ''}
+                        onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                        className="bg-slate-800 border-slate-700 text-white text-xs h-7 placeholder:text-slate-500"
+                        placeholder="ابحث عن عقارك المثالي"
+                      />
+                    )}
+                  </div>
+
+                  <div className="px-4 py-2.5">
+                    <button type="button" onClick={() => toggleSection('featured')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.featured}>
+                      <span className="flex items-center gap-2"><span className="w-5 text-center">⭐</span><span>المميز</span></span>
+                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.featured ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.featured ? 'translate-x-4' : 'translate-x-1'}`} />
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="px-4 py-2.5 space-y-2">
+                    <button type="button" onClick={() => toggleSection('listings')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.listings}>
+                      <span className="flex items-center gap-2"><span className="w-5 text-center">🏢</span><span>العروض</span></span>
+                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.listings ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.listings ? 'translate-x-4' : 'translate-x-1'}`} />
+                      </span>
+                    </button>
+                    {sections.listings && (
+                      <div className="space-y-2 pr-2 border-r-2 border-blue-600/30 mr-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400">أعمدة</span>
+                          <div className="flex gap-1">
+                            {([2, 3, 4] as const).map((n) => (
+                              <button key={n} type="button" onClick={() => updatePageConfig({ listings_columns: n })}
+                                className={`h-5 w-6 rounded text-[11px] font-bold transition-colors ${(pageConfig.listings_columns ?? 3) === n ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400">فلاتر</span>
+                          <button type="button" onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })} aria-pressed={pageConfig.show_listing_filters}>
+                            <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                              <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                            </span>
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400">بحث</span>
+                          <button type="button" onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })} aria-pressed={pageConfig.show_listing_search}>
+                            <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                              <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                            </span>
+                          </button>
+                        </div>
+                        <select
+                          value={pageConfig.currency || 'SAR'}
+                          onChange={(e) => updatePageConfig({ currency: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-[11px] text-white"
+                        >
+                          {CURRENCY_OPTIONS.map((o) => (
+                            <option key={o.code} value={o.code}>{`${o.symbol} ${o.code} · ${o.nameAr}`}</option>
+                          ))}
+                        </select>
+                        <div className="flex gap-1">
+                          <Input value={pageConfig.offer_label_1 || ''} onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })} placeholder="للبيع" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
+                          <Input value={pageConfig.offer_label_2 || ''} onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })} placeholder="للإيجار" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {([
+                    ['about',   '👥', 'من نحن'],
+                    ['news',    '📰', 'الأخبار'],
+                    ['gallery', '🖼️', 'المعرض'],
+                    ['team',    '🤝', 'الفريق'],
+                    ['contact', '📞', 'تواصل معنا'],
+                    ['footer',  '▬',  'التذييل'],
+                  ] as const).map(([key, icon, label]) => (
+                    <div key={key} className="px-4 py-2.5">
+                      <button type="button" onClick={() => toggleSection(key)} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections[key]}>
+                        <span className="flex items-center gap-2"><span className="w-5 text-center">{icon}</span><span>{label}</span></span>
+                        <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                          <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
+                        </span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
 
             {/* ── DESIGN: themes + visual brand ── */}
             <TabsContent value="design" className="mt-4 space-y-4">
@@ -1764,24 +1775,6 @@ export default function PageBuilderPage() {
               {/* ── ACCOUNT: domain + password ── */}
               <TabsContent value="account" className="mt-4 space-y-4">
 
-                {/* Public URL */}
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                  <p className="flex items-center gap-2 text-sm font-medium text-white">
-                    🔗 رابط صفحتك العامة
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-blue-400 font-mono truncate">
-                      {publicUrl}
-                    </div>
-                    <Button size="sm" variant="ghost" className="shrink-0 text-slate-400 hover:text-white" onClick={copyLink} aria-label="نسخ الرابط">
-                      {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                    <Button size="sm" variant="ghost" className="shrink-0 text-slate-400 hover:text-white" onClick={() => window.open(publicUrl, '_blank')} aria-label="فتح الصفحة">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
                 {/* Custom Domain */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                   <p className="flex items-center gap-2 text-sm font-medium text-white">
@@ -1892,7 +1885,7 @@ export default function PageBuilderPage() {
         </div>
 
         {/* Live Preview */}
-        <div className="min-w-0 relative z-0 xl:h-full">
+        <div className="min-w-0 relative z-0 xl:col-start-2 xl:row-start-1 xl:h-full">
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden h-full flex flex-col">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
@@ -1941,9 +1934,10 @@ export default function PageBuilderPage() {
             </div>
 
             {/* Live inline preview — renders theme component directly, no save needed */}
-            <div className="relative overflow-hidden bg-white flex-1 min-h-0">
+            <div className="relative overflow-hidden bg-white flex-1 min-h-[540px] xl:min-h-0">
               {/* onClick capture blocks link navigation; scroll still works */}
               <div
+                ref={previewRef}
                 className="overflow-y-auto overflow-x-hidden"
                 onClick={(e) => e.preventDefault()}
                 style={previewDevice === 'mobile' ? {

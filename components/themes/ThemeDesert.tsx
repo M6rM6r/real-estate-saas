@@ -110,7 +110,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — no card, HUGE text */}
         {sections.hero && (
-          <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
@@ -147,7 +147,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Featured listing — wide horizontal */}
         {sections.listings && featured && (
-          <section className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="flex items-baseline justify-between mb-8">
               <h2 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
@@ -227,7 +227,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* About — warm card */}
         {sections.about && (
-          <section className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="about" className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-5xl mx-auto">
               <div className="border p-8 sm:p-10" style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
                 <div className="flex flex-col sm:flex-row items-start gap-8">
@@ -269,7 +269,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* News — large horizontal cards */}
         {sections.news && news.length > 0 && (
-          <section className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
               {news.map(item => (
@@ -290,7 +290,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
               <p className="text-sm mb-8 text-gray-400">نرحب بتواصلك — تواصل معنا عبر:</p>

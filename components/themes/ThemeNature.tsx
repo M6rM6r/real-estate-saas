@@ -113,7 +113,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Hero */}
         {sections.hero && (
-          <section className={`relative flex items-center justify-center overflow-hidden ${hasBanner ? 'pt-24 sm:pt-28' : 'pt-20 sm:pt-24'} pb-20`}
+          <section data-section="hero" className={`relative flex items-center justify-center overflow-hidden ${hasBanner ? 'pt-24 sm:pt-28' : 'pt-20 sm:pt-24'} pb-20`}
             style={{ background: `linear-gradient(160deg, ${primary}22 0%, ${primary}08 50%, #f0fdf4 100%)` }}>
             {profile?.cover_url && (
               <>
@@ -159,7 +159,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
             {/* Filters */}
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
@@ -196,7 +196,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* News — 3 column grid */}
         {sections.news && news.length > 0 && (
-          <section className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -218,7 +218,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* About + Contact — side by side */}
-        <section className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+        <section data-section="about" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* About */}
             {sections.about && (

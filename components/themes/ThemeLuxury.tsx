@@ -101,7 +101,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — full bleed, no card */}
         {sections.hero && (
-          <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" priority />
             ) : (
@@ -150,7 +150,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="listings" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-6xl mx-auto">
               <div className="flex items-baseline justify-between mb-10">
                 <h2 className="text-3xl sm:text-4xl font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#e8e0d0' }}>
@@ -248,7 +248,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* News — typography list */}
         {sections.news && news.length > 0 && (
-          <section className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: '#0d0d0d' }}>
+          <section data-section="news" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: '#0d0d0d' }}>
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-10">
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
@@ -277,7 +277,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* About — quote style */}
         {sections.about && profile?.bio && (
-          <section className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="about" className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-2xl mx-auto">
               <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: primary }} />
               <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
@@ -301,7 +301,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Contact — minimal */}
-        <section className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d' }}>
+        <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d' }}>
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>
               تواصل معنا
