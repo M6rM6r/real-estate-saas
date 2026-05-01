@@ -430,29 +430,6 @@ export default function PageBuilderPage() {
   const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
   const [pwdSaving, setPwdSaving] = useState(false);
 
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  // Scroll preview to the section matching the active editor tab
-  useEffect(() => {
-    const sectionMap: Record<string, string> = {
-      control:  'hero',
-      design:   'hero',
-      identity: 'about',
-      posts:    'listings',
-      connect:  'contact',
-    };
-    const sectionId = sectionMap[activeTab];
-    const container = previewRef.current;
-    if (!container) return;
-    if (!sectionId) { container.scrollTop = 0; return; }
-    const el = container.querySelector(`[data-section="${sectionId}"]`);
-    if (el) {
-      (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      container.scrollTop = 0;
-    }
-  }, [activeTab]);
-
   const profileCompletionItems = [
     { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
     { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'design'   },
@@ -1994,7 +1971,6 @@ export default function PageBuilderPage() {
             <div className="relative overflow-hidden bg-white flex-1 min-h-[540px] xl:min-h-0">
               {/* onClick capture blocks link navigation; scroll still works */}
               <div
-                ref={previewRef}
                 className="overflow-y-auto overflow-x-hidden"
                 onClick={(e) => e.preventDefault()}
                 style={previewDevice === 'mobile' ? {
