@@ -284,7 +284,6 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   hero: true,
-  listings: true,
   about: true,
   news: true,
   contact: true,
@@ -954,7 +953,6 @@ export default function PageBuilderPage() {
                 { value: 'control', icon: SlidersHorizontal, label: '🎛️ تحكم' },
                 { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
                 { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
-                { value: 'posts',    icon: Building2, label: '🏠 العروض' },
                 { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
                 { value: 'account',  icon: Settings, label: '⚙️ حساب'   },
               ] as const).map(({ value, icon: Icon, label }) => (
@@ -1010,67 +1008,7 @@ export default function PageBuilderPage() {
                     )}
                   </div>
 
-                  <div className="px-4 py-2.5">
-                    <button type="button" onClick={() => toggleSection('featured')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.featured}>
-                      <span className="flex items-center gap-2"><span className="w-5 text-center">⭐</span><span>المميز</span></span>
-                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.featured ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.featured ? 'translate-x-4' : 'translate-x-1'}`} />
-                      </span>
-                    </button>
-                  </div>
 
-                  <div className="px-4 py-2.5 space-y-2">
-                    <button type="button" onClick={() => toggleSection('listings')} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections.listings}>
-                      <span className="flex items-center gap-2"><span className="w-5 text-center">🏢</span><span>العروض</span></span>
-                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.listings ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.listings ? 'translate-x-4' : 'translate-x-1'}`} />
-                      </span>
-                    </button>
-                    {sections.listings && (
-                      <div className="space-y-2 pr-2 border-r-2 border-blue-600/30 mr-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">أعمدة</span>
-                          <div className="flex gap-1">
-                            {([2, 3, 4] as const).map((n) => (
-                              <button key={n} type="button" onClick={() => updatePageConfig({ listings_columns: n })}
-                                className={`h-5 w-6 rounded text-[11px] font-bold transition-colors ${(pageConfig.listings_columns ?? 3) === n ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
-                                {n}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">فلاتر</span>
-                          <button type="button" onClick={() => updatePageConfig({ show_listing_filters: !pageConfig.show_listing_filters })} aria-pressed={pageConfig.show_listing_filters}>
-                            <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_filters ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                              <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_filters ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                            </span>
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">بحث</span>
-                          <button type="button" onClick={() => updatePageConfig({ show_listing_search: !pageConfig.show_listing_search })} aria-pressed={pageConfig.show_listing_search}>
-                            <span className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${pageConfig.show_listing_search ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                              <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${pageConfig.show_listing_search ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                            </span>
-                          </button>
-                        </div>
-                        <select
-                          value={pageConfig.currency || 'SAR'}
-                          onChange={(e) => updatePageConfig({ currency: e.target.value })}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-[11px] text-white"
-                        >
-                          {CURRENCY_OPTIONS.map((o) => (
-                            <option key={o.code} value={o.code}>{`${o.symbol} ${o.code} · ${o.nameAr}`}</option>
-                          ))}
-                        </select>
-                        <div className="flex gap-1">
-                          <Input value={pageConfig.offer_label_1 || ''} onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })} placeholder="للبيع" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
-                          <Input value={pageConfig.offer_label_2 || ''} onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })} placeholder="للإيجار" className="bg-slate-800 border-slate-700 text-white text-[11px] h-7 placeholder:text-slate-500" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
 
                   {([
                     ['about',   '👥', 'من نحن'],
