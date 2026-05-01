@@ -308,6 +308,18 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           </div>
         </section>
 
+        {/* Working Hours */}
+        {profile?.working_hours && (
+          <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d' }}>
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>أوقات العمل</h3>
+              <div style={{ backgroundColor: '#111', padding: '16px', borderRadius: '8px', border: `1px solid ${primary}30` }}>
+                <WorkingHours hours={profile.working_hours} textClass="text-gray-400 text-xs" />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Footer — slim single row */}
         {sections.footer && (
           <footer className="py-6 px-6 border-t" style={{ backgroundColor: '#0a0a0a', borderColor: `${primary}20` }}>

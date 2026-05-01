@@ -250,6 +250,18 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
           </div>
         </section>
 
+        {/* Working Hours */}
+        {profile?.working_hours && (
+          <section data-section="working-hours" className="nat-reveal py-10 px-6" style={{ backgroundColor: pageTheme.sectionAlt }}>
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-center mb-6" style={{ color: primary }}>أوقات العمل</h3>
+              <div className="bg-white/5 rounded-lg p-6 text-sm text-gray-300 border border-white/10">
+                <WorkingHours hours={profile.working_hours} />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Footer */}
         {sections.footer && (
           <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: primary }}>

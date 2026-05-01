@@ -294,6 +294,18 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
           </section>
         )}
 
+        {/* Working Hours */}
+        {profile?.working_hours && (
+          <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
+            <div className="max-w-xl mx-auto">
+              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: pageTheme.headingFont, color: primary }}>أوقات العمل</h3>
+              <div className="bg-gray-900 rounded-lg p-6 text-sm text-gray-400">
+                <WorkingHours hours={profile.working_hours} />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Footer — warm dark */}
         {sections.footer && (
           <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: '#1c0d02' }}>

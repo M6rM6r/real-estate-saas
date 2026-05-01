@@ -258,6 +258,18 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
           </section>
         )}
 
+        {/* Working Hours */}
+        {profile?.working_hours && (
+          <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
+            <div className="max-w-xl mx-auto">
+              <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
+              <div className="bg-blue-950/30 rounded-lg p-6 text-sm text-gray-300 border border-blue-900/50">
+                <WorkingHours hours={profile.working_hours} />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Footer — wave top + navy */}
         {sections.footer && (
           <footer style={{ backgroundColor: '#0c2340' }}>

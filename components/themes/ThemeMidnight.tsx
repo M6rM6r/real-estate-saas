@@ -280,6 +280,18 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           </section>
         )}
 
+        {/* Working Hours */}
+        {profile?.working_hours && (
+          <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg }}>
+            <div className="max-w-xl mx-auto">
+              <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
+              <div className="bg-slate-900/50 rounded-lg p-6 text-sm text-slate-300 border border-slate-700">
+                <WorkingHours hours={profile.working_hours} />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Footer */}
         {sections.footer && (
           <footer className="py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ backgroundColor: '#080612', borderTop: `1px solid ${pageTheme.navBorder}` }}>
