@@ -36,7 +36,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const [offerFilter, setOfferFilter] = useState('all')
   const [scrolled, setScrolled] = useState(false)
 
-  const hasBanner = !!pageConfig.announcement_text
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? whatsapp.replace(/^https?:\/\/wa\.me\//, '+').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '+') : ''
 
@@ -81,16 +80,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
       <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
 
-        {/* Announcement */}
-        {hasBanner && (
-          <div className="w-full text-center py-2 px-4 text-xs font-semibold tracking-widest uppercase" style={{ backgroundColor: primary, color: '#fff' }}>
-            {pageConfig.announcement_text}
-          </div>
-        )}
-
         {/* Navbar — minimal */}
-        <nav className={`fixed inset-x-0 z-40 transition-all duration-400 ${hasBanner ? 'top-8' : 'top-0'} ${scrolled ? 'shadow border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
+        <nav className="fixed inset-x-0 z-40 transition-all duration-400 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
           <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile?.logo_url ? (
@@ -117,7 +108,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
               <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, rgba(45,26,10,0.75) 0%, rgba(217,119,6,0.45) 100%)` }} />
-            <div className={`relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full ${hasBanner ? 'pt-24' : 'pt-20'}`}>
+            <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full pt-20">
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={72} height={72} className="w-16 h-16 object-contain mx-auto mb-6 opacity-90 rounded-full" priority />
               )}

@@ -65,10 +65,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
     ? sorted.filter(l => `${l.title} ${l.location ?? ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
     : sorted
 
-  const ANN_COLORS: Record<string, string> = { yellow: '#d97706', green: '#16a34a', red: '#dc2626', purple: '#7c3aed', orange: '#ea580c', teal: '#0d9488', dark: '#1e293b' }
-  const annBg = ANN_COLORS[pageConfig.announcement_color ?? ''] ?? primary
-  const hasBanner = !!pageConfig.announcement_text
-  const bannerPt = hasBanner ? 'pt-[92px] sm:pt-[100px]' : 'pt-14 sm:pt-16'
+  const bannerPt = 'pt-14 sm:pt-16'
 
   return (
     <>
@@ -89,13 +86,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
-          {hasBanner && (
-            <div className="w-full flex items-center justify-center gap-2 py-1.5 px-4 text-xs sm:text-[13px] font-medium relative overflow-hidden" style={{ backgroundColor: annBg, color: '#fff' }}>
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.08) 50%,transparent 100%)' }} />
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 opacity-90"><path d="M13.92 3.845a19.361 19.361 0 01-6.3 1.98C6.765 5.945 5.8 6 5 6a4 4 0 000 8c.38 0 .75-.034 1.108-.1a19.5 19.5 0 016.812 2.255c.39.2.58-.024.58-.43V4.275c0-.406-.19-.63-.58-.43zM16.5 10a.75.75 0 000-1.5h-1a.75.75 0 000 1.5h1zM15.25 6.5a.75.75 0 10-1.06 1.06l.707.707a.75.75 0 101.06-1.06l-.707-.707zM15.25 13.5a.75.75 0 10-1.06-1.06l-.707.707a.75.75 0 101.06 1.06l.707-.707z" /></svg>
-              <span className="relative">{pageConfig.announcement_text}</span>
-            </div>
-          )}
           <nav className={`transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-sm border-b' : 'bg-transparent'}`}
             style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
             <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
@@ -132,7 +122,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className={`pb-16 px-4 text-center ${hasBanner ? 'pt-[128px] sm:pt-[140px]' : 'pt-28 sm:pt-32'}`} style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6 shadow" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
             <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -144,7 +134,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className={`relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center ${hasBanner ? 'pt-[124px] sm:pt-[136px]' : 'pt-24 sm:pt-28'}`}
+          <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
             style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">

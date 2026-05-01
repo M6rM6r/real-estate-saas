@@ -37,7 +37,6 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
   const [typeFilter, setTypeFilter] = useState('all')
   const [scrolled, setScrolled] = useState(false)
 
-  const hasBanner = !!pageConfig.announcement_text
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? whatsapp.replace(/^https?:\/\/wa\.me\//, '+').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '+') : ''
 
@@ -86,16 +85,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
       <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
 
-        {/* Announcement */}
-        {hasBanner && (
-          <div className="w-full text-center py-2 px-4 text-xs font-medium" style={{ backgroundColor: primary, color: '#fff' }}>
-            🌿 {pageConfig.announcement_text}
-          </div>
-        )}
 
         {/* Navbar */}
-        <nav className={`fixed inset-x-0 z-40 transition-all duration-300 ${hasBanner ? 'top-8' : 'top-0'} ${scrolled ? 'shadow-md border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
+        <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
           <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               {profile?.logo_url ? (
@@ -113,7 +105,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Hero */}
         {sections.hero && (
-          <section data-section="hero" className={`relative flex items-center justify-center overflow-hidden ${hasBanner ? 'pt-24 sm:pt-28' : 'pt-20 sm:pt-24'} pb-20`}
+          <section data-section="hero" className="relative flex items-center justify-center overflow-hidden pt-20 sm:pt-24 pb-20"
             style={{ background: `linear-gradient(160deg, ${primary}22 0%, ${primary}08 50%, #f0fdf4 100%)` }}>
             {profile?.cover_url && (
               <>

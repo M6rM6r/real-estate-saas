@@ -37,7 +37,6 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const [statusFilter, setStatusFilter] = useState('all')
   const [scrolled, setScrolled] = useState(false)
 
-  const hasBanner = !!pageConfig.announcement_text
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? whatsapp.replace(/^https?:\/\/wa\.me\//, '+').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '+') : ''
 
@@ -85,16 +84,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
       <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
 
-        {/* Announcement */}
-        {hasBanner && (
-          <div className="w-full text-center py-2 px-4 text-xs font-medium" style={{ backgroundColor: primary, color: '#fff' }}>
-            🌊 {pageConfig.announcement_text}
-          </div>
-        )}
-
         {/* Sticky nav */}
-        <nav className={`fixed inset-x-0 z-40 transition-all duration-300 ${hasBanner ? 'top-8' : 'top-0'} ${scrolled ? 'shadow-lg border-b' : 'bg-transparent'}`}
-          style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
+        <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
           <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {profile?.logo_url ? (
@@ -121,7 +112,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
               <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(12,35,64,0.6) 0%, rgba(12,35,64,0.8) 100%)` }} />
-            <div className={`relative z-10 flex items-center justify-center text-center px-4 text-white ${hasBanner ? 'pt-24' : 'pt-20'}`} style={{ minHeight: '100vh' }}>
+            <div className="relative z-10 flex items-center justify-center text-center px-4 text-white pt-20" style={{ minHeight: '100vh' }}>
               <div className="max-w-2xl">
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-6 rounded-full bg-white/10 p-2 backdrop-blur" priority />

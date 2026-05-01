@@ -32,10 +32,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? whatsapp.replace(/^https?:\/\/wa\.me\//, '+').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '+') : ''
 
-  const ANN_COLORS: Record<string, string> = { yellow: '#d97706', green: '#16a34a', red: '#dc2626', purple: '#7c3aed', orange: '#ea580c', teal: '#0d9488', dark: '#1e293b' }
-  const annBg = ANN_COLORS[pageConfig.announcement_color ?? ''] ?? primary
-  const hasBanner = !!pageConfig.announcement_text
-  const bannerPt = hasBanner ? 'pt-[92px] sm:pt-[100px]' : 'pt-14 sm:pt-16'
+  const bannerPt = 'pt-14 sm:pt-16'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -85,11 +82,6 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
-          {hasBanner && (
-            <div className="w-full flex items-center justify-center gap-2 py-1.5 px-4 text-xs font-medium" style={{ backgroundColor: annBg, color: '#fff' }}>
-              <span>{pageConfig.announcement_text}</span>
-            </div>
-          )}
           <nav className={`transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-lg border-b' : 'bg-transparent'}`}
             style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
             <div className="max-w-7xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
@@ -129,7 +121,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className={`pb-16 px-4 text-center ${hasBanner ? 'pt-[128px] sm:pt-[140px]' : 'pt-28 sm:pt-32'}`} style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -140,7 +132,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className={`relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center ${hasBanner ? 'pt-[124px] sm:pt-[136px]' : 'pt-24 sm:pt-28'}`}
+          <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
             style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">

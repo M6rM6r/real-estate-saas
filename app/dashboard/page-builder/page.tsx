@@ -1968,7 +1968,7 @@ export default function PageBuilderPage() {
             </div>
 
             {/* Live inline preview — renders theme component directly, no save needed */}
-            <div className="relative overflow-hidden bg-white flex-1 min-h-[540px] xl:min-h-0">
+            <div className="relative overflow-hidden bg-black flex-1 min-h-[540px] xl:min-h-0">
               {/* onClick capture blocks link navigation; scroll still works */}
               <div
                 className="overflow-y-auto overflow-x-hidden"
