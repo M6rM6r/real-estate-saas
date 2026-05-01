@@ -58,7 +58,11 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const filtered = offerFilter === 'all' ? published : published.filter(l => l.offer_type === offerFilter)
   const featured = filtered[0] ?? null
   const compact = filtered.slice(1)
-  const colsClass = pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'
+  const colsClass = pageConfig.listings_columns === 2
+    ? 'sm:grid-cols-2'
+    : pageConfig.listings_columns === 4
+      ? 'sm:grid-cols-2 lg:grid-cols-4'
+      : 'sm:grid-cols-2 md:grid-cols-3'
 
   const cardStyle = {
     backgroundColor: pageTheme.cardBg,

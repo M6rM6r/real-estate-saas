@@ -62,7 +62,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
     ? sorted.filter(l => `${l.title} ${l.location ?? ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
     : sorted
 
-  const colsClass = pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'
+  const colsClass = pageConfig.listings_columns === 2
+    ? 'sm:grid-cols-2'
+    : pageConfig.listings_columns === 4
+      ? 'sm:grid-cols-2 lg:grid-cols-4'
+      : 'sm:grid-cols-2 md:grid-cols-3'
 
   return (
     <>
