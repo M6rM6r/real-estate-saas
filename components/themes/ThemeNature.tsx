@@ -240,12 +240,6 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                   </div>
                 )}
                 <div className="mt-5"><SocialLinks profile={profile} waLink={waLink} /></div>
-                {profile?.working_hours && (
-                  <div className="mt-5">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">ساعات العمل</p>
-                    <WorkingHours hours={profile.working_hours} textClass="text-gray-400" />
-                  </div>
-                )}
               </div>
             )}
             {/* Contact */}
@@ -263,16 +257,6 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             )}
           </div>
         </section>
-
-        {/* Working Hours */}
-        {profile?.working_hours && Object.values(profile.working_hours).some(h => h?.enabled) && (
-          <section className="nat-reveal py-10 px-4">
-            <div className="max-w-sm mx-auto">
-              <h3 className="text-center text-sm font-semibold uppercase tracking-widest mb-4 text-gray-400">ساعات العمل</h3>
-              <WorkingHours hours={profile.working_hours} textClass="text-gray-400" />
-            </div>
-          </section>
-        )}
 
         {/* Footer */}
         {sections.footer && (

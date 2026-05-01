@@ -303,16 +303,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
           </section>
         )}
 
-        {/* Working Hours */}
-        {profile?.working_hours && Object.values(profile.working_hours).some(h => h?.enabled) && (
-          <section className="dsr-reveal py-10 px-4" style={{ backgroundColor: pageTheme.bg }}>
-            <div className="max-w-sm mx-auto">
-              <h3 className="text-center text-sm font-semibold uppercase tracking-widest mb-4 dsr-text">ساعات العمل</h3>
-              <WorkingHours hours={profile.working_hours} textClass="text-gray-400" />
-            </div>
-          </section>
-        )}
-
         {/* Footer — warm dark */}
         {sections.footer && (
           <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: '#1c0d02' }}>
@@ -329,12 +319,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
               </div>
-              {profile?.working_hours && (
-                <div>
-                  <h4 className="text-xs tracking-widest uppercase mb-3" style={{ color: `${primary}70` }}>ساعات العمل</h4>
-                  <WorkingHours hours={profile.working_hours} />
-                </div>
-              )}
             </div>
             <div className="mt-8 border-t pt-6 text-center text-xs text-gray-700" style={{ borderColor: `${primary}20` }}>
               جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}

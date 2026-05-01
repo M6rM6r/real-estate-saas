@@ -316,30 +316,13 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           </div>
         </section>
 
-        {/* Working Hours */}
-        {profile?.working_hours && Object.values(profile.working_hours).some(h => h?.enabled) && (
-          <section className="lux-reveal py-10 px-6" style={{ backgroundColor: '#0a0a0a' }}>
-            <div className="max-w-sm mx-auto">
-              <h3 className="text-center text-xs font-bold uppercase tracking-widest mb-4" style={{ color: `${primary}80` }}>ساعات العمل</h3>
-              <WorkingHours hours={profile.working_hours} />
-            </div>
-          </section>
-        )}
-
         {/* Footer — slim single row */}
         {sections.footer && (
           <footer className="py-6 px-6 border-t" style={{ backgroundColor: '#0a0a0a', borderColor: `${primary}20` }}>
             <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
               <span className="tracking-widest uppercase">{tenant.name} © {new Date().getFullYear()}</span>
               <SocialLinks profile={profile} waLink={waLink} />
-              {profile?.working_hours && (
-                <details className="text-right">
-                  <summary className="cursor-pointer tracking-widest uppercase hover:text-gray-400 transition-colors" style={{ color: `${primary}80` }}>ساعات العمل</summary>
-                  <div className="mt-2 p-3 border absolute bottom-16 left-4" style={{ backgroundColor: '#141414', borderColor: `${primary}30`, borderRadius: '4px' }}>
-                    <WorkingHours hours={profile.working_hours} />
-                  </div>
-                </details>
-              )}
+
             </div>
           </footer>
         )}
