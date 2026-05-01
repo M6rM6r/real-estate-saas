@@ -284,8 +284,11 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   hero: true,
+  listings: true,
   about: true,
+  news: true,
   contact: true,
+  working_hours: true,
   footer: true,
 };
 
@@ -1006,8 +1009,11 @@ export default function PageBuilderPage() {
 
 
                   {([
+                    ['listings','🏘️', 'العروض'],
                     ['about',   '👥', 'من نحن'],
+                    ['news',    '📰', 'الأخبار'],
                     ['contact', '📞', 'تواصل معنا'],
+                    ['working_hours', '🕒', 'أوقات العمل'],
                     ['footer',  '▬',  'التذييل'],
                   ] as const).map(([key, icon, label]) => (
                     <div key={key} className="px-4 py-2.5">

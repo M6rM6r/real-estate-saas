@@ -244,7 +244,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         )}
 
         {/* Contact */}
-        {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
+        {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
@@ -259,7 +259,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         )}
 
         {/* Working Hours */}
-        {profile?.working_hours && (
+        {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
@@ -299,7 +299,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
           </footer>
         )}
 
-        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
+        {!isPreview && sections.contact && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

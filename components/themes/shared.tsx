@@ -44,6 +44,7 @@ export type Profile = {
     team?: boolean
     contact?: boolean
     footer?: boolean
+    working_hours?: boolean
   } | null
   page_config?: {
     hero_headline?: string
@@ -171,6 +172,8 @@ export function getPageSections(profile: Profile) {
     about: true,
     news: true,
     footer: true,
+    contact: true,
+    working_hours: true,
     ...(profile?.page_sections ?? {}),
   }
 }

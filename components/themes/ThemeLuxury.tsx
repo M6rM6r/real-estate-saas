@@ -297,6 +297,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Contact — minimal */}
+        {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email || profile?.contact_address) && (
         <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d' }}>
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>
@@ -311,9 +312,10 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             </div>
           </div>
         </section>
+        )}
 
         {/* Working Hours */}
-        {profile?.working_hours && (
+        {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d' }}>
             <div className="max-w-2xl mx-auto">
               <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>أوقات العمل</h3>
@@ -335,7 +337,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           </footer>
         )}
 
-        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
+        {!isPreview && sections.contact && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

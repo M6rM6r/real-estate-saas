@@ -264,7 +264,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         )}
 
         {/* Contact */}
-        {(whatsapp || profile?.contact_phone || profile?.contact_email) && (
+        {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
               <div className="flex items-center gap-3 mb-6 justify-center">
@@ -285,7 +285,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         )}
 
         {/* Working Hours */}
-        {profile?.working_hours && (
+        {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
@@ -308,11 +308,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               </div>
               <div>
                 <h4 className="font-semibold mb-3 text-xs uppercase tracking-wider text-slate-500">التواصل</h4>
-                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white block mb-2">{waDisplay}</a>}
-                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white block mb-2">{profile.contact_email}</a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white block mb-2">{profile.contact_phone}</a>}
+                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{waDisplay}</a>}
+                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_email}</a>}
+                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_phone}</a>}
                 {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                  <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white block mb-2">{n}</a>
+                  <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{n}</a>
                 ))}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
               </div>
@@ -324,7 +324,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           </footer>
         )}
 
-        {!isPreview && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
+        {!isPreview && sections.contact && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
           <PropertyDetailModal
             property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}

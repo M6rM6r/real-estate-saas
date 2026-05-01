@@ -99,8 +99,11 @@ export type Profile = {
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
   page_sections?: {
     hero?: boolean;
+    listings?: boolean;
     about?: boolean;
+    news?: boolean;
     contact?: boolean;
+    working_hours?: boolean;
     footer?: boolean;
   };
   page_config?: {
