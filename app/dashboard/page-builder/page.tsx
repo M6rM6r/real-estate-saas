@@ -1221,6 +1221,33 @@ export default function PageBuilderPage() {
                   <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">نمط قسم الهيرو</Label>
+                    <select
+                      value={pageConfig.hero_style || 'centered'}
+                      onChange={(e) => updatePageConfig({ hero_style: e.target.value as NonNullable<Profile['page_config']>['hero_style'] })}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+                    >
+                      <option value="centered">مركزي</option>
+                      <option value="split">منقسم</option>
+                      <option value="minimal">بسيط</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">نص زر الدعوة (CTA)</Label>
+                    <Input
+                      value={pageConfig.hero_cta_text || ''}
+                      onChange={(e) => updatePageConfig({ hero_cta_text: e.target.value })}
+                      placeholder="تواصل عبر واتساب"
+                      maxLength={80}
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_cta_text || '').length}/80</p>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">الشعار النصي</Label>
                   <Input
