@@ -106,15 +106,15 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
-            <div className="relative flex-1 min-h-[40vh] lg:min-h-screen">
+          <section data-section="hero" className={`min-h-[68vh] sm:min-h-[72vh] lg:min-h-[88vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
+            <div className="relative flex-1 min-h-[26vh] sm:min-h-[32vh] lg:min-h-[88vh]">
               {profile?.cover_url
                 ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
                 : <div className="w-full h-full min-h-[40vh]" style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }} />
               }
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, rgba(13,10,30,0.85) 0%, transparent 60%)' }} />
             </div>
-            <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 py-16" style={{ backgroundColor: pageTheme.bg }}>
+            <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-12 py-10 sm:py-12 lg:py-16" style={{ backgroundColor: pageTheme.bg }}>
               {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain rounded-full mb-6" />}
               <div className="w-12 h-1 rounded-full mb-5" style={{ backgroundColor: primary }} />
               <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
@@ -126,7 +126,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className="pb-12 sm:pb-14 px-4 text-center pt-24 sm:pt-28" style={{ backgroundColor: pageTheme.sectionAlt }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -137,11 +137,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
+          <section data-section="hero" className="relative min-h-[72dvh] sm:min-h-[82dvh] lg:min-h-[92dvh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24"
             style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className="border rounded-2xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto backdrop-blur-md mid-glow"
+              <div className="border rounded-2xl px-4 sm:px-6 py-6 sm:py-8 shadow-2xl mx-auto backdrop-blur-md mid-glow"
                 style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder }}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-lg" priority />}
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight text-white">{tenant.name}</h1>
