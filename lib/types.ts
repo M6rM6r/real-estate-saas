@@ -1,6 +1,6 @@
 export const PAGE_THEMES = {
   modern: {
-    id: 'modern', label: 'عصري', labelEn: 'Modern',
+    id: 'modern', label: '1', labelEn: '1',
     bg: '#0f1117', card: '#1a1d27', accent: '#2563eb', dark: true,
     navBg: 'rgba(15,17,23,0.97)', navBorder: '#2a2e3e',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0.72))',
@@ -10,7 +10,7 @@ export const PAGE_THEMES = {
     headingFont: 'inherit',
   },
   luxury: {
-    id: 'luxury', label: 'فاخر', labelEn: 'Luxury',
+    id: 'luxury', label: '2', labelEn: '2',
     bg: '#0a0a0a', card: '#141414', accent: '#c9a84c', dark: true,
     navBg: 'rgba(8,8,8,0.97)', navBorder: 'rgba(201,168,76,0.18)',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.88))',
@@ -20,7 +20,7 @@ export const PAGE_THEMES = {
     headingFont: "Georgia, 'Times New Roman', serif",
   },
   nature: {
-    id: 'nature', label: 'طبيعي', labelEn: 'Nature',
+    id: 'nature', label: '3', labelEn: '3',
     bg: '#0a1a0e', card: '#162419', accent: '#16a34a', dark: true,
     navBg: 'rgba(10,26,14,0.97)', navBorder: '#2d4a32',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,40,10,0.25), rgba(0,40,10,0.80))',
@@ -30,7 +30,7 @@ export const PAGE_THEMES = {
     headingFont: 'inherit',
   },
   ocean: {
-    id: 'ocean', label: 'بحري', labelEn: 'Ocean',
+    id: 'ocean', label: '4', labelEn: '4',
     bg: '#060e1e', card: '#0d1b30', accent: '#0891b2', dark: true,
     navBg: 'rgba(6,14,30,0.97)', navBorder: '#1a3356',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,20,50,0.15), rgba(0,20,50,0.75))',
@@ -40,7 +40,7 @@ export const PAGE_THEMES = {
     headingFont: 'inherit',
   },
   desert: {
-    id: 'desert', label: 'صحراوي', labelEn: 'Desert',
+    id: 'desert', label: '5', labelEn: '5',
     bg: '#1a0f02', card: '#241505', accent: '#d97706', dark: true,
     navBg: 'rgba(26,15,2,0.97)', navBorder: '#3d2810',
     heroOverlay: 'linear-gradient(to bottom, rgba(60,25,0,0.18), rgba(60,25,0,0.74))',
@@ -50,7 +50,7 @@ export const PAGE_THEMES = {
     headingFont: 'inherit',
   },
   midnight: {
-    id: 'midnight', label: 'بنفسجي', labelEn: 'Midnight',
+    id: 'midnight', label: '6', labelEn: '6',
     bg: '#0d0a1e', card: '#1a1433', accent: '#8b5cf6', dark: true,
     navBg: 'rgba(13,10,30,0.97)', navBorder: '#2d2050',
     heroOverlay: 'linear-gradient(to bottom, rgba(10,5,20,0.12), rgba(10,5,20,0.80))',
