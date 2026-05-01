@@ -411,12 +411,14 @@ export function ContactForm({
 
 // ─── SocialLinks ─────────────────────────────────────────────────────────────
 
-export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { profile: Profile; waLink: string; bgClass?: string }) {
+export function SocialLinks({ profile, waLink }: { profile: Profile; waLink: string; bgClass?: string }) {
+  const iconBase = 'w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-105'
   return (
     <div className="flex gap-2 flex-wrap">
       {profile?.social_links?.instagram && (
         <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(225,48,108,0.35)]`}
+          style={{ background: 'linear-gradient(135deg,#feda75 0%,#fa7e1e 22%,#d62976 55%,#962fbf 78%,#4f5bd5 100%)' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772 4.902 4.902 0 011.772-1.153c.636-.247 1.363-.416 2.427-.465C9.673 2.013 10.03 2 12.48 2h-.165zm3.77 4.53a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" clipRule="evenodd" />
           </svg>
@@ -424,7 +426,8 @@ export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { prof
       )}
       {profile?.social_links?.x && (
         <a href={profile.social_links.x} target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(0,0,0,0.35)]`}
+          style={{ backgroundColor: '#000000' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
           </svg>
@@ -432,7 +435,8 @@ export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { prof
       )}
       {profile?.social_links?.linkedin && (
         <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(10,102,194,0.35)]`}
+          style={{ backgroundColor: '#0A66C2' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
           </svg>
@@ -440,7 +444,8 @@ export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { prof
       )}
       {profile?.social_links?.snapchat && (
         <a href={`https://snapchat.com/add/${profile.social_links.snapchat.replace(/^https?:\/\/snapchat\.com\/add\//, '')}`} target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-yellow-400 hover:text-black transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(255,252,0,0.35)]`}
+          style={{ backgroundColor: '#FFFC00', color: '#111827' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path d="M12.166 2C9.033 2 6.6 3.64 5.567 6.227c-.28.706-.236 1.883-.198 2.81l.006.163c-.18.093-.407.134-.65.134-.34 0-.694-.096-.988-.27a.484.484 0 0 0-.252-.069c-.133 0-.264.04-.368.122-.155.12-.228.306-.197.497.064.39.508.683 1.11.875.05.015.1.03.147.047-.07.17-.127.35-.127.546 0 .148.032.287.086.415-.6.4-1.363.784-2.19.963a.507.507 0 0 0-.393.49c0 .273.199.501.47.537.94.124 1.59.59 2.073 1.066.41.404.587.8.526 1.214-.057.39-.38.696-.757.93a2.65 2.65 0 0 1-.355.187c-.272.115-.406.276-.406.495 0 .303.248.497.678.556.6.083 1.115.373 1.576.888.387.433.673 1.001.847 1.693.068.27.262.422.52.422.133 0 .272-.037.39-.104.43-.246.889-.371 1.364-.371.21 0 .424.026.637.077.522.127 1.025.403 1.542.693.747.42 1.52.855 2.486.855.964 0 1.742-.436 2.49-.856.516-.29 1.02-.566 1.54-.693.213-.05.427-.077.638-.077.475 0 .934.125 1.363.37.118.068.258.105.391.105.258 0 .452-.152.52-.422.174-.692.46-1.26.847-1.693.46-.515.977-.805 1.576-.888.43-.059.678-.253.678-.556 0-.219-.134-.38-.406-.495a2.65 2.65 0 0 1-.355-.187c-.377-.234-.7-.54-.757-.93-.061-.414.116-.81.526-1.214.483-.476 1.134-.942 2.073-1.066a.538.538 0 0 0 .47-.537.507.507 0 0 0-.394-.49c-.826-.179-1.589-.563-2.19-.963.054-.128.086-.267.086-.415 0-.197-.057-.376-.127-.546.048-.017.097-.032.147-.047.602-.192 1.046-.485 1.11-.875a.507.507 0 0 0-.197-.497.506.506 0 0 0-.368-.122.484.484 0 0 0-.252.069c-.294.174-.648.27-.988.27-.243 0-.47-.041-.65-.134l.006-.163c.038-.927.082-2.104-.198-2.81C17.4 3.64 14.966 2 11.834 2h.332z" />
           </svg>
@@ -449,7 +454,8 @@ export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { prof
       {profile?.social_links?.tiktok && (
         <a href={profile.social_links.tiktok.startsWith('http') ? profile.social_links.tiktok : `https://tiktok.com/@${profile.social_links.tiktok.replace(/^@/, '')}`}
           target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-black hover:text-white transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(0,0,0,0.35)]`}
+          style={{ backgroundColor: '#000000' }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
           </svg>
@@ -457,7 +463,8 @@ export function SocialLinks({ profile, waLink, bgClass = 'bg-gray-800' }: { prof
       )}
       {profile?.social_links?.whatsapp && (
         <a href={waLink} target="_blank" rel="noopener noreferrer"
-          className={`w-10 h-10 rounded-full ${bgClass} flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transition-all`}>
+          className={`${iconBase} shadow-[0_4px_14px_rgba(37,211,102,0.35)]`}
+          style={{ backgroundColor: '#25D366' }}>
           <WaIcon />
         </a>
       )}

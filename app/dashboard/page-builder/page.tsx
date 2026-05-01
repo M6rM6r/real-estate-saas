@@ -997,14 +997,6 @@ export default function PageBuilderPage() {
                         <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.hero ? 'translate-x-4' : 'translate-x-1'}`} />
                       </span>
                     </button>
-                    {sections.hero && (
-                      <Input
-                        value={pageConfig.hero_headline || ''}
-                        onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                        className="bg-slate-800 border-slate-700 text-white text-xs h-7 placeholder:text-slate-500"
-                        placeholder="ابحث عن عقارك المثالي"
-                      />
-                    )}
                   </div>
 
 
@@ -1216,6 +1208,18 @@ export default function PageBuilderPage() {
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   ✍️ محتوى الصفحة
                 </p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">العنوان الرئيسي</Label>
+                  <Input
+                    value={pageConfig.hero_headline || ''}
+                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                    placeholder="ابحث عن عقارك المثالي"
+                    maxLength={200}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
+                </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">الشعار النصي</Label>
