@@ -310,6 +310,7 @@ const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   currency: 'SAR',
   offer_label_1: 'للبيع',
   offer_label_2: 'للإيجار',
+  page_lang: 'ar' as 'ar' | 'en',
 };
 
 const EMPTY_PROFILE: Profile = {
@@ -1232,6 +1233,24 @@ export default function PageBuilderPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">لغة الصفحة</Label>
+                    <div className="flex gap-2">
+                      {(['ar', 'en'] as const).map(l => (
+                        <button key={l} type="button"
+                          onClick={() => updatePageConfig({ page_lang: l })}
+                          className={`flex-1 py-2 rounded-md text-sm font-semibold border transition-colors ${
+                            (pageConfig.page_lang ?? 'ar') === l
+                              ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                              : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                          }`}
+                        >
+                          {l === 'ar' ? '🇸🇦 عربي' : '🇬🇧 English'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
                     <Label className="text-slate-400 text-xs uppercase tracking-wider">نمط قسم الهيرو</Label>
                     <select

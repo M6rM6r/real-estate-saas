@@ -20,15 +20,17 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
 export default function ThemeNature({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#16a34a'
   const pageTheme = PAGE_THEMES['nature'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
 
@@ -83,7 +85,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         .nat-chip-active { background: var(--nat-primary); color: #fff; border-color: var(--nat-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
 
 
         {/* Navbar */}
@@ -152,7 +154,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeadingAlt}</h2>
             {/* Filters */}
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
               {(['all', 'sale', 'rent'] as const).map(f => (
@@ -190,7 +192,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {sections.news && news.length > 0 && (
           <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {news.map(item => (
                   <div key={item.id} className="overflow-hidden border" style={{ borderColor: pageTheme.cardBorder, backgroundColor: pageTheme.cardBg, borderRadius: '24px', boxShadow: pageTheme.cardShadow }}>
@@ -217,13 +219,13 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             {sections.about && (
               <div className="p-8 border" style={{ borderColor: pageTheme.cardBorder, borderRadius: '28px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl mb-5 shadow-sm" style={{ backgroundColor: `${primary}25` }}>🌿</div>
-                <h2 className="text-2xl font-bold mb-4 text-white" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
                 {profile?.bio && <p className="text-gray-400 leading-relaxed mb-4">{profile.bio}</p>}
                 {(profile?.licence_numbers && profile.licence_numbers.length > 0)
                   ? profile.licence_numbers.map((l, i) => (
-                      <p key={i} className="text-xs text-gray-400 font-mono mt-2">{l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}</p>
+                      <p key={i} className="text-xs text-gray-400 font-mono mt-2">{l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}</p>
                     ))
-                  : profile?.licence_no && <p className="text-xs text-gray-400 font-mono mt-4">رقم الترخيص: {profile.licence_no}</p>
+                  : profile?.licence_no && <p className="text-xs text-gray-400 font-mono mt-4">{L.licencePrefix} {profile.licence_no}</p>
                 }
                 {profile?.contact_address && <p className="flex items-center gap-2 text-sm text-gray-500 mt-3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {profile.contact_address}</p>}
                 {(profile?.contact_phone || profile?.contact_email) && (
@@ -239,8 +241,8 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
               <div className="p-8 border flex flex-col items-center text-center" style={{ borderColor: pageTheme.cardBorder, borderRadius: '28px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5 shadow-sm" style={{ backgroundColor: `${primary}18` }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6" style={{ color: primary }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg></div>
-                <h2 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
-                <p className="text-sm text-gray-400 mb-6">نسعد بخدمتك — تواصل معنا مباشرةً</p>
+                <h2 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+                <p className="text-sm text-gray-400 mb-6">{L.contactSubtitle}</p>
                 <div className="flex flex-col items-center gap-3 w-full" dir="ltr">
                   {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm w-full justify-center transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
                   {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
@@ -256,9 +258,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="nat-reveal py-10 px-6" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-center mb-6" style={{ color: primary }}>أوقات العمل</h3>
+              <h3 className="text-xl font-bold text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-white/5 rounded-lg p-6 text-sm text-gray-300 border border-white/10">
-                <WorkingHours hours={profile.working_hours} />
+                <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
             </div>
           </section>
@@ -272,7 +274,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-10 h-10 rounded-full object-contain bg-white p-1" />}
                 <span className="font-bold text-white text-lg">{tenant.name}</span>
               </div>
-              <p className="text-white/70 text-sm">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
+              <p className="text-white/70 text-sm">{L.footerCopyright} © {new Date().getFullYear()}</p>
               <SocialLinks profile={profile} waLink={waLink} bgClass="bg-white/20 hover:bg-white/40" />
             </div>
           </footer>

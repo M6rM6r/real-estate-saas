@@ -22,15 +22,17 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, THEME_LABELS,
 } from './shared'
 
 export default function ThemeLuxury({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#c9a84c'
   const pageTheme = PAGE_THEMES['luxury'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
 
@@ -76,7 +78,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         .lux-border { border-color: var(--lux-gold) !important; }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
 
         {/* Sticky minimal nav */}
         <nav className={`fixed inset-x-0 z-40 transition-all duration-500 top-0 ${scrolled ? 'bg-black/90 backdrop-blur border-b border-yellow-900/30' : 'bg-transparent'}`}>
@@ -150,7 +152,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             <div className="max-w-6xl mx-auto">
               <div className="flex items-baseline justify-between mb-10">
                 <h2 className="text-3xl sm:text-4xl font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#e8e0d0' }}>
-                  العقارات المتاحة
+                  {L.listingsHeadingAlt}
                 </h2>
                 {/* Offer filter */}
                 <div className="flex gap-3">
@@ -248,7 +250,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-10">
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
-                <h2 className="text-2xl font-bold tracking-widest uppercase" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>آخر الأخبار</h2>
+                <h2 className="text-2xl font-bold tracking-widest uppercase" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>{L.newsHeading}</h2>
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
               </div>
               <div className="space-y-8">
@@ -282,12 +284,12 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
               {(profile.licence_numbers && profile.licence_numbers.length > 0)
                 ? profile.licence_numbers.map((l, i) => (
                     <p key={i} className="mt-4 text-xs tracking-widest uppercase text-gray-600 font-mono">
-                      {l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}
+                      {l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}
                     </p>
                   ))
                 : profile.licence_no && (
                     <p className="mt-8 text-xs tracking-widest uppercase text-gray-600 font-mono">
-                      رقم الترخيص: {profile.licence_no}
+                      {L.licencePrefix} {profile.licence_no}
                     </p>
                   )
               }
@@ -301,7 +303,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d' }}>
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>
-              تواصل معنا
+              {L.contactHeading}
             </h2>
             <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: `${primary}60` }} />
             <div className="space-y-3" dir="ltr">
@@ -318,9 +320,9 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d' }}>
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>أوقات العمل</h3>
+              <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div style={{ backgroundColor: '#111', padding: '16px', borderRadius: '8px', border: `1px solid ${primary}30` }}>
-                <WorkingHours hours={profile.working_hours} textClass="text-gray-400 text-xs" />
+                <WorkingHours hours={profile.working_hours} textClass="text-gray-400 text-xs" lang={lang} />
               </div>
             </div>
           </section>

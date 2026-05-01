@@ -65,6 +65,7 @@ export type Profile = {
     currency?: string
     offer_label_1?: string
     offer_label_2?: string
+    page_lang?: 'ar' | 'en'
   } | null
 } | null
 
@@ -132,6 +133,72 @@ export const DAY_LABELS_AR: Record<string, string> = {
   thu: 'الخميس', fri: 'الجمعة', sat: 'السبت', sun: 'الأحد',
 }
 
+export const DAY_LABELS_EN: Record<string, string> = {
+  mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
+  thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
+}
+
+export const THEME_LABELS = {
+  ar: {
+    about: 'من نحن',
+    contactHeading: 'تواصل معنا',
+    contactSubtitle: 'نسعد بخدمتك — تواصل معنا عبر:',
+    listingsHeading: 'قائمة العقارات',
+    listingsHeadingAlt: 'العقارات المتاحة',
+    newsHeading: 'آخر الأخبار',
+    workingHoursHeading: 'أوقات العمل',
+    licencePrefix: 'رقم الترخيص:',
+    footerCopyright: 'جميع الحقوق محفوظة',
+    footerContact: 'التواصل',
+    closed: 'مغلق',
+    formName: 'الاسم',
+    formNameRequired: 'الاسم مطلوب',
+    formNamePlaceholder: 'محمد أحمد',
+    formPhone: 'رقم الهاتف',
+    formPhoneRequired: 'رقم الهاتف مطلوب',
+    formEmail: 'البريد الإلكتروني',
+    formEmailInvalid: 'البريد الإلكتروني غير صحيح',
+    formMessage: 'الرسالة',
+    formMessagePlaceholder: 'كيف يمكننا مساعدتك؟',
+    formSubmit: 'إرسال الرسالة',
+    formSubmitting: 'جاري الإرسال...',
+    formSuccessTitle: 'تم الإرسال!',
+    formSuccessMsg: 'سنتواصل معك في أقرب وقت ممكن.',
+    formError: 'حدث خطأ. الرجاء المحاولة مرة أخرى.',
+    waMessage: (name: string) => `مرحباً، وجدتك عبر موقعك ${name}`,
+    days: DAY_LABELS_AR,
+  },
+  en: {
+    about: 'About Us',
+    contactHeading: 'Contact Us',
+    contactSubtitle: "We're happy to help — reach us via:",
+    listingsHeading: 'Our Listings',
+    listingsHeadingAlt: 'Available Properties',
+    newsHeading: 'Latest News',
+    workingHoursHeading: 'Working Hours',
+    licencePrefix: 'License #:',
+    footerCopyright: 'All rights reserved',
+    footerContact: 'Contact',
+    closed: 'Closed',
+    formName: 'Name',
+    formNameRequired: 'Name is required',
+    formNamePlaceholder: 'John Smith',
+    formPhone: 'Phone',
+    formPhoneRequired: 'Phone number is required',
+    formEmail: 'Email',
+    formEmailInvalid: 'Invalid email address',
+    formMessage: 'Message',
+    formMessagePlaceholder: 'How can we help you?',
+    formSubmit: 'Send Message',
+    formSubmitting: 'Sending...',
+    formSuccessTitle: 'Sent!',
+    formSuccessMsg: "We'll get back to you soon.",
+    formError: 'An error occurred. Please try again.',
+    waMessage: (name: string) => `Hi, I found you via your website: ${name}`,
+    days: DAY_LABELS_EN,
+  },
+} as const
+
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   SAR: '⃁', AED: 'د.إ', KWD: 'د.ك', QAR: 'ر.ق',
   BHD: 'د.ب', OMR: 'ر.ع', EGP: 'ج.م',
@@ -161,6 +228,7 @@ export function getPageConfig(profile: Profile) {
     currency: 'SAR',
     offer_label_1: 'للبيع',
     offer_label_2: 'للإيجار',
+    page_lang: 'ar' as 'ar' | 'en',
     ...(profile?.page_config ?? {}),
   }
 }
@@ -178,10 +246,11 @@ export function getPageSections(profile: Profile) {
   }
 }
 
-export function buildWaLink(tenant: Tenant, profile: Profile) {
+export function buildWaLink(tenant: Tenant, profile: Profile, lang: 'ar' | 'en' = 'ar') {
   const wa = profile?.social_links?.whatsapp
   if (!wa) return '#'
-  return `https://wa.me/${wa.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`مرحباً، وجدتك عبر موقعك ${tenant.name}`)}`
+  const msg = THEME_LABELS[lang].waMessage(tenant.name)
+  return `https://wa.me/${wa.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`
 }
 
 export function getBtnRadius(buttonShape: string, themeRadius: string) {
@@ -210,6 +279,7 @@ export function ContactForm({
   cardBorder,
   radius = '12px',
   darkText = false,
+  lang = 'ar',
 }: {
   tenantId: string
   accentColor: string
@@ -217,6 +287,7 @@ export function ContactForm({
   cardBorder: string
   radius?: string
   darkText?: boolean
+  lang?: 'ar' | 'en'
 }) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -228,9 +299,10 @@ export function ContactForm({
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!name.trim()) e.name = 'الاسم مطلوب'
-    if (!phone.trim()) e.phone = 'رقم الهاتف مطلوب'
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'البريد الإلكتروني غير صحيح'
+    const L = THEME_LABELS[lang]
+    if (!name.trim()) e.name = L.formNameRequired
+    if (!phone.trim()) e.phone = L.formPhoneRequired
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = L.formEmailInvalid
     return e
   }
 
@@ -249,7 +321,7 @@ export function ContactForm({
       if (!res.ok) throw new Error()
       setSubmitted(true)
     } catch {
-      setErrors({ form: 'حدث خطأ. الرجاء المحاولة مرة أخرى.' })
+      setErrors({ form: THEME_LABELS[lang].formError })
     } finally {
       setSubmitting(false)
     }
@@ -275,8 +347,8 @@ export function ContactForm({
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <p className="font-bold text-xl" style={{ color: textColor }}>تم الإرسال!</p>
-        <p className="text-sm" style={{ color: mutedColor }}>سنتواصل معك في أقرب وقت ممكن.</p>
+        <p className="font-bold text-xl" style={{ color: textColor }}>{THEME_LABELS[lang].formSuccessTitle}</p>
+        <p className="text-sm" style={{ color: mutedColor }}>{THEME_LABELS[lang].formSuccessMsg}</p>
       </div>
     )
   }
@@ -301,12 +373,14 @@ export function ContactForm({
     e.currentTarget.style.boxShadow = 'none'
   }
 
+  const L = THEME_LABELS[lang]
+
   return (
     <form
       onSubmit={handleSubmit}
       className="border p-6 sm:p-8 space-y-5"
       style={{ background: cardBg, borderColor: cardBorder, borderRadius: radius }}
-      dir="rtl"
+      dir={lang === 'en' ? 'ltr' : 'rtl'}
       noValidate
     >
       {errors.form && (
@@ -323,15 +397,15 @@ export function ContactForm({
         <div className="space-y-1.5">
           <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: mutedColor }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z"/></svg>
-            الاسم <span style={{ color: accentColor }}>*</span>
+            {L.formName} <span style={{ color: accentColor }}>*</span>
           </label>
           <input
-            className={fieldInput}
+            className={fieldWrap + ' ' + fieldInput}
             style={inputStyleBase}
             value={name}
             onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: '' })) }}
             onFocus={onFocus} onBlur={onBlur}
-            placeholder="محمد أحمد"
+            placeholder={L.formNamePlaceholder}
           />
           {errors.name && <p className="text-red-400 text-xs flex items-center gap-1"><span>⚠</span>{errors.name}</p>}
         </div>
@@ -340,7 +414,7 @@ export function ContactForm({
         <div className="space-y-1.5">
           <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: mutedColor }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg>
-            رقم الهاتف <span style={{ color: accentColor }}>*</span>
+            {L.formPhone} <span style={{ color: accentColor }}>*</span>
           </label>
           <input
             className={fieldInput}
@@ -359,7 +433,7 @@ export function ContactForm({
       <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: mutedColor }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg>
-          البريد الإلكتروني
+          {L.formEmail}
         </label>
         <input
           type="email"
@@ -378,7 +452,7 @@ export function ContactForm({
       <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: mutedColor }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 001.33 0l1.713-3.293a.783.783 0 01.642-.413 41.102 41.102 0 003.55-.414c1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2z" clipRule="evenodd"/></svg>
-          الرسالة
+          {L.formMessage}
         </label>
         <textarea
           className={`${fieldInput} resize-none`}
@@ -387,7 +461,7 @@ export function ContactForm({
           value={message}
           onChange={e => setMessage(e.target.value)}
           onFocus={onFocus} onBlur={onBlur}
-          placeholder="كيف يمكننا مساعدتك؟"
+          placeholder={L.formMessagePlaceholder}
         />
       </div>
 
@@ -403,11 +477,11 @@ export function ContactForm({
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            جاري الإرسال...
+            {L.formSubmitting}
           </>
         ) : (
           <>
-            إرسال الرسالة
+            {L.formSubmit}
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 rotate-180">
               <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"/>
             </svg>
@@ -483,8 +557,10 @@ export function SocialLinks({ profile, waLink }: { profile: Profile; waLink: str
 
 // ─── WorkingHours ────────────────────────────────────────────────────────────
 
-export function WorkingHours({ hours, textClass = 'text-gray-400' }: { hours?: Record<string, { enabled: boolean; open: string; close: string }> | null; textClass?: string }) {
+export function WorkingHours({ hours, textClass = 'text-gray-400', lang = 'ar' }: { hours?: Record<string, { enabled: boolean; open: string; close: string }> | null; textClass?: string; lang?: 'ar' | 'en' }) {
   if (!hours) return null
+  const dayLabels = THEME_LABELS[lang].days
+  const closedLabel = THEME_LABELS[lang].closed
   return (
     <div className="space-y-1">
       {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map((day) => {
@@ -492,8 +568,8 @@ export function WorkingHours({ hours, textClass = 'text-gray-400' }: { hours?: R
         if (!h) return null
         return (
           <div key={day} className={`flex justify-between text-xs ${textClass}`}>
-            <span>{DAY_LABELS_AR[day] ?? day}</span>
-            <span>{h.enabled ? `${h.open} – ${h.close}` : 'مغلق'}</span>
+            <span>{dayLabels[day] ?? day}</span>
+            <span>{h.enabled ? `${h.open} – ${h.close}` : closedLabel}</span>
           </div>
         )
       })}

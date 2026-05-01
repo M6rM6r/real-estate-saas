@@ -9,15 +9,17 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, PropertyCard, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
 } from './shared'
 
 export default function ThemeMidnight({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#8b5cf6'
   const pageTheme = PAGE_THEMES['midnight'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
@@ -83,7 +85,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
@@ -163,7 +165,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">قائمة العقارات</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.listingsHeading}</h2>
             </div>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -231,7 +233,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-                <h2 className="text-2xl sm:text-3xl font-bold text-white">آخر الأخبار</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.newsHeading}</h2>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
                 {news.map(item => (
@@ -257,12 +259,12 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-6 justify-center lg:justify-start">
                     <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">من نحن</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.about}</h2>
                   </div>
                   {profile?.bio && <p className="leading-relaxed text-base sm:text-lg text-slate-300">{profile.bio}</p>}
                   {(profile?.licence_numbers && profile.licence_numbers.length > 0)
-                    ? profile.licence_numbers.map((l, i) => <p key={i} className="mt-2 text-xs font-mono text-slate-500">{l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}</p>)
-                    : profile?.licence_no && <p className="mt-4 text-sm font-mono text-slate-500">رقم الترخيص: {profile.licence_no}</p>
+                    ? profile.licence_numbers.map((l, i) => <p key={i} className="mt-2 text-xs font-mono text-slate-500">{l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}</p>)
+                    : profile?.licence_no && <p className="mt-4 text-sm font-mono text-slate-500">{L.licencePrefix} {profile.licence_no}</p>
                   }
                 </div>
               )}
@@ -271,9 +273,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 <div data-section="contact" className="border rounded-2xl p-6 sm:p-8 text-center" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-6 justify-center">
                     <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">تواصل معنا</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.contactHeading}</h2>
                   </div>
-                  <p className="text-sm mb-8 text-slate-400">نسعد بخدمتك — تواصل معنا عبر:</p>
+                  <p className="text-sm mb-8 text-slate-400">{L.contactSubtitle}</p>
                   <div className="flex flex-col items-center gap-3" dir="ltr">
                     {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: '#25D366' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg>
@@ -292,9 +294,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
+              <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="bg-slate-900/50 rounded-lg p-6 text-sm text-slate-300 border border-slate-700">
-                <WorkingHours hours={profile.working_hours} />
+                <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
             </div>
           </section>
@@ -311,7 +313,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 {profile?.contact_address && <p className="text-slate-500 text-sm mt-3">{profile.contact_address}</p>}
               </div>
               <div>
-                <h4 className="font-semibold mb-3 text-xs uppercase tracking-wider text-slate-500">التواصل</h4>
+                <h4 className="font-semibold mb-3 text-xs uppercase tracking-wider text-slate-500">{L.footerContact}</h4>
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{waDisplay}</span></a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{profile.contact_email}</span></a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{profile.contact_phone}</span></a>}
@@ -323,7 +325,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
             </div>
             <div className="mt-10 border-t pt-6 text-center text-sm text-slate-600" style={{ borderColor: pageTheme.navBorder }}>
-              جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}
+              {L.footerCopyright} © {new Date().getFullYear()} {tenant.name}
             </div>
           </footer>
         )}

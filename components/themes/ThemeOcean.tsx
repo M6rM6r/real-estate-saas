@@ -20,15 +20,17 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
 export default function ThemeOcean({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#0891b2'
   const pageTheme = PAGE_THEMES['ocean'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
 
@@ -82,7 +84,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         .ocn-chip-active { background: var(--ocn-primary); color: #fff; border-color: var(--ocn-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
 
         {/* Sticky nav */}
         <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
@@ -162,7 +164,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeadingAlt}</h2>
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
               {(['all', 'sale', 'rent'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setOfferFilter(f)}
@@ -195,7 +197,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.news && news.length > 0 && (
           <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               {/* First 2 as large cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 {news.slice(0, 2).map(item => (
@@ -232,13 +234,13 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {/* About */}
         {sections.about && (
           <section data-section="about" className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
             {profile?.bio && <p className="text-gray-400 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
               ? profile.licence_numbers.map((l, i) => (
-                  <p key={i} className="mt-2 text-xs font-mono text-gray-400">{l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}</p>
+                  <p key={i} className="mt-2 text-xs font-mono text-gray-400">{l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}</p>
                 ))
-              : profile?.licence_no && <p className="mt-4 text-sm font-mono text-gray-400">رقم الترخيص: {profile.licence_no}</p>
+              : profile?.licence_no && <p className="mt-4 text-sm font-mono text-gray-400">{L.licencePrefix} {profile.licence_no}</p>
             }
           </section>
         )}
@@ -247,8 +249,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
-              <p className="text-sm mb-8 text-gray-400">نسعد بخدمتك — تواصل معنا عبر:</p>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+              <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
@@ -262,9 +264,9 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-bold text-center mb-6 text-white">أوقات العمل</h3>
+              <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="bg-blue-950/30 rounded-lg p-6 text-sm text-gray-300 border border-blue-900/50">
-                <WorkingHours hours={profile.working_hours} />
+                <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
             </div>
           </section>
@@ -293,7 +295,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
               </div>
               <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-gray-600">
-                جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}
+                {L.footerCopyright} © {new Date().getFullYear()} {tenant.name}
               </div>
             </div>
           </footer>

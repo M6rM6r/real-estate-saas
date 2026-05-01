@@ -9,7 +9,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, PropertyCard, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
 } from './shared'
 
 export default function ThemeModern({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -17,8 +17,10 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   const pageTheme = PAGE_THEMES[(tenant.theme as keyof typeof PAGE_THEMES) ?? 'modern'] ?? PAGE_THEMES.modern
   const isDark = pageTheme.dark
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
@@ -82,7 +84,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
@@ -159,7 +161,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>قائمة العقارات</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
@@ -227,7 +229,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {sections.news && news.length > 0 && (
           <section data-section="news" className="reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
                 {news.map(item => (
                   <div key={item.id} className={`overflow-hidden shrink-0 snap-start w-[80vw] sm:w-80 border ${surfaceClass}`} style={cardStyle}>
@@ -247,13 +249,13 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* About */}
         {sections.about && (
           <section data-section="about" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
             {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyClass}`}>{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
               ? profile.licence_numbers.map((l, i) => (
-                  <p key={i} className={`mt-2 text-xs font-mono ${mutedClass}`}>{l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}</p>
+                  <p key={i} className={`mt-2 text-xs font-mono ${mutedClass}`}>{l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}</p>
                 ))
-              : profile?.licence_no && <p className={`mt-4 text-sm font-mono ${mutedClass}`}>رقم الترخيص: {profile.licence_no}</p>
+              : profile?.licence_no && <p className={`mt-4 text-sm font-mono ${mutedClass}`}>{L.licencePrefix} {profile.licence_no}</p>
             }
           </section>
         )}
@@ -262,8 +264,8 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
-              <p className={`text-sm mb-8 ${mutedClass}`}>نسعد بخدمتك — تواصل معنا عبر:</p>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+              <p className={`text-sm mb-8 ${mutedClass}`}>{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg> واتساب: {waDisplay}</a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className={`flex items-center gap-2 text-sm font-medium ${mutedClass} hover:underline`} dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
@@ -294,15 +296,15 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
                 {sections.working_hours && profile?.working_hours && (
                   <div className="mt-6 pt-4 border-t border-gray-800">
-                    <h5 className="font-semibold text-sm text-gray-300 mb-2">أوقات العمل</h5>
-                    <WorkingHours hours={profile.working_hours} />
+                    <h5 className="font-semibold text-sm text-gray-300 mb-2">{L.workingHoursHeading}</h5>
+                    <WorkingHours hours={profile.working_hours} lang={lang} />
                   </div>
                 )}
               </div>
 
             </div>
             <div className="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
-              جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}
+              {L.footerCopyright} © {new Date().getFullYear()} {tenant.name}
             </div>
           </footer>
         )}

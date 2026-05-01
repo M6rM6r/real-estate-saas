@@ -20,15 +20,17 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, DAY_LABELS_AR,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
 export default function ThemeDesert({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
   const primary = tenant.primary_color ?? '#d97706'
   const pageTheme = PAGE_THEMES['desert'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const lang = pageConfig.page_lang ?? 'ar'
+  const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
-  const waLink = buildWaLink(tenant, profile)
+  const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
 
@@ -82,7 +84,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         .dsr-chip-active { background: var(--dsr-primary); color: #fff; border-color: var(--dsr-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir="rtl" style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
+      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
 
         {/* Navbar — minimal */}
         <nav className="fixed inset-x-0 z-40 transition-all duration-400 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
@@ -144,7 +146,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {sections.listings && featured && (
           <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="flex items-baseline justify-between mb-8">
-              <h2 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: pageTheme.headingFont }}>العقارات المتاحة</h2>
+              <h2 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeadingAlt}</h2>
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', 'sale', 'rent'] as const).map(f => (
                   <button key={f} type="button" onClick={() => setOfferFilter(f)}
@@ -230,18 +232,18 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-24 h-24 rounded-full object-contain shadow border shrink-0" style={{ borderColor: `${primary}40` }} />
                   )}
                   <div className="flex-1">
-                    <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>من نحن</h2>
+                    <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
                     {profile?.bio && <p className="text-gray-400 leading-relaxed mb-4">{profile.bio}</p>}
                     <div className="flex flex-wrap gap-3">
                       {(profile?.licence_numbers && profile.licence_numbers.length > 0)
                         ? profile.licence_numbers.map((l, i) => (
                             <span key={i} className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: `${primary}18`, color: primary }}>
-                              🏙 {l.label ? `${l.label}: ` : 'رقم الترخيص: '}{l.number}
+                              🏙 {l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}
                             </span>
                           ))
                         : profile?.licence_no && (
                             <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: `${primary}18`, color: primary }}>
-                              🏙 رقم الترخيص: {profile.licence_no}
+                              🏙 {L.licencePrefix} {profile.licence_no}
                             </span>
                           )
                       }
@@ -265,7 +267,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {/* News — large horizontal cards */}
         {sections.news && news.length > 0 && (
           <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: pageTheme.headingFont }}>آخر الأخبار</h2>
+            <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
               {news.map(item => (
                 <div key={item.id} className="shrink-0 snap-start w-72 sm:w-80 overflow-hidden border" style={{ borderColor: `${primary}25`, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
@@ -287,8 +289,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>تواصل معنا</h2>
-              <p className="text-sm mb-8 text-gray-400">نرحب بتواصلك — تواصل معنا عبر:</p>
+              <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+              <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }} dir="ltr"><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
@@ -302,9 +304,9 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: pageTheme.headingFont, color: primary }}>أوقات العمل</h3>
+              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: pageTheme.headingFont, color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-gray-900 rounded-lg p-6 text-sm text-gray-400">
-                <WorkingHours hours={profile.working_hours} />
+                <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
             </div>
           </section>
@@ -320,7 +322,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 {profile?.bio && <p className="text-xs leading-relaxed line-clamp-3">{profile.bio}</p>}
               </div>
               <div>
-                <h4 className="text-xs tracking-widest uppercase mb-3" style={{ color: `${primary}70` }}>التواصل</h4>
+                <h4 className="text-xs tracking-widest uppercase mb-3" style={{ color: `${primary}70` }}>{L.footerContact}</h4>
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><WaIcon className="w-3.5 h-3.5 shrink-0" /> {waDisplay}</a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                 {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
@@ -328,7 +330,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
               </div>
             </div>
             <div className="mt-8 border-t pt-6 text-center text-xs text-gray-700" style={{ borderColor: `${primary}20` }}>
-              جميع الحقوق محفوظة © {new Date().getFullYear()} {tenant.name}
+              {L.footerCopyright} © {new Date().getFullYear()} {tenant.name}
             </div>
           </footer>
         )}

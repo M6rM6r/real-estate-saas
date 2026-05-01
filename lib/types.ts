@@ -125,6 +125,7 @@ export type Profile = {
     currency?: string;
     offer_label_1?: string;
     offer_label_2?: string;
+    page_lang?: 'ar' | 'en';
   };
 };
 
