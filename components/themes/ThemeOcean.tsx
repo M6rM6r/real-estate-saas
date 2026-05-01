@@ -38,7 +38,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const [scrolled, setScrolled] = useState(false)
 
   const whatsapp = profile?.social_links?.whatsapp
-  const waDisplay = whatsapp ? '+' + whatsapp.replace(/^https?:\/\/wa\.me\//, '').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '').replace(/\D/g, '').replace(/\+/g, '') : ''
+  const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
