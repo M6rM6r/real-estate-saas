@@ -312,11 +312,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               </div>
               <div>
                 <h4 className="font-semibold mb-3 text-xs uppercase tracking-wider text-slate-500">التواصل</h4>
-                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{waDisplay}</a>}
-                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_email}</a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_phone}</a>}
+                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" dir="ltr" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{waDisplay}</a>}
+                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} dir="ltr" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_email}</a>}
+                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} dir="ltr" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{profile.contact_phone}</a>}
                 {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                  <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{n}</a>
+                  <a key={i} href={`tel:${n}`} dir="ltr" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2">{n}</a>
                 ))}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
               </div>
