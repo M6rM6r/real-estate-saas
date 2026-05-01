@@ -30,7 +30,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
   const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
   const whatsapp = profile?.social_links?.whatsapp
-  const waDisplay = whatsapp ? whatsapp.replace(/^https?:\/\/wa\.me\//, '+').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '+') : ''
+  const waDisplay = whatsapp ? '+' + whatsapp.replace(/^https?:\/\/wa\.me\//, '').replace(/^https?:\/\/api\.whatsapp\.com\/send\?phone=/, '').replace(/\D/g, '').replace(/\+/g, '') : ''
 
   const bannerPt = 'pt-14 sm:pt-16'
 
