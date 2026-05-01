@@ -136,8 +136,8 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
               {[
                 { label: 'إجمالي العقارات', value: published.length, icon: '🏠' },
-                { label: 'للبيع', value: forSaleCount, icon: '🔑' },
-                { label: 'للإيجار', value: forRentCount, icon: '📋' },
+                { label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount, icon: '🔑' },
+                { label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount, icon: '📋' },
               ].map(stat => (
                 <div key={stat.label} className="text-center py-6 px-4 border" style={{ borderColor: pageTheme.cardBorder, borderRadius: '24px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                   <div className="text-3xl mb-2">{stat.icon}</div>
@@ -159,7 +159,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 <button key={f} type="button" onClick={() => setOfferFilter(f)}
                   className={`shrink-0 px-4 py-2 text-sm font-medium border transition-all active:scale-95 ${offerFilter === f ? 'nat-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-green-700'}`}
                   style={{ borderRadius: '999px' }}>
-                  {f === 'all' ? 'الكل' : f === 'sale' ? 'للبيع' : 'للإيجار'}
+                  {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
                 </button>
               ))}
             </div>
@@ -169,7 +169,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                   <button key={f} type="button" onClick={() => setTypeFilter(f)}
                     className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${typeFilter === f ? 'nat-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-green-700'}`}
                     style={{ borderRadius: '999px' }}>
-                    {f === 'all' ? 'كل الأنواع' : f}
+                    {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
                   </button>
                 ))}
               </div>

@@ -141,8 +141,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
               <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
                 {[
                   { icon: '🏠', label: 'إجمالي العقارات', value: published.length },
-                  { icon: '🔑', label: 'للبيع', value: forSaleCount },
-                  { icon: '📋', label: 'للإيجار', value: forRentCount },
+                  { icon: '🔑', label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount },
+                  { icon: '📋', label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount },
                   { icon: '✅', label: 'متاح الآن', value: availableCount },
                 ].map(s => (
                   <div key={s.label} className="flex items-center gap-3 shrink-0 snap-start px-5 py-4 border"
@@ -168,14 +168,14 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                 <button key={f} type="button" onClick={() => setOfferFilter(f)}
                   className={`shrink-0 px-4 py-2 text-sm font-medium border transition-all active:scale-95 ${offerFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
                   style={{ borderRadius: '999px' }}>
-                  {f === 'all' ? 'الكل' : f === 'sale' ? 'للبيع' : 'للإيجار'}
+                  {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
                 </button>
               ))}
               {(['all', 'available', 'sold', 'rented'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setStatusFilter(f)}
                   className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${statusFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
                   style={{ borderRadius: '999px' }}>
-                  {f === 'all' ? 'كل الحالات' : STATUS_LABELS[f]}
+                  {f === 'all' ? (pageConfig.filter_label_all_status ?? 'كل الحالات') : STATUS_LABELS[f]}
                 </button>
               ))}
             </div>

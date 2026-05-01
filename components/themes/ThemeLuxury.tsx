@@ -160,7 +160,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       style={offerFilter === f
                         ? { backgroundColor: primary, borderColor: primary, color: '#0a0a0a', borderRadius: btnRadius }
                         : { borderColor: `${primary}40`, color: `${primary}99`, borderRadius: btnRadius }}>
-                      {f === 'all' ? 'الكل' : f === 'sale' ? 'بيع' : 'إيجار'}
+                      {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'بيع') : (pageConfig.offer_label_2 ?? 'إيجار')}
                     </button>
                   ))}
                 </div>

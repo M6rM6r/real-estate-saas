@@ -109,6 +109,9 @@ export type Profile = {
     listings_columns?: 2 | 3 | 4;
     show_listing_filters?: boolean;
     show_listing_search?: boolean;
+    filter_label_all?: string;
+    filter_label_all_types?: string;
+    filter_label_all_status?: string;
     hero_style?: 'centered' | 'split' | 'minimal';
     hero_cta_text?: string;
     button_shape?: 'pill' | 'soft' | 'sharp';

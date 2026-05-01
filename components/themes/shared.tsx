@@ -51,6 +51,9 @@ export type Profile = {
     listings_columns?: 2 | 3 | 4
     show_listing_filters?: boolean
     show_listing_search?: boolean
+    filter_label_all?: string
+    filter_label_all_types?: string
+    filter_label_all_status?: string
     hero_style?: 'centered' | 'split' | 'minimal'
     hero_cta_text?: string
     button_shape?: 'pill' | 'soft' | 'sharp'
@@ -144,6 +147,9 @@ export function getPageConfig(profile: Profile) {
     listings_columns: 3 as 2 | 3 | 4,
     show_listing_filters: true,
     show_listing_search: true,
+    filter_label_all: 'الكل',
+    filter_label_all_types: 'كل الأنواع',
+    filter_label_all_status: 'كل الحالات',
     hero_style: 'centered' as 'centered' | 'split' | 'minimal',
     hero_cta_text: 'تواصل عبر واتساب',
     button_shape: 'soft' as 'pill' | 'soft' | 'sharp',

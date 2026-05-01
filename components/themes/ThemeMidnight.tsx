@@ -179,7 +179,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                     <button key={f} type="button" onClick={() => setOfferFilter(f)}
                       className="shrink-0 px-4 py-2 min-h-[40px] rounded-full text-sm font-medium transition-all border active:scale-95"
                       style={offerFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff', boxShadow: `0 0 12px ${primary}55` } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                      {f === 'all' ? 'الكل' : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
+                      {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
                     </button>
                   ))}
                 </div>
@@ -189,7 +189,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                       <button key={f} type="button" onClick={() => setTypeFilter(f)}
                         className="shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95"
                         style={typeFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff' } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                        {f === 'all' ? 'كل الأنواع' : f}
+                        {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
                       </button>
                     ))}
                   </div>
@@ -199,7 +199,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                     <button key={f} type="button" onClick={() => setStatusFilter(f)}
                       className="shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95"
                       style={statusFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff' } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                      {f === 'all' ? 'كل الحالات' : STATUS_LABELS[f]}
+                      {f === 'all' ? (pageConfig.filter_label_all_status ?? 'كل الحالات') : STATUS_LABELS[f]}
                     </button>
                   ))}
                   <select value={sortPrice} onChange={e => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}

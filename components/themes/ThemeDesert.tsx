@@ -150,7 +150,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   <button key={f} type="button" onClick={() => setOfferFilter(f)}
                     className={`shrink-0 px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 ${offerFilter === f ? 'dsr-chip-active' : 'border-amber-800 text-amber-300 bg-transparent hover:bg-amber-900/30'}`}
                     style={{ borderRadius: btnRadius }}>
-                    {f === 'all' ? 'الكل' : f === 'sale' ? 'بيع' : 'إيجار'}
+                    {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'بيع') : (pageConfig.offer_label_2 ?? 'إيجار')}
                   </button>
                 ))}
               </div>

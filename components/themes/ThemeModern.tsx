@@ -176,7 +176,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                     <button key={f} type="button" onClick={() => setOfferFilter(f)}
                       className={`shrink-0 px-4 py-2 min-h-[40px] rounded-full text-sm font-medium transition-all border active:scale-95 ${offerFilter === f ? 'text-white border-transparent shadow-md' : `${surfaceClass} hover:opacity-80`}`}
                       style={offerFilter === f ? { backgroundColor: primary, borderColor: primary, boxShadow: `0 4px 12px ${primary}44` } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}>
-                      {f === 'all' ? 'الكل' : f === 'sale' ? 'للبيع' : 'للإيجار'}
+                      {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
                     </button>
                   ))}
                 </div>
@@ -187,7 +187,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                       <button key={f} type="button" onClick={() => setTypeFilter(f)}
                         className={`shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95 ${typeFilter === f ? 'text-white border-transparent' : `${surfaceClass} hover:opacity-80`}`}
                         style={typeFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}>
-                        {f === 'all' ? 'كل الأنواع' : f}
+                        {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
                       </button>
                     ))}
                   </div>
@@ -198,7 +198,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                     <button key={f} type="button" onClick={() => setStatusFilter(f)}
                       className={`shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95 ${statusFilter === f ? 'text-white border-transparent' : `${surfaceClass} hover:opacity-80`}`}
                       style={statusFilter === f ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}>
-                      {f === 'all' ? 'كل الحالات' : STATUS_LABELS[f]}
+                      {f === 'all' ? (pageConfig.filter_label_all_status ?? 'كل الحالات') : STATUS_LABELS[f]}
                     </button>
                   ))}
                   <select value={sortPrice} onChange={e => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}
