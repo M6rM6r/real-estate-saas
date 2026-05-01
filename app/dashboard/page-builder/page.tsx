@@ -1358,33 +1358,6 @@ export default function PageBuilderPage() {
                   </Button>
                 </div>
 
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
-                  <p className="text-sm font-medium text-white">تخصيص نصوص الفلاتر</p>
-                  <p className="text-xs text-slate-400">يمكنك تعديل أسماء أزرار الفلاتر التي تظهر للزوار في الصفحة العامة.</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">زر الكل</Label>
-                      <Input value={pageConfig.filter_label_all || ''} onChange={(e) => updatePageConfig({ filter_label_all: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="الكل" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">زر للبيع</Label>
-                      <Input value={pageConfig.offer_label_1 || ''} onChange={(e) => updatePageConfig({ offer_label_1: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="للبيع" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">زر للإيجار</Label>
-                      <Input value={pageConfig.offer_label_2 || ''} onChange={(e) => updatePageConfig({ offer_label_2: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="للإيجار" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">زر كل الأنواع</Label>
-                      <Input value={pageConfig.filter_label_all_types || ''} onChange={(e) => updatePageConfig({ filter_label_all_types: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="كل الأنواع" />
-                    </div>
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-slate-400 text-xs">زر كل الحالات</Label>
-                      <Input value={pageConfig.filter_label_all_status || ''} onChange={(e) => updatePageConfig({ filter_label_all_status: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="كل الحالات" />
-                    </div>
-                  </div>
-                </div>
-
                 {showListingForm && (
                   <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
                     <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العرض' : 'إضافة عرض جديد'}</p>
