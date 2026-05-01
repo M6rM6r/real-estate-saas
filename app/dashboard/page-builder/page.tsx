@@ -952,6 +952,7 @@ export default function PageBuilderPage() {
                 { value: 'control', icon: SlidersHorizontal, label: '🎛️ تحكم' },
                 { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
                 { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
+                { value: 'posts',    icon: Building2, label: '🏠 العروض' },
                 { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
                 { value: 'account',  icon: Settings, label: '⚙️ حساب'   },
               ] as const).map(({ value, icon: Icon, label }) => (
