@@ -285,7 +285,6 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   hero: true,
   about: true,
-  news: true,
   contact: true,
   footer: true,
 };
@@ -1012,9 +1011,6 @@ export default function PageBuilderPage() {
 
                   {([
                     ['about',   '👥', 'من نحن'],
-                    ['news',    '📰', 'الأخبار'],
-                    ['gallery', '🖼️', 'المعرض'],
-                    ['team',    '🤝', 'الفريق'],
                     ['contact', '📞', 'تواصل معنا'],
                     ['footer',  '▬',  'التذييل'],
                   ] as const).map(([key, icon, label]) => (
