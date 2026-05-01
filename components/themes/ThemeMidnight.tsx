@@ -252,7 +252,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {/* About + Contact (combined layout) */}
         {(sections.about || (sections.contact && hasContactInfo)) && (
           <section data-section="about" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
               {sections.about && (
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-6 justify-center lg:justify-start">
