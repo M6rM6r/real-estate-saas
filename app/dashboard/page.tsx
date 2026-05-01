@@ -35,9 +35,14 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">نظرة عامة</h1>
-        <p className="text-sm text-gray-400">تابع آخر الاستفسارات والعقارات المنشورة.</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">نظرة عامة</h1>
+          <p className="text-sm text-gray-400">تابع آخر الاستفسارات والعقارات المنشورة.</p>
+        </div>
+        <Link href="/dashboard/page-builder" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap">
+          محرر الصفحة
+        </Link>
       </div>
 
       {/* Recent Activity */}
