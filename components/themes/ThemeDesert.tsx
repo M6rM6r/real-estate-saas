@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Desert Theme Layout
@@ -170,7 +170,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   ) : (
                     <div className="w-full h-full" style={{ backgroundColor: pageTheme.cardBorder }} />
                   )}
-                  <ListingBadges listing={featured} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
+                  <ListingBadges listing={featured} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                 </div>
                 {/* Details on left */}
                 <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
@@ -208,7 +208,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                       ) : (
                         <div className="w-full h-full" style={{ backgroundColor: '#f5e6c8' }} />
                       )}
-                      <ListingBadges listing={l} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
+                      <ListingBadges listing={l} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                     </div>
                     <div className="p-3">
                       <h3 className="text-sm font-bold mb-1 line-clamp-1 text-gray-100">{l.title}</h3>
@@ -343,6 +343,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
             slug={tenant.slug}
             tenantId={tenant.id}
             accentColor={primary}
+            lang={lang}
           />
         )}
       </div>

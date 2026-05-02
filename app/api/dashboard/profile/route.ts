@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+﻿export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
@@ -75,6 +75,10 @@ const ProfileDataSchema = z.object({
     currency: z.preprocess(emptyToNull, z.string().max(10).nullable().optional()),
     offer_label_1: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
     offer_label_2: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
+    page_lang: z.enum(['ar', 'en']).optional(),
+    filter_label_all: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
+    filter_label_all_types: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
+    filter_label_all_status: z.preprocess(emptyToNull, z.string().max(50).nullable().optional()),
   }).optional(),
 }).optional()
 
@@ -153,11 +157,11 @@ export async function PATCH(request: NextRequest) {
     await ref.set({ ...profileFields, updatedAt: new Date() }, { merge: true })
   }
 
-  // Update tenant doc with name and/or primary_color if provided
   const tenantUpdate: Record<string, unknown> = {}
   if (tenantFields?.name) tenantUpdate.name = tenantFields.name
   if (tenantFields?.primary_color) tenantUpdate.primary_color = tenantFields.primary_color
   if (tenantFields?.theme) tenantUpdate.theme = tenantFields.theme
+  if (tenantFields?.business_type) tenantUpdate.business_type = tenantFields.business_type
   if (Object.keys(tenantUpdate).length > 0) {
     await adminDb.collection('tenants').doc(session.tenantId).update(tenantUpdate)
   }

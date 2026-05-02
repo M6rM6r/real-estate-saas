@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
@@ -167,6 +167,7 @@ export const THEME_LABELS = {
     formError: 'حدث خطأ. الرجاء المحاولة مرة أخرى.',
     waMessage: (name: string) => `مرحباً، وجدتك عبر موقعك ${name}`,
     days: DAY_LABELS_AR,
+    statusLabels: { available: 'متاح', sold: 'مباع', rented: 'مؤجر' },
   },
   en: {
     about: 'About Us',
@@ -196,6 +197,7 @@ export const THEME_LABELS = {
     formError: 'An error occurred. Please try again.',
     waMessage: (name: string) => `Hi, I found you via your website: ${name}`,
     days: DAY_LABELS_EN,
+    statusLabels: { available: 'Available', sold: 'Sold', rented: 'Rented' },
   },
 } as const
 
@@ -584,18 +586,23 @@ export function ListingBadges({
   primary,
   offerLabel1 = 'للبيع',
   offerLabel2 = 'للإيجار',
+  statusLabels,
+  lang = 'ar',
 }: {
   listing: Post
   primary: string
   offerLabel1?: string
   offerLabel2?: string
+  statusLabels?: Record<string, string>
+  lang?: 'ar' | 'en'
 }) {
+  const sLabels = statusLabels ?? STATUS_LABELS
   return (
     <>
       {listing.listing_status && (
         <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
           style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? primary }}>
-          {STATUS_LABELS[listing.listing_status] ?? listing.listing_status}
+          {sLabels[listing.listing_status] ?? listing.listing_status}
         </span>
       )}
       {listing.offer_type && (
@@ -628,6 +635,8 @@ export function PropertyCard({
   offerLabel1 = 'للبيع',
   offerLabel2 = 'للإيجار',
   imageHeight = 'h-52',
+  statusLabels,
+  lang = 'ar',
 }: {
   listing: Post
   onClick: () => void
@@ -641,7 +650,10 @@ export function PropertyCard({
   offerLabel1?: string
   offerLabel2?: string
   imageHeight?: string
+  statusLabels?: Record<string, string>
+  lang?: 'ar' | 'en'
 }) {
+  const sLabels2 = statusLabels ?? STATUS_LABELS
   const offerColor = listing.offer_type === 'rent' ? 'rgba(5,150,105,0.88)' : 'rgba(37,99,235,0.88)'
 
   return (
@@ -649,7 +661,7 @@ export function PropertyCard({
       onClick={onClick}
       className={`text-right group border overflow-hidden transition-all duration-300 w-full active:scale-[0.97] hover:-translate-y-1.5 hover:shadow-2xl ${surfaceClass}`}
       style={cardStyle}
-      aria-label={`عرض تفاصيل العقار: ${listing.title}`}
+      aria-label={lang === 'en' ? `View details: ${listing.title}` : `عرض تفاصيل العقار: ${listing.title}`}
     >
       {/* Image area */}
       <div className="relative overflow-hidden">
@@ -667,7 +679,7 @@ export function PropertyCard({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 22V12h6v10" />
             </svg>
-            <span className="text-xs opacity-40">لا توجد صورة</span>
+            <span className="text-xs opacity-40">{lang === 'en' ? 'No image' : 'لا توجد صورة'}</span>
           </div>
         )}
 
@@ -690,7 +702,7 @@ export function PropertyCard({
             className="absolute top-3 left-3 text-white text-[11px] font-bold px-2.5 py-1 rounded-full"
             style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? '#6b7280' }}
           >
-            {STATUS_LABELS[listing.listing_status] ?? listing.listing_status}
+            {sLabels2[listing.listing_status] ?? listing.listing_status}
           </span>
         )}
 
@@ -739,7 +751,7 @@ export function PropertyCard({
             )}
             {listing.area_sqm != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>📐</span> {listing.area_sqm} م²
+                <span>📐</span> {listing.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}
               </span>
             )}
           </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -218,7 +218,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {displayed.map(l => (
-                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass={surfaceClass} mutedClass={mutedClass} primary={primary} sectionAlt={pageTheme.sectionAlt} currency={pageConfig.currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
+                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass={surfaceClass} mutedClass={mutedClass} primary={primary} sectionAlt={pageTheme.sectionAlt} currency={pageConfig.currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                 ))}
               </div>
             )}
@@ -317,6 +317,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             slug={tenant.slug}
             tenantId={tenant.id}
             accentColor={primary}
+            lang={lang}
           />
         )}
       </div>

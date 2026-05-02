@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -1203,7 +1203,22 @@ export default function PageBuilderPage() {
                 <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
                 <select
                   value={businessType}
-                  onChange={(e) => { setBusinessType(e.target.value); markDirty(); }}
+                  onChange={(e) => {
+                  const bt = e.target.value;
+                  setBusinessType(bt);
+                  markDirty();
+                  if (bt === 'real_estate') {
+                    updatePageConfig({ offer_label_1: 'للبيع', offer_label_2: 'للإيجار' });
+                  } else if (bt === 'restaurant') {
+                    updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'خاص' });
+                  } else if (bt === 'retail') {
+                    updatePageConfig({ offer_label_1: 'للبيع', offer_label_2: 'نفذ' });
+                  } else if (bt === 'salon' || bt === 'services') {
+                    updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'محجوز' });
+                  } else {
+                    updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'غير متاح' });
+                  }
+                }}
                   className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
                 >
                   <option value="real_estate">🏠 عقارات</option>

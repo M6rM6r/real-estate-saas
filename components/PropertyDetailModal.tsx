@@ -1,10 +1,55 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, Twitter, MessageCircle } from 'lucide-react';
 import { InquiryForm } from './InquiryForm';
 import type { Post } from '@/lib/types';
+
+const MODAL_LABELS = {
+  ar: {
+    statusAvailable: 'متاح',
+    statusSold: 'مباع',
+    statusRented: 'مؤجر',
+    bedrooms: 'غرف النوم',
+    bathrooms: 'الحمامات',
+    area: 'المساحة',
+    description: 'الوصف',
+    location: 'الموقع',
+    viewMap: 'عرض على الخريطة',
+    viewMapShort: 'عرض الموقع على الخريطة',
+    price: 'السعر',
+    priceUnset: 'غير محدد',
+    features: 'المميزات',
+    share: 'مشاركة العقار',
+    shareWhatsApp: 'واتساب',
+    shareX: 'X',
+    shareCopy: 'نسخ',
+    shareCopied: 'تم النسخ',
+    inquiry: 'إرسال استفسار',
+  },
+  en: {
+    statusAvailable: 'Available',
+    statusSold: 'Sold',
+    statusRented: 'Rented',
+    bedrooms: 'Bedrooms',
+    bathrooms: 'Bathrooms',
+    area: 'Area',
+    description: 'Description',
+    location: 'Location',
+    viewMap: 'View on Map',
+    viewMapShort: 'View location on map',
+    price: 'Price',
+    priceUnset: 'Not specified',
+    features: 'Features',
+    share: 'Share Listing',
+    shareWhatsApp: 'WhatsApp',
+    shareX: 'X',
+    shareCopy: 'Copy',
+    shareCopied: 'Copied!',
+    inquiry: 'Send Inquiry',
+  },
+} as const
 
 interface PropertyDetailModalProps {
   property: Post;
@@ -13,6 +58,7 @@ interface PropertyDetailModalProps {
   tenantId?: string;
   accentColor?: string;
   bgColor?: string;
+  lang?: 'ar' | 'en';
 }
 
 export function PropertyDetailModal({
@@ -22,10 +68,13 @@ export function PropertyDetailModal({
   tenantId,
   accentColor = '#2563eb',
   bgColor = '#0f0f0f',
+  lang = 'ar',
 }: PropertyDetailModalProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const L = MODAL_LABELS[lang];
 
   // Track listing view
   useEffect(() => {
@@ -61,7 +110,6 @@ export function PropertyDetailModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for browsers without clipboard API
       const ta = document.createElement('textarea');
       ta.value = getShareUrl();
       document.body.appendChild(ta);
@@ -91,13 +139,13 @@ export function PropertyDetailModal({
   };
 
   const statusLabel: Record<string, string> = {
-    available: 'متاح',
-    sold: 'مباع',
-    rented: 'مؤجر',
+    available: L.statusAvailable,
+    sold: L.statusSold,
+    rented: L.statusRented,
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" dir="rtl">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" dir={lang === 'en' ? 'ltr' : 'rtl'}>
       <div
         className="bg-gray-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-800"
         style={{ backgroundColor: bgColor }}
@@ -186,7 +234,7 @@ export function PropertyDetailModal({
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Bed className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-400 text-sm">غرف النوم</span>
+                    <span className="text-gray-400 text-sm">{L.bedrooms}</span>
                   </div>
                   <p className="text-2xl font-bold text-white">{property.bedrooms}</p>
                 </div>
@@ -195,7 +243,7 @@ export function PropertyDetailModal({
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Bath className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-400 text-sm">الحمامات</span>
+                    <span className="text-gray-400 text-sm">{L.bathrooms}</span>
                   </div>
                   <p className="text-2xl font-bold text-white">{property.bathrooms}</p>
                 </div>
@@ -204,9 +252,9 @@ export function PropertyDetailModal({
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Maximize className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-400 text-sm">المساحة</span>
+                    <span className="text-gray-400 text-sm">{L.area}</span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{property.area_sqm}م²</p>
+                  <p className="text-2xl font-bold text-white">{property.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}</p>
                 </div>
               )}
             </div>
@@ -214,7 +262,7 @@ export function PropertyDetailModal({
             {/* Description */}
             {property.body && (
             <div className="mt-6">
-              <h3 className="text-lg font-bold text-white mb-3">الوصف</h3>
+              <h3 className="text-lg font-bold text-white mb-3">{L.description}</h3>
               <p className="text-gray-300 leading-relaxed">{property.body}</p>
             </div>
             )}
@@ -225,7 +273,7 @@ export function PropertyDetailModal({
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-400 text-sm mb-1">الموقع</p>
+                    <p className="text-gray-400 text-sm mb-1">{L.location}</p>
                     <p className="text-white font-semibold">{property.location}</p>
                     {property.location_url && (
                       <a
@@ -235,7 +283,7 @@ export function PropertyDetailModal({
                         className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
                       >
                         <MapPin className="h-4 w-4" />
-                        عرض على الخريطة
+                        {L.viewMap}
                       </a>
                     )}
                   </div>
@@ -251,7 +299,7 @@ export function PropertyDetailModal({
                   className="inline-flex items-center gap-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   <MapPin className="h-5 w-5" />
-                  عرض الموقع على الخريطة
+                  {L.viewMapShort}
                 </a>
               </div>
             )}
@@ -261,8 +309,8 @@ export function PropertyDetailModal({
           <div className="lg:w-80 space-y-6">
             {/* Price */}
             <div className="bg-gradient-to-br rounded-xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}11)`, borderColor: accentColor, borderWidth: '1px' }}>
-              <p className="text-gray-300 text-sm mb-2">السعر</p>
-              <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString('en-US') : 'غير محدد'}</p>
+              <p className="text-gray-300 text-sm mb-2">{L.price}</p>
+              <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString('en-US') : L.priceUnset}</p>
               <p className="text-gray-300 text-sm mt-2">⃁</p>
             </div>
 
@@ -273,7 +321,7 @@ export function PropertyDetailModal({
                 className="w-full text-white font-semibold py-3 rounded-lg"
                 style={{ backgroundColor: accentColor }}
               >
-                إرسال استفسار
+                {L.inquiry}
               </Button>
             ) : (
               <div className="border border-gray-700 rounded-lg p-4">
@@ -290,7 +338,7 @@ export function PropertyDetailModal({
             {/* Features */}
             {(property.features && property.features.length > 0) && (
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 space-y-2">
-              <p className="font-semibold text-white text-sm mb-3">المميزات</p>
+              <p className="font-semibold text-white text-sm mb-3">{L.features}</p>
               <div className="space-y-2">
                 {property.features.map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -304,37 +352,34 @@ export function PropertyDetailModal({
 
             {/* Share */}
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <p className="font-semibold text-white text-sm mb-3">مشاركة العقار</p>
+              <p className="font-semibold text-white text-sm mb-3">{L.share}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleWhatsApp}
                   className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-green-500/10 hover:border-green-500/40"
-                  title="مشاركة عبر واتساب"
                 >
                   <MessageCircle className="h-4 w-4 mr-1.5 text-green-400" />
-                  واتساب
+                  {L.shareWhatsApp}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCopyLink}
                   className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white"
-                  title="نسخ الرابط"
                 >
                   {copied ? <Check className="h-4 w-4 mr-1.5 text-green-400" /> : <Copy className="h-4 w-4 mr-1.5" />}
-                  {copied ? 'تم النسخ' : 'نسخ'}
+                  {copied ? L.shareCopied : L.shareCopy}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleTwitter}
                   className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-sky-500/10 hover:border-sky-500/40"
-                  title="مشاركة على X"
                 >
                   <Twitter className="h-4 w-4 mr-1.5 text-sky-400" />
-                  X
+                  {L.shareX}
                 </Button>
               </div>
             </div>

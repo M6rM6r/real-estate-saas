@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Nature Theme Layout
@@ -181,7 +181,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {filtered.map(l => (
-                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-gray-100" mutedClass="text-gray-400" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} />
+                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-gray-100" mutedClass="text-gray-400" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                 ))}
               </div>
             )}
@@ -288,6 +288,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             slug={tenant.slug}
             tenantId={tenant.id}
             accentColor={primary}
+            lang={lang}
           />
         )}
       </div>
