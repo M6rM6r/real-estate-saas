@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader as Loader2, Building2, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { GlobeDemo } from '@/components/GlobeDemo';
 
 
 export default function LoginPage() {
@@ -53,27 +54,9 @@ export default function LoginPage() {
   return (
     /* Outer flex keeps LTR so decorative panel stays visually on the left */
     <div className="min-h-screen flex" dir="ltr">
-      {/* Left decorative panel */}
-      <div aria-hidden="true" className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#1a2f5a] to-[#0a0a1f]">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1b3e]/80 via-transparent to-transparent" />
-        <div className="relative z-10 flex flex-col justify-between p-12 h-full text-white w-full">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">Rew</span>
-          </div>
-          <div>
-            <blockquote className="text-4xl font-bold leading-tight mb-4" dir="rtl">
-              &ldquo;عروضك.<br />علامتك.<br />عملاؤك.&rdquo;
-            </blockquote>
-            <p className="text-blue-300 text-sm" dir="rtl">المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.</p>
-          </div>
-        </div>
+      {/* Left globe panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-black">
+        <GlobeDemo />
       </div>
 
       {/* Right form panel — Arabic RTL content */}

@@ -137,7 +137,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
           <section className="nat-reveal py-10 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
             <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
               {[
-                { label: 'إجمالي العقارات', value: published.length, icon: '🏠' },
+                { label: 'إجمالي العروض', value: published.length, icon: '🏠' },
                 { label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount, icon: '🔑' },
                 { label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount, icon: '📋' },
               ].map(stat => (

@@ -142,7 +142,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             <div className="max-w-5xl mx-auto">
               <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
                 {[
-                  { icon: '🏠', label: 'إجمالي العقارات', value: published.length },
+                  { icon: '🏠', label: 'إجمالي العروض', value: published.length },
                   { icon: '🔑', label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount },
                   { icon: '📋', label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount },
                   { icon: '✅', label: 'متاح الآن', value: availableCount },
