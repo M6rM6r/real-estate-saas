@@ -20,7 +20,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'منصة Rew',
-  description: 'منصة إحترافية لإدارة وعرض المنتجات\الخدمات',
+  description: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app'),
 };
 
