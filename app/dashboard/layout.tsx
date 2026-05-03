@@ -2,14 +2,35 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Building2, Sparkles } from 'lucide-react';
+import { LogOut, Building2, Sparkles, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LanguageProvider, useLanguage } from './LanguageContext';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+const translations = {
+  ar: {
+    pageBuilder: 'منشئ الصفحة',
+    demo: 'تجريبي',
+    demoCta: 'جرب النسخة التجريبية',
+    logout: 'تسجيل الخروج',
+    language: 'English',
+  },
+  en: {
+    pageBuilder: 'Page Builder',
+    demo: 'Demo',
+    demoCta: 'Try Demo Version',
+    logout: 'Logout',
+    language: 'العربية',
+  },
+};
+
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { lang, toggleLang, isRTL } = useLanguage();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isDemo, setIsDemo] = useState(false);
   const [userInfo, setUserInfo] = useState<{ email: string; displayName: string | null } | null>(null);
+
+  const t = translations[lang];
 
   useEffect(() => {
     const demoAuth = sessionStorage.getItem('demo_auth');
@@ -57,29 +78,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white" dir={isRTL ? 'rtl' : 'ltr'}>
       <header className="sticky top-0 z-30 border-b border-gray-800/80 bg-[#0a0a0f]/80 backdrop-blur-sm">
         <div className="h-14 px-4 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
               <Building2 className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-slate-200">منشئ الصفحة</span>
+            <span className="text-sm font-semibold text-slate-200">{t.pageBuilder}</span>
             {isDemo && (
               <span className="text-[10px] font-bold tracking-wider bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
-                تجريبي
+                {t.demo}
               </span>
             )}
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleLang}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              {t.language}
+            </button>
             {!isDemo && (
               <a
                 href="/try"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold hover:from-blue-500 hover:to-indigo-500 transition-all"
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                جرب النسخة التجريبية
+                {t.demoCta}
               </a>
             )}
             {userInfo && (
@@ -98,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               aria-label="تسجيل الخروج"
             >
               <LogOut className="h-4 w-4" />
-              تسجيل الخروج
+              {t.logout}
             </Button>
           </div>
         </div>
@@ -108,5 +136,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LanguageProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </LanguageProvider>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -54,12 +54,25 @@ const translations = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>('ar');
+  const [lang, setLangState] = useState<Lang>('ar');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Load saved language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem('app_lang') as Lang | null;
+    if (savedLang && (savedLang === 'ar' || savedLang === 'en')) {
+      setLangState(savedLang);
+    }
+  }, []);
+
+  const setLang = (newLang: Lang) => {
+    setLangState(newLang);
+    localStorage.setItem('app_lang', newLang);
+  };
 
   const t = translations[lang];
   const isRTL = lang === 'ar';
