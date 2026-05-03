@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ export default function LoginPage() {
     setError('');
     try {
       const { auth } = await import('@/lib/firebase');
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const token = await cred.user.getIdToken();
       const res = await fetch('/api/auth/session', {
