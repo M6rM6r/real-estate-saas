@@ -154,17 +154,8 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeadingAlt}</h2>
+
             {/* Filters */}
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
-              {(['all', 'sale', 'rent'] as const).map(f => (
-                <button key={f} type="button" onClick={() => setOfferFilter(f)}
-                  className={`shrink-0 px-4 py-2 text-sm font-medium border transition-all active:scale-95 ${offerFilter === f ? 'nat-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-green-700'}`}
-                  style={{ borderRadius: '999px' }}>
-                  {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
-                </button>
-              ))}
-            </div>
             {propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
@@ -177,7 +168,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
               </div>
             )}
             {filtered.length === 0 ? (
-              <p className="text-center py-12 text-gray-400">لا توجد عقارات لهذا التصنيف</p>
+              <p className="text-center py-12 text-gray-400">لا توجد عروض لهذا التصنيف</p>
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {filtered.map(l => (
@@ -219,7 +210,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             {sections.about && (
               <div className="p-8 border" style={{ borderColor: pageTheme.cardBorder, borderRadius: '28px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl mb-5 shadow-sm" style={{ backgroundColor: `${primary}25` }}>🌿</div>
-                <h2 className="text-2xl font-bold mb-4 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
+
                 {profile?.bio && <p className="text-gray-400 leading-relaxed mb-4">{profile.bio}</p>}
                 {(profile?.licence_numbers && profile.licence_numbers.length > 0)
                   ? profile.licence_numbers.map((l, i) => (
@@ -231,6 +222,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 {(profile?.contact_phone || profile?.contact_email) && (
                   <div className="mt-3 space-y-1">
                     {profile.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                    {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
+                      <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
+                    ))}
                     {profile.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                   </div>
                 )}
@@ -246,6 +240,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 <div className="flex flex-col items-center gap-3 w-full" dir="ltr">
                   {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm w-full justify-center transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
                   {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                  {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
+                    <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
+                  ))}
                   {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm nat-text font-medium hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                 </div>
               </div>

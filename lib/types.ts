@@ -95,6 +95,8 @@ export type Profile = {
     whatsapp?: string;
     snapchat?: string;
     tiktok?: string;
+    telegram?: string;
+    discord?: string;
   };
   working_hours?: Record<string, { enabled: boolean; open: string; close: string }> | null;
   page_sections?: {

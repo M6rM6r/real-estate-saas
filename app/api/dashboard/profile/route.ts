@@ -40,6 +40,8 @@ const ProfileDataSchema = z.object({
     whatsapp: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
     snapchat: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     tiktok: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    telegram: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+    discord: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   }).optional().nullable(),
   working_hours: z.record(
     z.object({

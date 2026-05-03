@@ -165,27 +165,18 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.listingsHeading}</h2>
+
             </div>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
-                  placeholder="ابحث باسم العقار أو الموقع"
+                  placeholder="ابحث باسم العرض أو الموقع"
                   className="w-full border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 text-white placeholder-slate-500 bg-transparent"
                   style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, focusRingColor: primary } as React.CSSProperties} />
               </div>
             )}
             {pageConfig.show_listing_filters && (
               <div className="space-y-2.5 mb-6">
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-                  {(['all', 'sale', 'rent'] as const).map(f => (
-                    <button key={f} type="button" onClick={() => setOfferFilter(f)}
-                      className="shrink-0 px-4 py-2 min-h-[40px] rounded-full text-sm font-medium transition-all border active:scale-95"
-                      style={offerFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff', boxShadow: `0 0 12px ${primary}55` } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                      {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
-                    </button>
-                  ))}
-                </div>
                 {propertyTypes.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                     {(['all', ...propertyTypes]).map(f => (
@@ -216,7 +207,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               </div>
             )}
             {displayed.length === 0 ? (
-              <p className="text-center py-12 text-slate-500">لا توجد عقارات لهذا التصنيف</p>
+              <p className="text-center py-12 text-slate-500">لا توجد عروض لهذا التصنيف</p>
             ) : (
               <div className={`grid grid-cols-1 ${colsClass} gap-6`}>
                 {displayed.map(l => (
@@ -259,7 +250,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-6 justify-center lg:justify-start">
                     <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.about}</h2>
+
                   </div>
                   {profile?.bio && <p className="leading-relaxed text-base sm:text-lg text-slate-300">{profile.bio}</p>}
                   {(profile?.licence_numbers && profile.licence_numbers.length > 0)
@@ -282,6 +273,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                       واتساب: {waDisplay}
                     </a>}
                     {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                    {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
+                      <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
+                    ))}
                     {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                   </div>
                 </div>
@@ -316,10 +310,6 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 <h4 className="font-semibold mb-3 text-xs uppercase tracking-wider text-slate-500">{L.footerContact}</h4>
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{waDisplay}</span></a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{profile.contact_email}</span></a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{profile.contact_phone}</span></a>}
-                {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                  <a key={i} href={`tel:${n}`} className="block text-sm text-slate-400 hover:text-white mb-2"><span dir="ltr">{n}</span></a>
-                ))}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
               </div>
 

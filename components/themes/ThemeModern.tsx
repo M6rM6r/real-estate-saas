@@ -161,27 +161,17 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
+
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
-                  placeholder="ابحث باسم العقار أو الموقع"
+                  placeholder="ابحث باسم العرض أو الموقع"
                   className="w-full border px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
                   style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius }} />
               </div>
             )}
             {pageConfig.show_listing_filters && (
               <div className="space-y-2.5 mb-6">
-                {/* Offer type chips — horizontal scroll */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-                  {(['all', 'sale', 'rent'] as const).map(f => (
-                    <button key={f} type="button" onClick={() => setOfferFilter(f)}
-                      className={`shrink-0 px-4 py-2 min-h-[40px] rounded-full text-sm font-medium transition-all border active:scale-95 ${offerFilter === f ? 'text-white border-transparent shadow-md' : `${surfaceClass} hover:opacity-80`}`}
-                      style={offerFilter === f ? { backgroundColor: primary, borderColor: primary, boxShadow: `0 4px 12px ${primary}44` } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder }}>
-                      {f === 'all' ? (pageConfig.filter_label_all ?? 'الكل') : f === 'sale' ? (pageConfig.offer_label_1 ?? 'للبيع') : (pageConfig.offer_label_2 ?? 'للإيجار')}
-                    </button>
-                  ))}
-                </div>
                 {/* Property type chips */}
                 {propertyTypes.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -214,7 +204,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
               </div>
             )}
             {displayed.length === 0 ? (
-              <p className={`text-center py-12 ${mutedClass}`}>لا توجد عقارات لهذا التصنيف</p>
+              <p className={`text-center py-12 ${mutedClass}`}>لا توجد عروض لهذا التصنيف</p>
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {displayed.map(l => (
@@ -249,7 +239,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* About */}
         {sections.about && (
           <section data-section="about" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: pageTheme.headingFont }}>{L.about}</h2>
+
             {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyClass}`}>{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
               ? profile.licence_numbers.map((l, i) => (
@@ -289,10 +279,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                 <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">التواصل</h4>
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-green-400"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg> {waDisplay}</a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-gray-400"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-gray-400"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
-                {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                  <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-gray-400"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
-                ))}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
                 {sections.working_hours && profile?.working_hours && (
                   <div className="mt-6 pt-4 border-t border-gray-800">

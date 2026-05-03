@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
 const ListingSchema = z.object({
-  title: z.string().min(1).max(200),
+  title: z.string().max(200).optional().nullable(),
   body: z.string().max(5000).optional(),
   price: z.number().positive().optional().nullable(),
   location: z.string().max(200).optional().nullable(),

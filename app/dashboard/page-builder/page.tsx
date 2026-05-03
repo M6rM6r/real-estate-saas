@@ -17,7 +17,7 @@ import {
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
-  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, Lock, Settings, SlidersHorizontal,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal,
 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -325,7 +325,7 @@ const EMPTY_PROFILE: Profile = {
   contact_phone: '',
   extra_phones: [],
   contact_address: '',
-  social_links: { instagram: '', x: '', linkedin: '', whatsapp: '', snapchat: '', tiktok: '' },
+  social_links: { instagram: '', x: '', linkedin: '', whatsapp: '', snapchat: '', tiktok: '', telegram: '', discord: '' },
   working_hours: {
     sun: { enabled: true,  open: '09:00', close: '17:00' },
     mon: { enabled: true,  open: '09:00', close: '17:00' },
@@ -407,6 +407,7 @@ export default function PageBuilderPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [saveError, setSaveError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
@@ -431,9 +432,6 @@ export default function PageBuilderPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
-  const [customDomain, setCustomDomain] = useState('');
-  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
-  const [pwdSaving, setPwdSaving] = useState(false);
 
   const profileCompletionItems = [
     { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
@@ -536,7 +534,6 @@ export default function PageBuilderPage() {
         setSelectedTheme(profileRes.tenant?.theme || 'modern');
         setBusinessType((profileRes.tenant as any)?.business_type || 'real_estate');
         setListings(listingsRes.data ?? []);
-        setCustomDomain((profileRes.tenant as any)?.custom_domain || '');
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -562,6 +559,8 @@ export default function PageBuilderPage() {
     if ('logo_url' in patch || 'cover_url' in patch) {
       pendingImageAutoSave.current = true;
     }
+    const keys = Object.keys(patch);
+    if (keys.length) setFieldErrors((prev) => { const n = { ...prev }; keys.forEach(k => delete n[k]); return n; });
   };
 
   const updateSocial = (key: string, value: string) => {
@@ -570,6 +569,7 @@ export default function PageBuilderPage() {
       social_links: { ...prev.social_links, [key]: value },
     }));
     markDirty();
+    setFieldErrors((prev) => { const n = { ...prev }; delete n[key]; return n; });
   };
 
   const toggleSection = (key: keyof NonNullable<Profile['page_sections']>) => {
@@ -604,11 +604,10 @@ export default function PageBuilderPage() {
   };
 
   const addListing = async () => {
-    if (!listingForm.title || !listingForm.price) return;
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
     const payload = {
       title: listingForm.title,
-      price: parseInt(listingForm.price),
+      price: listingForm.price ? parseInt(listingForm.price) : null,
       location: listingForm.location || null,
       bedrooms: listingForm.bedrooms ? parseInt(listingForm.bedrooms) : null,
       bathrooms: listingForm.bathrooms ? parseInt(listingForm.bathrooms) : null,
@@ -671,26 +670,27 @@ export default function PageBuilderPage() {
   };
 
   const handleSave = async () => {
+    setFieldErrors({});
     const email = (profile.contact_email || '').trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setSaveStatus('error');
-      setSaveError('صيغة البريد الإلكتروني غير صحيحة');
+      setSaveError('البريد الإلكتروني — الصيغة غير صحيحة');
+      setFieldErrors({ contact_email: 'صيغة غير صحيحة' });
+      setActiveTab('connect');
       return;
     }
 
-    const urlCandidates: Array<{ label: string; value?: string }> = [
-      { label: 'رابط الشعار', value: profile.logo_url || '' },
-      { label: 'رابط صورة الغلاف', value: profile.cover_url || '' },
-      { label: 'Instagram', value: profile.social_links?.instagram || '' },
-      { label: 'X (Twitter)', value: profile.social_links?.x || '' },
-      { label: 'LinkedIn', value: profile.social_links?.linkedin || '' },
-      { label: 'WhatsApp', value: profile.social_links?.whatsapp || '' },
+    const urlCandidates: Array<{ label: string; value?: string; field: string; tab: string }> = [
+      { label: 'رابط الشعار',       value: profile.logo_url || '',                    field: 'logo_url',   tab: 'design'  },
+      { label: 'رابط صورة الغلاف', value: profile.cover_url || '',                   field: 'cover_url',  tab: 'design'  },
     ];
     for (const candidate of urlCandidates) {
       const v = candidate.value?.trim();
       if (v && !isValidUrl(v)) {
         setSaveStatus('error');
-        setSaveError(`${candidate.label}: الرجاء إدخال رابط صحيح يبدأ بـ http أو https`);
+        setSaveError(`${candidate.label} — الرجاء إدخال رابط صحيح يبدأ بـ http أو https`);
+        setFieldErrors({ [candidate.field]: 'رابط غير صحيح' });
+        setActiveTab(candidate.tab);
         return;
       }
     }
@@ -700,13 +700,15 @@ export default function PageBuilderPage() {
       if (!h?.enabled) continue;
       if (!h.open || !h.close || toMinutes(h.open) >= toMinutes(h.close)) {
         setSaveStatus('error');
-        setSaveError(`ساعات العمل غير صحيحة ليوم ${DAY_AR[day]}`);
+        setSaveError(`ساعات العمل — تحقق من توقيت يوم ${DAY_AR[day]}`);
+        setActiveTab('connect');
         return;
       }
     }
 
     setSaveStatus('saving');
     setSaveError('');
+    setFieldErrors({});
     try {
       await authFetch('/api/dashboard/profile', {
         method: 'PATCH',
@@ -761,46 +763,6 @@ export default function PageBuilderPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-    const handleChangePassword = async () => {
-      if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) return;
-      if (pwdForm.next !== pwdForm.confirm) return;
-      if (pwdForm.next.length < 8) return;
-      const { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } = await import('firebase/auth');
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user || !user.email) return;
-      setPwdSaving(true);
-      try {
-        const cred = EmailAuthProvider.credential(user.email, pwdForm.current);
-        await reauthenticateWithCredential(user, cred);
-        await updatePassword(user, pwdForm.next);
-        setPwdForm({ current: '', next: '', confirm: '' });
-        setSaveStatus('saved');
-        if (savedTimer.current) clearTimeout(savedTimer.current);
-        savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
-      } catch {
-        setSaveStatus('error');
-        setSaveError('فشل تغيير كلمة المرور. تأكد من كلمة المرور الحالية.');
-      } finally {
-        setPwdSaving(false);
-      }
-    };
-
-    const handleSaveDomain = async () => {
-      try {
-        await authFetch('/api/dashboard/profile', {
-          method: 'PATCH',
-          body: JSON.stringify({ tenant: { custom_domain: customDomain } }),
-        });
-        setSaveStatus('saved');
-        if (savedTimer.current) clearTimeout(savedTimer.current);
-        savedTimer.current = setTimeout(() => setSaveStatus('idle'), 3000);
-      } catch {
-        setSaveStatus('error');
-        setSaveError('فشل حفظ الدومين.');
-      }
-    };
 
   const downloadQr = () => {
     const svg = document.getElementById('qr-svg');
@@ -954,14 +916,13 @@ export default function PageBuilderPage() {
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-1.5">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
               {([
                 { value: 'control', icon: SlidersHorizontal, label: '🎛️ تحكم' },
                 { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
                 { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
                 { value: 'posts',    icon: Building2, label: '🏠 العروض' },
                 { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
-                { value: 'account',  icon: Settings, label: '⚙️ حساب'   },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -980,15 +941,6 @@ export default function PageBuilderPage() {
                 <div className="px-4 pt-4 pb-3 border-b border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
-                    <span className="text-[11px] font-mono bg-blue-600/20 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
-                      {Object.values(sections).filter(Boolean).length}/{Object.values(sections).length}
-                    </span>
-                  </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-500"
-                      style={{ width: `${(Object.values(sections).filter(Boolean).length / Object.values(sections).length) * 100}%` }}
-                    />
                   </div>
                 </div>
 
@@ -1012,7 +964,6 @@ export default function PageBuilderPage() {
                   {([
                     ['listings','🏘️', 'العروض'],
                     ['about',   '👥', 'من نحن'],
-                    ['news',    '📰', 'الأخبار'],
                     ['contact', '📞', 'تواصل معنا'],
                     ['working_hours', '🕒', 'أوقات العمل'],
                     ['footer',  '▬',  'التذييل'],
@@ -1026,6 +977,42 @@ export default function PageBuilderPage() {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  🎛️ إعدادات الصفحة
+                </p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">العنوان الرئيسي للصفحة</Label>
+                  <Input
+                    value={pageConfig.hero_headline || ''}
+                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                    placeholder="ابحث عن عقارك المثالي"
+                    maxLength={200}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">لغة الصفحة</Label>
+                  <div className="flex gap-2">
+                    {(['ar', 'en'] as const).map(l => (
+                      <button key={l} type="button"
+                        onClick={() => updatePageConfig({ page_lang: l })}
+                        className={`flex-1 py-2 rounded-md text-sm font-semibold border transition-colors ${
+                          (pageConfig.page_lang ?? 'ar') === l
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                            : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                        }`}
+                      >
+                        {l === 'ar' ? '🇸🇦 عربي' : '🇬🇧 English'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -1236,63 +1223,6 @@ export default function PageBuilderPage() {
                 </p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">العنوان الرئيسي</Label>
-                  <Input
-                    value={pageConfig.hero_headline || ''}
-                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                    placeholder="ابحث عن عقارك المثالي"
-                    maxLength={200}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                  <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-slate-400 text-xs uppercase tracking-wider">لغة الصفحة</Label>
-                    <div className="flex gap-2">
-                      {(['ar', 'en'] as const).map(l => (
-                        <button key={l} type="button"
-                          onClick={() => updatePageConfig({ page_lang: l })}
-                          className={`flex-1 py-2 rounded-md text-sm font-semibold border transition-colors ${
-                            (pageConfig.page_lang ?? 'ar') === l
-                              ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                              : 'border-slate-700 text-slate-400 hover:border-slate-500'
-                          }`}
-                        >
-                          {l === 'ar' ? '🇸🇦 عربي' : '🇬🇧 English'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-slate-400 text-xs uppercase tracking-wider">نمط قسم الهيرو</Label>
-                    <select
-                      value={pageConfig.hero_style || 'centered'}
-                      onChange={(e) => updatePageConfig({ hero_style: e.target.value as NonNullable<Profile['page_config']>['hero_style'] })}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
-                    >
-                      <option value="centered">مركزي</option>
-                      <option value="split">منقسم</option>
-                      <option value="minimal">بسيط</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-slate-400 text-xs uppercase tracking-wider">نص زر الدعوة (CTA)</Label>
-                    <Input
-                      value={pageConfig.hero_cta_text || ''}
-                      onChange={(e) => updatePageConfig({ hero_cta_text: e.target.value })}
-                      placeholder="تواصل عبر واتساب"
-                      maxLength={80}
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                    <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_cta_text || '').length}/80</p>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">الشعار النصي</Label>
                   <Input
                     value={profile.tagline || ''}
@@ -1373,6 +1303,57 @@ export default function PageBuilderPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-medium text-white">
+                  🔍 محركات البحث والمشاركة
+                </p>
+                <p className="text-xs text-slate-500">هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل</p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">عنوان الصفحة (SEO Title)</Label>
+                  <Input
+                    value={pageConfig.seo_title || ''}
+                    onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    placeholder={`${agencyName || 'اسم منشأتك'}`}
+                    maxLength={120}
+                  />
+                  <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 (يُنصح بـ 60 حرفاً)</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">وصف الصفحة (Meta Description)</Label>
+                  <Textarea
+                    value={pageConfig.seo_description || ''}
+                    onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
+                    placeholder="وصف موجز لمنشأتك يظهر في نتائج البحث..."
+                    rows={3}
+                    maxLength={160}
+                  />
+                  <p className={`text-[11px] text-left ${ (pageConfig.seo_description || '').length > 160 ? 'text-red-400' : 'text-slate-500' }`}>{(pageConfig.seo_description || '').length}/160</p>
+                </div>
+
+                {/* WhatsApp preview */}
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-400 font-medium">معاينة عند المشاركة على واتساب</p>
+                  <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
+                    {profile.cover_url && (
+                      <img src={profile.cover_url} alt="OG preview" className="w-full h-24 object-cover" />
+                    )}
+                    <div className="p-3">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {pageConfig.seo_title || agencyName || 'اسم المنشأة'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
+                        {pageConfig.seo_description || profile.bio || 'وصف المنشأة يظهر هنا'}
+                      </p>
+                      <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             {/* POSTS */}
@@ -1397,21 +1378,20 @@ export default function PageBuilderPage() {
                     <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العرض' : 'إضافة عرض جديد'}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">نوع العرض</Label>
-                        <select value={listingForm.offer_type} onChange={(e) => setListingForm({ ...listingForm, offer_type: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
-                          <option value="sale">{pageConfig.offer_label_1 || 'للبيع'}</option>
-                          <option value="rent">{pageConfig.offer_label_2 || 'للإيجار'}</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">الفئة</Label>
                         <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="مثال: شقة، منتج، خدمة..." />
                       </div>
                     <div className="space-y-1">
-                        <Input value={listingForm.title} onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="فيلا فاخرة..." />
+                        <Label className="text-slate-400 text-xs">الاسم</Label>
+                        <Input
+                          value={listingForm.title}
+                          onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
+                          className="bg-slate-900 border-slate-700 text-white text-sm"
+                          placeholder="اكتب الاسم..."
+                        />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">السعر *</Label>
+                        <Label className="text-slate-400 text-xs">السعر</Label>
                         <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="1000000" />
                       </div>
                       <div className="space-y-1">
@@ -1481,35 +1461,6 @@ export default function PageBuilderPage() {
                       )}
                     </div>
 
-                    {/* Card style */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-400 text-xs">طريقة عرض البطاقة</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { value: 'standard', label: 'عادي', desc: 'h-52', icon: '▬' },
-                          { value: 'featured', label: 'مميز', desc: 'h-72', icon: '◼' },
-                          { value: 'compact', label: 'مضغوط', desc: 'h-32', icon: '▭' },
-                        ].map(opt => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => setListingForm({ ...listingForm, card_style: opt.value })}
-                            className={`rounded-lg border p-2.5 text-center transition-colors ${listingForm.card_style === opt.value ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-500'}`}
-                          >
-                            <div className="text-lg leading-none mb-1">{opt.icon}</div>
-                            <div className="text-xs font-medium">{opt.label}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">الحالة</Label>
-                      <select value={listingForm.status} onChange={(e) => setListingForm({ ...listingForm, status: e.target.value })} className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2 text-sm">
-                        <option value="available">متاح</option>
-                        <option value="sold">مباع</option>
-                        <option value="rented">مؤجر</option>
-                      </select>
-                    </div>
                     <div className="flex items-center justify-between py-1">
                       <div>
                         <p className="text-sm text-white">نشر على الصفحة العامة</p>
@@ -1600,8 +1551,13 @@ export default function PageBuilderPage() {
                         value={(profile as unknown as Record<string, string | undefined>)[key] || ''}
                         onChange={(e) => updateProfile({ [key]: e.target.value })}
                         placeholder={placeholder}
-                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className={`bg-slate-800 text-white placeholder:text-slate-500 pl-9 focus:ring-1 transition-colors ${fieldErrors[key] ? 'border-amber-400 ring-1 ring-amber-400/30 focus:border-amber-400 focus:ring-amber-400/30' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500'}`}
                       />
+                      {fieldErrors[key] && (
+                        <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
+                          <span>⚠</span> {fieldErrors[key]}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1710,13 +1666,13 @@ export default function PageBuilderPage() {
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   🌐 روابط التواصل الاجتماعي
                 </p>
-                <p className="text-xs text-slate-500">الصق روابط ملفاتك الشخصية — ستظهر كأيقونات في صفحتك</p>
+                <p className="text-xs text-slate-500">اكتب اسم المستخدم فقط (بدون رابط) — التطبيق يبني الرابط تلقائياً عند الضغط على الأيقونة</p>
 
                 {([
-                  { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'https://instagram.com/youragency', color: 'text-pink-400'  },
-                  { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'https://x.com/youragency',          color: 'text-sky-400'   },
-                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'https://linkedin.com/company/...',  color: 'text-blue-400'  },
-                  { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp',    placeholder: 'https://wa.me/966500000000',         color: 'text-green-400' },
+                  { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'm6r_dev',              color: 'text-pink-400'  },
+                  { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'm6r_dev',              color: 'text-sky-400'   },
+                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'm6r_dev أو company/..', color: 'text-blue-400'  },
+                  { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp',    placeholder: '966500000000',         color: 'text-green-400' },
                 ] as const).map(({ key, icon: Icon, label, placeholder, color }) => (
                   <div key={key} className="space-y-1.5">
                     <Label className="text-slate-400 text-xs uppercase tracking-wider">{label}</Label>
@@ -1726,8 +1682,13 @@ export default function PageBuilderPage() {
                         value={profile.social_links?.[key] || ''}
                         onChange={(e) => updateSocial(key, e.target.value)}
                         placeholder={placeholder}
-                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className={`bg-slate-800 text-white placeholder:text-slate-500 pl-9 focus:ring-1 transition-colors ${fieldErrors[key] ? 'border-amber-400 ring-1 ring-amber-400/30 focus:border-amber-400 focus:ring-amber-400/30' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500'}`}
                       />
+                      {fieldErrors[key] && (
+                        <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
+                          <span>⚠</span> {fieldErrors[key]}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1740,7 +1701,7 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.snapchat || ''}
                       onChange={(e) => updateSocial('snapchat', e.target.value)}
-                      placeholder="اسم المستخدم أو https://snapchat.com/add/..."
+                      placeholder="m6r_dev"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -1758,144 +1719,50 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.tiktok || ''}
                       onChange={(e) => updateSocial('tiktok', e.target.value)}
-                      placeholder="اسم المستخدم أو https://tiktok.com/@..."
+                      placeholder="m6r_dev"
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Telegram */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">Telegram</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-sky-400">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                      </svg>
+                    </span>
+                    <Input
+                      value={profile.social_links?.telegram || ''}
+                      onChange={(e) => updateSocial('telegram', e.target.value)}
+                      placeholder="m6r_dev"
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Discord */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">Discord</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-indigo-400">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                      </svg>
+                    </span>
+                    <Input
+                      value={profile.social_links?.discord || ''}
+                      onChange={(e) => updateSocial('discord', e.target.value)}
+                      placeholder="username or server invite"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🔍 محركات البحث والمشاركة
-                </p>
-                <p className="text-xs text-slate-500">هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل</p>
 
-                <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">عنوان الصفحة (SEO Title)</Label>
-                  <Input
-                    value={pageConfig.seo_title || ''}
-                    onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                    placeholder={`${agencyName || 'اسم منشأتك'}`}
-                    maxLength={120}
-                  />
-                  <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 (يُنصح بـ 60 حرفاً)</p>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">وصف الصفحة (Meta Description)</Label>
-                  <Textarea
-                    value={pageConfig.seo_description || ''}
-                    onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
-                    placeholder="وصف موجز لمنشأتك يظهر في نتائج البحث..."
-                    rows={3}
-                    maxLength={160}
-                  />
-                  <p className={`text-[11px] text-left ${ (pageConfig.seo_description || '').length > 160 ? 'text-red-400' : 'text-slate-500' }`}>{(pageConfig.seo_description || '').length}/160</p>
-                </div>
-
-                {/* WhatsApp preview */}
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-400 font-medium">معاينة عند المشاركة على واتساب</p>
-                  <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
-                    {profile.cover_url && (
-                      <img src={profile.cover_url} alt="OG preview" className="w-full h-24 object-cover" />
-                    )}
-                    <div className="p-3">
-                      <p className="text-sm font-semibold text-white truncate">
-                        {pageConfig.seo_title || agencyName || 'اسم المنشأة'}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
-                        {pageConfig.seo_description || profile.bio || 'وصف المنشأة يظهر هنا'}
-                      </p>
-                      <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </TabsContent>
-              {/* ── ACCOUNT: domain + password ── */}
-              <TabsContent value="account" className="mt-4 space-y-4">
-
-                {/* Custom Domain */}
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                  <p className="flex items-center gap-2 text-sm font-medium text-white">
-                    🌐 دومين مخصص
-                  </p>
-                  <p className="text-xs text-slate-500">اربط نطاقك الخاص بصفحتك العامة</p>
-                  <Input
-                    value={customDomain}
-                    onChange={(e) => setCustomDomain(e.target.value)}
-                    placeholder="yourcompany.com"
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                  <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs text-slate-400 space-y-1.5">
-                    <p className="text-slate-300 font-medium">إعداد DNS</p>
-                    <p>أضف سجل CNAME في مزود النطاق يشير إلى:</p>
-                    <code className="block bg-black/40 rounded px-2 py-1.5 text-green-400 font-mono">{`CNAME  @  →  ${typeof window !== 'undefined' ? window.location.hostname : 'your-app.hosted.app'}`}</code>
-                    <p className="text-slate-500">قد يستغرق الأمر 48 ساعة للانتشار.</p>
-                  </div>
-                  <Button onClick={handleSaveDomain} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    حفظ الدومين
-                  </Button>
-                </div>
-
-                {/* Change Password */}
-                {!(typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true') && (
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                    <p className="flex items-center gap-2 text-sm font-medium text-white">
-                      <Lock className="h-4 w-4" /> تغيير كلمة المرور
-                    </p>
-                    <div className="space-y-1.5">
-                      <Label className="text-slate-400 text-xs uppercase tracking-wider">كلمة المرور الحالية</Label>
-                      <Input
-                        type="password"
-                        value={pwdForm.current}
-                        onChange={(e) => setPwdForm((p) => ({ ...p, current: e.target.value }))}
-                        autoComplete="current-password"
-                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-slate-400 text-xs uppercase tracking-wider">كلمة المرور الجديدة</Label>
-                      <Input
-                        type="password"
-                        value={pwdForm.next}
-                        onChange={(e) => setPwdForm((p) => ({ ...p, next: e.target.value }))}
-                        autoComplete="new-password"
-                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-slate-400 text-xs uppercase tracking-wider">تأكيد كلمة المرور الجديدة</Label>
-                      <Input
-                        type="password"
-                        value={pwdForm.confirm}
-                        onChange={(e) => setPwdForm((p) => ({ ...p, confirm: e.target.value }))}
-                        autoComplete="new-password"
-                        className="bg-slate-800 border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <Button
-                      onClick={handleChangePassword}
-                      disabled={pwdSaving || !pwdForm.current || !pwdForm.next || pwdForm.next !== pwdForm.confirm || pwdForm.next.length < 8}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white gap-2 disabled:opacity-50"
-                    >
-                      {pwdSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
-                      تغيير كلمة المرور
-                    </Button>
-                    {pwdForm.next && pwdForm.confirm && pwdForm.next !== pwdForm.confirm && (
-                      <p className="text-xs text-red-400">كلمتا المرور غير متطابقتين</p>
-                    )}
-                    {pwdForm.next && pwdForm.next.length < 8 && (
-                      <p className="text-xs text-amber-400">يجب أن تكون 8 أحرف على الأقل</p>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-
           </Tabs>
 
           {/* Save button + status + completion checklist */}
@@ -1915,10 +1782,11 @@ export default function PageBuilderPage() {
                   <CheckCircle2 className="h-4 w-4" /> تم الحفظ تلقائياً
                 </span>
               )}
-              {saveStatus === 'error' && (
-                <span className="flex items-center gap-1.5 text-sm text-red-400">
-                  <AlertCircle className="h-4 w-4" /> {saveError}
-                </span>
+              {saveStatus === 'error' && saveError && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300 text-sm max-w-sm">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+                  <span>{saveError}</span>
+                </div>
               )}
               {dirty && saveStatus === 'idle' && (
                 <span className="text-xs text-slate-500">يُحفظ تلقائياً بعد 2.5 ثانية من آخر تغيير</span>
@@ -1941,15 +1809,7 @@ export default function PageBuilderPage() {
               </div>
             </div>
 
-            <div className="px-3 py-2 flex items-center gap-2" style={{ backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="flex gap-1">
-                <span className="h-2 w-2 rounded-full bg-red-500/70 inline-block" />
-                <span className="h-2 w-2 rounded-full bg-yellow-500/70 inline-block" />
-                <span className="h-2 w-2 rounded-full bg-green-500/70 inline-block" />
-              </div>
-              <div className="flex-1 rounded text-[10px] px-2 py-0.5 truncate font-mono bg-slate-800 text-slate-400">
-                {publicUrl}
-              </div>
+            <div className="px-3 py-2 flex items-center justify-end gap-2" style={{ backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {/* Device toggle */}
               <div className="flex items-center gap-0.5 shrink-0">
                 <button
