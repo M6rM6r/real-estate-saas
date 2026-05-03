@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     name: z.string().min(1).max(100),
     slug: z.string().min(1).max(60).regex(/^[a-z0-9-]+$/),
     email: z.string().email(),
-    tempPassword: z.string().min(8),
+    tempPassword: z.string().min(6),
     primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#3B82F6'),
   })
 

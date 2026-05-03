@@ -349,7 +349,7 @@ export default function AdminTenantsPage() {
                   <Label className="text-[#00ff41]/60 text-sm">Temporary Password</Label>
                   <Input
                     type="text"
-                    placeholder="Min 8 characters"
+                    placeholder="Min 6 characters"
                     value={form.tempPassword}
                     onChange={(e) => setForm({ ...form, tempPassword: e.target.value })}
                     className="bg-[#0a0a0a] border-[#00ff41]/20 text-[#00ff41] placeholder:text-[#00ff41]/20 focus:border-[#00ff41]/50"
