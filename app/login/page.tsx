@@ -7,16 +7,62 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader as Loader2, Building2, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Loader as Loader2, Building2, Sparkles, ArrowRight, Eye, EyeOff, Globe } from 'lucide-react';
 
+type Lang = 'ar' | 'en';
+
+const translations = {
+  ar: {
+    tagline: '"عروضك.\nعلامتك.\nعملاؤك."',
+    subtitle: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
+    demoBadge: 'معاينة مجانية',
+    noAccount: 'لا حاجة لحساب',
+    demoTitle: 'جرّب النسخة التجريبية',
+    demoDesc: 'استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.',
+    enterDemo: 'ادخل التجربة',
+    agencyLogin: 'تسجيل دخول الوكالة',
+    haveAccount: 'هل لديك حساب؟ سجّل دخولك أدناه.',
+    email: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    emailPlaceholder: 'you@agency.com',
+    passwordPlaceholder: 'أدخل كلمة المرور',
+    login: 'تسجيل الدخول',
+    hidePassword: 'إخفاء كلمة المرور',
+    showPassword: 'إظهار كلمة المرور',
+    loginFailed: 'Login failed',
+  },
+  en: {
+    tagline: '"Your Listings.\nYour Brand.\nYour Clients."',
+    subtitle: 'The professional platform for managing modern business pages.',
+    demoBadge: 'Free Preview',
+    noAccount: 'No account needed',
+    demoTitle: 'Try the Demo',
+    demoDesc: 'Explore the full dashboard — listings, your business page — with ready demo data.',
+    enterDemo: 'Enter Demo',
+    agencyLogin: 'Agency Login',
+    haveAccount: 'Have an account? Sign in below.',
+    email: 'Email Address',
+    password: 'Password',
+    emailPlaceholder: 'you@agency.com',
+    passwordPlaceholder: 'Enter your password',
+    login: 'Sign In',
+    hidePassword: 'Hide password',
+    showPassword: 'Show password',
+    loginFailed: 'Login failed',
+  },
+};
 
 export default function LoginPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Lang>('ar');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const t = translations[lang];
+  const isRTL = lang === 'ar';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +84,7 @@ export default function LoginPage() {
       }
       router.push('/dashboard');
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Login failed');
+      setError(e instanceof Error ? e.message : t.loginFailed);
     } finally {
       setLoading(false);
     }
@@ -69,17 +115,28 @@ export default function LoginPage() {
             <span className="font-bold text-xl tracking-tight">Rew</span>
           </div>
           <div>
-            <blockquote className="text-4xl font-bold leading-tight mb-4" dir="rtl">
-              &ldquo;عروضك.<br />علامتك.<br />عملاؤك.&rdquo;
+            <blockquote className="text-4xl font-bold leading-tight mb-4 whitespace-pre-line" dir={isRTL ? 'rtl' : 'ltr'}>
+              &ldquo;{t.tagline.replace(/"/g, '').replace(/\n/g, '.\n')}&rdquo;
             </blockquote>
-            <p className="text-blue-300 text-sm" dir="rtl">المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.</p>
+            <p className="text-blue-300 text-sm" dir={isRTL ? 'rtl' : 'ltr'}>{t.subtitle}</p>
           </div>
         </div>
       </div>
 
-      {/* Right form panel — Arabic RTL content */}
-      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12" dir="rtl">
+      {/* Right form panel */}
+      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="w-full max-w-md space-y-6">
+
+          {/* ── Language Toggle ── */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors"
+            >
+              <Globe className="h-4 w-4" />
+              {lang === 'ar' ? 'English' : 'العربية'}
+            </button>
+          </div>
 
           {/* ── Demo CTA ── */}
           <div className="relative rounded-2xl overflow-hidden">
@@ -88,21 +145,21 @@ export default function LoginPage() {
             <div className="relative p-6 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-xs font-semibold px-2.5 py-1 rounded-full">
-                  <Sparkles className="h-3 w-3" /> معاينة مجانية
+                  <Sparkles className="h-3 w-3" /> {t.demoBadge}
                 </span>
-                <span className="text-white/60 text-xs">لا حاجة لحساب</span>
+                <span className="text-white/60 text-xs">{t.noAccount}</span>
               </div>
-              <h2 className="text-xl font-bold mb-1">جرّب النسخة التجريبية</h2>
+              <h2 className="text-xl font-bold mb-1">{t.demoTitle}</h2>
               <p className="text-white/70 text-sm mb-5 leading-relaxed">
-                استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.
+                {t.demoDesc}
               </p>
               <button
                 type="button"
                 onClick={handleDemo}
                 className="group flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
               >
-                <ArrowRight className="h-4 w-4 group-hover:-translate-x-1 transition-transform rotate-180" />
-                ادخل التجربة
+                <ArrowRight className={`h-4 w-4 group-hover:-translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
+                {t.enterDemo}
                 <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
               </button>
             </div>
@@ -111,15 +168,15 @@ export default function LoginPage() {
           {/* ── Sign-in form ── */}
           <Card className="bg-[#12121a] border-gray-800">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg text-white">تسجيل دخول الوكالة</CardTitle>
+              <CardTitle className="text-lg text-white">{t.agencyLogin}</CardTitle>
               <CardDescription className="text-gray-500 text-sm">
-                هل لديك حساب؟ سجّل دخولك أدناه.
+                {t.haveAccount}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300 block">البريد الإلكتروني</Label>
+                  <Label htmlFor="email" className="text-gray-300 block">{t.email}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -128,11 +185,11 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     dir="ltr"
                     className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left"
-                    placeholder="you@agency.com"
+                    placeholder={t.emailPlaceholder}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-300 block">كلمة المرور</Label>
+                  <Label htmlFor="password" className="text-gray-300 block">{t.password}</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -142,14 +199,14 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       dir="ltr"
                       className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left pr-10"
-                      placeholder="أدخل كلمة المرور"
+                      placeholder={t.passwordPlaceholder}
                       aria-describedby={error ? 'login-error' : undefined}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
-                      aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                      aria-label={showPassword ? t.hidePassword : t.showPassword}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -162,7 +219,7 @@ export default function LoginPage() {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                  تسجيل الدخول
+                  {t.login}
                 </Button>
               </form>
             </CardContent>
