@@ -36,8 +36,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center px-4 font-mono">
-      <Card className="w-full max-w-md bg-[#111] border-[#00ff41]/30">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 font-mono relative"
+      style={{ backgroundImage: "url('/gemini-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+    >
+      <div className="absolute inset-0 bg-black/65" />
+      <div className="relative z-10 w-full flex items-center justify-center">
+      <Card className="w-full max-w-md bg-[#111]/80 border-[#00ff41]/30 backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 rounded-xl bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center mb-4">
             <Shield className="h-6 w-6 text-[#00ff41]" />
@@ -91,6 +96,7 @@ export default function AdminLoginPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
