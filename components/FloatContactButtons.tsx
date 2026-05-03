@@ -1,5 +1,7 @@
 'use client';
 
+import { buildWhatsAppLink } from '@/lib/whatsapp';
+
 interface FloatContactButtonsProps {
   whatsapp?: string;
   phone?: string;
@@ -9,9 +11,7 @@ interface FloatContactButtonsProps {
 export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }: FloatContactButtonsProps) {
   if (!whatsapp && !phone) return null;
 
-  const waLink = whatsapp
-    ? `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('مرحباً، أريد الاستفسار')}`
-    : null;
+  const waLink = whatsapp ? buildWhatsAppLink(whatsapp, 'مرحباً، أريد الاستفسار') : null;
 
   return (
     <>

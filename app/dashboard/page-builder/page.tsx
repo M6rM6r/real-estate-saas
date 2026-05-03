@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { normalizeWhatsAppTarget } from '@/lib/whatsapp';
 
 type ProfileResponse = {
   profile: Profile | null;
@@ -463,7 +464,7 @@ export default function PageBuilderPage() {
             instagram: 'https://instagram.com/luxuryhomesdubai',
             x: 'https://x.com/luxuryhomesdubai',
             linkedin: 'https://linkedin.com/company/luxuryhomesdubai',
-            whatsapp: 'https://wa.me/971501234567',
+            whatsapp: '971501234567',
             snapchat: 'https://snapchat.com/add/luxuryhomesdubai',
             tiktok: 'https://tiktok.com/@luxuryhomesdubai',
           },
@@ -570,6 +571,17 @@ export default function PageBuilderPage() {
     }));
     markDirty();
     setFieldErrors((prev) => { const n = { ...prev }; delete n[key]; return n; });
+  };
+
+  const normalizeWhatsappInput = () => {
+    const current = profile.social_links?.whatsapp || '';
+    const normalized = normalizeWhatsAppTarget(current) || '';
+    if (normalized === current) return;
+    setProfile((prev) => ({
+      ...prev,
+      social_links: { ...prev.social_links, whatsapp: normalized },
+    }));
+    markDirty();
   };
 
   const toggleSection = (key: keyof NonNullable<Profile['page_sections']>) => {
@@ -1681,9 +1693,15 @@ export default function PageBuilderPage() {
                       <Input
                         value={profile.social_links?.[key] || ''}
                         onChange={(e) => updateSocial(key, e.target.value)}
+                        onBlur={() => {
+                          if (key === 'whatsapp') normalizeWhatsappInput();
+                        }}
                         placeholder={placeholder}
                         className={`bg-slate-800 text-white placeholder:text-slate-500 pl-9 focus:ring-1 transition-colors ${fieldErrors[key] ? 'border-amber-400 ring-1 ring-amber-400/30 focus:border-amber-400 focus:ring-amber-400/30' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500'}`}
                       />
+                      {key === 'whatsapp' && (
+                        <p className="mt-1 text-[11px] text-slate-500">يمكنك إدخال رقم الهاتف أو رابط واتساب، وسيتم تحويله تلقائياً.</p>
+                      )}
                       {fieldErrors[key] && (
                         <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
                           <span>⚠</span> {fieldErrors[key]}

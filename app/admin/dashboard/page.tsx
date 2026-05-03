@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { AdminMetrics } from '@/lib/types';
-import { Building2, FileText, Image, ExternalLink, TrendingUp } from 'lucide-react';
+import { Building2, FileText, Image, ExternalLink, TrendingUp, Sparkles } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -42,6 +42,21 @@ export default function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-[#00ff41]">{'> Overview_'}</h1>
         <p className="text-[#00ff41]/40 text-sm mt-1">Platform-wide metrics and activity</p>
+      </div>
+
+      <div className="bg-[#0d0d0d] border border-[#00ff41]/20 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-[#00ff41] text-sm font-semibold inline-flex items-center gap-2">
+            <Sparkles className="h-4 w-4" /> Sales Demo Catalog
+          </p>
+          <p className="text-[#00ff41]/45 text-xs mt-1">One-click access to polished demo cards with screenshots and direct links.</p>
+        </div>
+        <a
+          href="/admin/demo-catalog"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20 text-[#00ff41] text-sm transition-colors"
+        >
+          Open Catalog <ExternalLink className="h-3.5 w-3.5" />
+        </a>
       </div>
 
       {/* Stat Cards */}

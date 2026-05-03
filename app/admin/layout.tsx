@@ -2,11 +2,12 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart3, Users, ScrollText, LogOut, Shield, Menu, X, Building2, Terminal } from 'lucide-react';
+import { BarChart3, Users, ScrollText, LogOut, Shield, Menu, X, Building2, Terminal, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
+  { href: '/admin/demo-catalog', label: 'Demo Catalog', icon: Sparkles },
   { href: '/admin/tenants', label: 'Tenants', icon: Users },
   { href: '/admin/logs', label: 'Logs', icon: ScrollText },
 ];

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { buildWhatsAppLink } from '@/lib/whatsapp'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -254,7 +255,7 @@ export function buildWaLink(tenant: Tenant, profile: Profile, lang: 'ar' | 'en' 
   const wa = profile?.social_links?.whatsapp
   if (!wa) return '#'
   const msg = THEME_LABELS[lang].waMessage(tenant.name)
-  return `https://wa.me/${wa.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`
+  return buildWhatsAppLink(wa, msg)
 }
 
 export function getBtnRadius(buttonShape: string, themeRadius: string) {

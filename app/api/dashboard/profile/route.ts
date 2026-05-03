@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
+import { normalizeWhatsAppTarget } from '@/lib/whatsapp'
 import { z } from 'zod'
 
 const emptyToNull = (v: unknown) => {
@@ -37,7 +38,7 @@ const ProfileDataSchema = z.object({
     instagram: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     x: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     linkedin: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
-    whatsapp: z.preprocess(emptyToNull, z.string().max(30).nullable().optional()),
+    whatsapp: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
     snapchat: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     tiktok: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
     telegram: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
@@ -156,7 +157,14 @@ export async function PATCH(request: NextRequest) {
     .doc(session.tenantId)
 
   if (profileFields && Object.keys(profileFields).length > 0) {
-    await ref.set({ ...profileFields, updatedAt: new Date() }, { merge: true })
+    const normalizedProfile: Record<string, unknown> = { ...profileFields }
+    if (profileFields.social_links) {
+      normalizedProfile.social_links = {
+        ...profileFields.social_links,
+        whatsapp: normalizeWhatsAppTarget(profileFields.social_links.whatsapp ?? null),
+      }
+    }
+    await ref.set({ ...normalizedProfile, updatedAt: new Date() }, { merge: true })
   }
 
   const tenantUpdate: Record<string, unknown> = {}
