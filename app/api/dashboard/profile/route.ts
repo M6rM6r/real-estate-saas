@@ -61,6 +61,8 @@ const ProfileDataSchema = z.object({
     team: z.boolean().optional(),
     contact: z.boolean().optional(),
     footer: z.boolean().optional(),
+    working_hours: z.boolean().optional(),
+    order: z.array(z.enum(['hero', 'listings', 'about', 'news', 'contact', 'working_hours', 'footer'])).optional(),
   }).optional(),
   page_config: z.object({
     hero_headline: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),

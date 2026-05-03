@@ -242,7 +242,7 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                   <span className="text-xs text-slate-400 shrink-0 flex items-center gap-1">
-                    <Eye className="h-3 w-3" /> {item.views.toLocaleString()}
+                    <Eye className="h-3 w-3" /> {item.views.toLocaleString('en-US')}
                   </span>
                 </div>
               )

@@ -21,7 +21,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, THEME_LABELS,
 } from './shared'
 
@@ -32,6 +32,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
@@ -78,7 +79,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         .lux-border { border-color: var(--lux-gold) !important; }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
 
         {/* Sticky minimal nav */}
         <nav className={`fixed inset-x-0 z-40 transition-all duration-500 top-0 ${scrolled ? 'bg-black/90 backdrop-blur border-b border-yellow-900/30' : 'bg-transparent'}`}>
@@ -99,7 +100,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — full bleed, no card */}
         {sections.hero && (
-          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" priority />
             ) : (
@@ -150,7 +151,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="listings" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.listings }}>
             <div className="max-w-6xl mx-auto">
               <div className="flex items-baseline justify-between mb-10">
               </div>
@@ -177,7 +178,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       </h3>
                       {featured.price != null && (
                         <p className="text-2xl font-bold mb-4" style={{ color: primary }}>
-                          {featured.price.toLocaleString('ar-SA')} {CURRENCY_SYMBOLS[currency] ?? currency}
+                          {featured.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}
                         </p>
                       )}
                       {featured.location && <p className="text-sm text-gray-500 mb-4">📍 {featured.location}</p>}
@@ -215,7 +216,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       </div>
                       <div className="p-5">
                         <h3 className="font-semibold mb-2 text-gray-200">{l.title}</h3>
-                        {l.price != null && <p className="font-bold text-lg mb-1" style={{ color: primary }}>{l.price.toLocaleString('ar-SA')} {CURRENCY_SYMBOLS[currency] ?? currency}</p>}
+                        {l.price != null && <p className="font-bold text-lg mb-1" style={{ color: primary }}>{l.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}</p>}
                         {l.location && <p className="text-xs text-gray-600 mb-3">📍 {l.location}</p>}
                         <div className="flex gap-3 text-xs text-gray-600">
                           {l.bedrooms != null && <span>🛏 {l.bedrooms}</span>}
@@ -233,7 +234,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* News — typography list */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: '#0d0d0d' }}>
+          <section data-section="news" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.news }}>
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-10">
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
@@ -248,7 +249,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                     </span>
                     <div>
                       <p className="text-xs tracking-widest uppercase mb-2 text-gray-600">
-                        {new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
                       <h3 className="text-lg font-semibold mb-2 text-gray-200">{item.title}</h3>
                       {item.body && <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{item.body}</p>}
@@ -262,7 +263,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* About — quote style */}
         {sections.about && profile?.bio && (
-          <section data-section="about" className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="about" className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.about }}>
             <div className="max-w-2xl mx-auto">
               <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: primary }} />
               <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
@@ -287,7 +288,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Contact — minimal */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email || profile?.contact_address) && (
-        <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d' }}>
+        <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.contact }}>
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>
               {L.contactHeading}
@@ -308,7 +309,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d' }}>
+          <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.working_hours }}>
             <div className="max-w-2xl mx-auto">
               <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div style={{ backgroundColor: '#111', padding: '16px', borderRadius: '8px', border: `1px solid ${primary}30` }}>
@@ -320,7 +321,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Footer — slim single row */}
         {sections.footer && (
-          <footer className="py-6 px-6 border-t" style={{ backgroundColor: '#0a0a0a', borderColor: `${primary}20` }}>
+          <footer className="py-6 px-6 border-t" style={{ backgroundColor: '#0a0a0a', borderColor: `${primary}20`, order: sectionOrder.footer }}>
             <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
               <span className="tracking-widest uppercase">{tenant.name} © {new Date().getFullYear()}</span>
               <SocialLinks profile={profile} waLink={waLink} />

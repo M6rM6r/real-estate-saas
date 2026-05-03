@@ -8,7 +8,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
 } from './shared'
 
@@ -19,6 +19,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
 
@@ -85,7 +86,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
@@ -108,7 +109,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-[68vh] sm:min-h-[72vh] lg:min-h-[88vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
+          <section data-section="hero" className={`min-h-[68vh] sm:min-h-[72vh] lg:min-h-[88vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
             <div className="relative flex-1 min-h-[26vh] sm:min-h-[32vh] lg:min-h-[88vh]">
               {profile?.cover_url
                 ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
@@ -128,7 +129,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className="pb-12 sm:pb-14 px-4 text-center pt-24 sm:pt-28" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className="pb-12 sm:pb-14 px-4 text-center pt-24 sm:pt-28" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -140,7 +141,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
           <section data-section="hero" className="relative min-h-[72dvh] sm:min-h-[82dvh] lg:min-h-[92dvh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24"
-            style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            style={{ order: sectionOrder.hero, background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
               <div className="border rounded-2xl px-4 sm:px-6 py-6 sm:py-8 shadow-2xl mx-auto backdrop-blur-md mid-glow"
@@ -162,7 +163,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
 
@@ -220,7 +221,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="mid-reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="mid-reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
@@ -244,7 +245,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* About + Contact (combined layout) */}
         {(sections.about || (sections.contact && hasContactInfo)) && (
-          <section data-section="about" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="about" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
               {sections.about && (
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
@@ -286,7 +287,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="bg-slate-900/50 rounded-lg p-6 text-sm text-slate-300 border border-slate-700">
@@ -298,7 +299,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ backgroundColor: '#080612', borderTop: `1px solid ${pageTheme.navBorder}` }}>
+          <footer className="py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ backgroundColor: '#080612', borderTop: `1px solid ${pageTheme.navBorder}`, order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={64} height={64} className="w-16 h-16 object-contain mb-3 rounded" />}

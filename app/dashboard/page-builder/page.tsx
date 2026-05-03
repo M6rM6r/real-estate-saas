@@ -20,6 +20,9 @@ import {
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal,
 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import 'react-image-crop/dist/ReactCrop.css';
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp';
 
@@ -287,11 +290,80 @@ const DEFAULT_PAGE_SECTIONS: NonNullable<Profile['page_sections']> = {
   hero: true,
   listings: true,
   about: true,
-  news: true,
+  news: false,
   contact: true,
   working_hours: true,
   footer: true,
+  order: ['hero', 'listings', 'about', 'contact', 'working_hours', 'footer'],
 };
+
+const SECTION_ORDER_KEYS = ['hero', 'listings', 'about', 'contact', 'working_hours', 'footer'] as const;
+type SectionOrderKey = (typeof SECTION_ORDER_KEYS)[number];
+
+const SECTION_ORDER_LABELS: Record<SectionOrderKey, { icon: string; label: string }> = {
+  hero: { icon: '🏠', label: 'القسم الرئيسي' },
+  listings: { icon: '🏘️', label: 'العروض' },
+  about: { icon: '👥', label: 'من نحن' },
+  contact: { icon: '📞', label: 'تواصل معنا' },
+  working_hours: { icon: '🕒', label: 'أوقات العمل' },
+  footer: { icon: '▬', label: 'التذييل' },
+};
+
+function normalizeSectionOrder(order?: string[]): SectionOrderKey[] {
+  const fromProfile = Array.isArray(order)
+    ? order.filter((k): k is SectionOrderKey => SECTION_ORDER_KEYS.includes(k as SectionOrderKey))
+    : [];
+
+  return Array.from(new Set([...fromProfile, ...SECTION_ORDER_KEYS]));
+}
+
+function SortableSectionRow({
+  sectionKey,
+  enabled,
+  onToggle,
+}: {
+  sectionKey: SectionOrderKey;
+  enabled: boolean;
+  onToggle: (key: SectionOrderKey) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="px-4 py-2.5 flex items-center justify-between gap-3 border-b last:border-b-0 border-slate-800/60"
+    >
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="إعادة ترتيب القسم"
+          className="text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          ☰
+        </button>
+        <span className="w-5 text-center">{SECTION_ORDER_LABELS[sectionKey].icon}</span>
+        <span className="text-sm text-slate-200">{SECTION_ORDER_LABELS[sectionKey].label}</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onToggle(sectionKey)}
+        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${enabled ? 'bg-blue-600' : 'bg-slate-700'}`}
+        aria-pressed={enabled}
+      >
+        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${enabled ? 'translate-x-4' : 'translate-x-1'}`} />
+      </button>
+    </div>
+  );
+}
 
 const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   hero_headline: 'مرحباً بكم',
@@ -433,6 +505,7 @@ export default function PageBuilderPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const profileCompletionItems = [
     { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
@@ -492,7 +565,7 @@ export default function PageBuilderPage() {
       setData(d);
       setProfile({
         ...d.profile,
-        page_sections: DEFAULT_PAGE_SECTIONS,
+        page_sections: { ...DEFAULT_PAGE_SECTIONS, news: false },
         page_config: {
           ...DEFAULT_PAGE_CONFIG,
           hero_headline: 'اكتشف منزل أحلامك في دبي',
@@ -526,7 +599,7 @@ export default function PageBuilderPage() {
           setProfile({
             ...profileRes.profile,
             working_hours: { ...WORKING_HOURS_DEFAULT, ...(profileRes.profile.working_hours ?? {}) },
-            page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(profileRes.profile.page_sections ?? {}) },
+            page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(profileRes.profile.page_sections ?? {}), news: false },
             page_config: { ...DEFAULT_PAGE_CONFIG, ...(profileRes.profile.page_config ?? {}) },
           });
         }
@@ -584,7 +657,7 @@ export default function PageBuilderPage() {
     markDirty();
   };
 
-  const toggleSection = (key: keyof NonNullable<Profile['page_sections']>) => {
+  const toggleSection = (key: SectionOrderKey) => {
     setProfile((prev) => ({
       ...prev,
       page_sections: {
@@ -594,6 +667,31 @@ export default function PageBuilderPage() {
       },
     }));
     markDirty();
+  };
+
+  const getCurrentSectionOrder = () => normalizeSectionOrder(profile.page_sections?.order as string[] | undefined);
+
+  const setSectionOrder = (nextOrder: SectionOrderKey[]) => {
+    setProfile((prev) => ({
+      ...prev,
+      page_sections: {
+        ...DEFAULT_PAGE_SECTIONS,
+        ...(prev.page_sections ?? {}),
+        order: nextOrder,
+      },
+    }));
+    markDirty();
+  };
+
+  const handleSectionDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const current = getCurrentSectionOrder();
+    const oldIndex = current.indexOf(active.id as SectionOrderKey);
+    const newIndex = current.indexOf(over.id as SectionOrderKey);
+    if (oldIndex < 0 || newIndex < 0) return;
+    setSectionOrder(arrayMove(current, oldIndex, newIndex));
   };
 
   const updatePageConfig = (patch: Partial<NonNullable<Profile['page_config']>>) => {
@@ -954,42 +1052,23 @@ export default function PageBuilderPage() {
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
                   </div>
+                  <p className="text-xs text-slate-500">اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.</p>
                 </div>
 
-                <div className="divide-y divide-slate-800/60">
-                  <div className="px-4 py-2.5 space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleSection('hero')}
-                      className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors"
-                      aria-pressed={sections.hero}
-                    >
-                      <span className="flex items-center gap-2"><span className="w-5 text-center">🏠</span><span>القسم الرئيسي</span></span>
-                      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections.hero ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections.hero ? 'translate-x-4' : 'translate-x-1'}`} />
-                      </span>
-                    </button>
-                  </div>
-
-
-
-                  {([
-                    ['listings','🏘️', 'العروض'],
-                    ['about',   '👥', 'من نحن'],
-                    ['contact', '📞', 'تواصل معنا'],
-                    ['working_hours', '🕒', 'أوقات العمل'],
-                    ['footer',  '▬',  'التذييل'],
-                  ] as const).map(([key, icon, label]) => (
-                    <div key={key} className="px-4 py-2.5">
-                      <button type="button" onClick={() => toggleSection(key)} className="w-full flex items-center justify-between text-sm text-slate-200 hover:text-white transition-colors" aria-pressed={sections[key]}>
-                        <span className="flex items-center gap-2"><span className="w-5 text-center">{icon}</span><span>{label}</span></span>
-                        <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sections[key] ? 'bg-blue-600' : 'bg-slate-700'}`}>
-                          <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${sections[key] ? 'translate-x-4' : 'translate-x-1'}`} />
-                        </span>
-                      </button>
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+                  <SortableContext items={getCurrentSectionOrder()} strategy={verticalListSortingStrategy}>
+                    <div>
+                      {getCurrentSectionOrder().map((sectionKey) => (
+                        <SortableSectionRow
+                          key={sectionKey}
+                          sectionKey={sectionKey}
+                          enabled={Boolean(sections[sectionKey])}
+                          onToggle={(key) => toggleSection(key)}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">

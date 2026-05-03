@@ -21,7 +21,6 @@ export default async function Image({ params }: { params: { slug: string } }) {
     const profile = profilesSnap.empty ? null : (profilesSnap.docs[0].data() as any)
 
     const primaryColor = tenant.primary_color || '#2563eb'
-    const logoUrl = profile?.logoUrl || profile?.logo_url
     const coverUrl = profile?.coverUrl || profile?.cover_url
     const tagline = profile?.tagline || 'Leading Business Experiences'
 
@@ -30,16 +29,17 @@ export default async function Image({ params }: { params: { slug: string } }) {
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             height: '100%',
             width: '100%',
-            backgroundColor: '#ffffff',
+            backgroundColor: '#0b1220',
             backgroundImage: coverUrl ? `url(${coverUrl})` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          {/* Overlay */}
           <div
             style={{
               position: 'absolute',
@@ -47,11 +47,11 @@ export default async function Image({ params }: { params: { slug: string } }) {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              background: 'linear-gradient(180deg, rgba(4,10,18,0.52) 0%, rgba(4,10,18,0.88) 100%)',
               display: 'flex',
             }}
           />
-          
+
           <div
             style={{
               display: 'flex',
@@ -64,71 +64,88 @@ export default async function Image({ params }: { params: { slug: string } }) {
               position: 'relative',
             }}
           >
-            {logoUrl && (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                style={{
-                  width: 150,
-                  height: 150,
-                  objectFit: 'contain',
-                  borderRadius: '100px',
-                  backgroundColor: 'white',
-                  padding: '10px',
-                  marginBottom: '20px',
-                  boxShadow: `0 0 20px ${primaryColor}40`,
-                }}
-              />
-            )}
-            
             <h1
               style={{
-                fontSize: '72px',
-                fontWeight: 900,
+                fontSize: '74px',
+                fontWeight: 800,
                 color: 'white',
-                marginBottom: '10px',
+                marginBottom: '12px',
                 textAlign: 'center',
                 letterSpacing: '-1.5px',
+                maxWidth: '1000px',
               }}
             >
               {tenant.name}
             </h1>
-            
+
             <div
               style={{
-                fontSize: '32px',
+                fontSize: '30px',
                 fontWeight: 500,
-                color: primaryColor,
+                color: '#dbeafe',
                 textAlign: 'center',
-                maxWidth: '800px',
+                maxWidth: '900px',
+                lineHeight: 1.3,
               }}
             >
               {tagline}
             </div>
-            
+
             <div
               style={{
                 position: 'absolute',
-                bottom: '40px',
-                fontSize: '24px',
-                fontWeight: 600,
-                color: 'white',
-                opacity: 0.8,
+                top: '28px',
+                right: '32px',
                 display: 'flex',
                 alignItems: 'center',
+                gap: '10px',
+                backgroundColor: 'rgba(2,6,23,0.55)',
+                border: `1px solid ${primaryColor}55`,
+                borderRadius: '9999px',
+                padding: '10px 18px',
               }}
             >
-              Explore Exclusive Offers
+              <div
+                style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '9999px',
+                  backgroundColor: primaryColor,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  color: 'white',
+                }}
+              >
+                REW
+              </span>
             </div>
-            
-            {/* Colorful neon accent bar at bottom */}
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '36px',
+                left: '40px',
+                fontSize: '22px',
+                fontWeight: 500,
+                color: 'white',
+                opacity: 0.9,
+              }}
+            >
+              Discover premium listings
+            </div>
+
             <div
               style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: '12px',
+                height: '10px',
                 backgroundColor: primaryColor,
                 display: 'flex',
               }}

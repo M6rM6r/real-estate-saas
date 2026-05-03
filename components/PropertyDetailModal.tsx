@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, Twitter, MessageCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle } from 'lucide-react';
 import { InquiryForm } from './InquiryForm';
 import type { Post } from '@/lib/types';
 
@@ -21,9 +21,8 @@ const MODAL_LABELS = {
     price: 'السعر',
     priceUnset: 'غير محدد',
     features: 'المميزات',
-    share: 'مشاركة العقار',
+    share: 'مشاركة العرض',
     shareWhatsApp: 'واتساب',
-    shareX: 'X',
     shareCopy: 'نسخ',
     shareCopied: 'تم النسخ',
     inquiry: 'إرسال استفسار',
@@ -44,7 +43,6 @@ const MODAL_LABELS = {
     features: 'Features',
     share: 'Share Listing',
     shareWhatsApp: 'WhatsApp',
-    shareX: 'X',
     shareCopy: 'Copy',
     shareCopied: 'Copied!',
     inquiry: 'Send Inquiry',
@@ -124,12 +122,6 @@ export function PropertyDetailModal({
   const handleWhatsApp = () => {
     const text = encodeURIComponent(`${property.title} - ${getShareUrl()}`);
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleTwitter = () => {
-    const text = encodeURIComponent(property.title);
-    const url = encodeURIComponent(getShareUrl());
-    window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener,noreferrer');
   };
 
   const statusColor: Record<string, string> = {
@@ -371,15 +363,6 @@ export function PropertyDetailModal({
                 >
                   {copied ? <Check className="h-4 w-4 mr-1.5 text-green-400" /> : <Copy className="h-4 w-4 mr-1.5" />}
                   {copied ? L.shareCopied : L.shareCopy}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleTwitter}
-                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-sky-500/10 hover:border-sky-500/40"
-                >
-                  <Twitter className="h-4 w-4 mr-1.5 text-sky-400" />
-                  {L.shareX}
                 </Button>
               </div>
             </div>

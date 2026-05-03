@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -232,7 +233,9 @@ export default function AdminTenantsPage() {
                         <div className="w-8 h-8 rounded-full bg-[#00ff41]/20 border border-[#00ff41]/40 flex items-center justify-center text-[#00ff41] text-xs font-bold shrink-0">
                           {t.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-[#00ff41] font-medium">{t.name}</span>
+                        <Link href={`/admin/tenants/${t.id}`} className="text-[#00ff41] font-medium hover:underline">
+                          {t.name}
+                        </Link>
                       </div>
                     </td>
                     <td className="px-6 py-4">

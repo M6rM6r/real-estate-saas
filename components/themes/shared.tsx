@@ -48,6 +48,7 @@ export type Profile = {
     contact?: boolean
     footer?: boolean
     working_hours?: boolean
+    order?: Array<'hero' | 'listings' | 'about' | 'news' | 'contact' | 'working_hours' | 'footer'>
   } | null
   page_config?: {
     hero_headline?: string
@@ -247,8 +248,30 @@ export function getPageSections(profile: Profile) {
     footer: true,
     contact: true,
     working_hours: true,
+    order: ['hero', 'listings', 'about', 'news', 'contact', 'working_hours', 'footer'] as const,
     ...(profile?.page_sections ?? {}),
   }
+}
+
+export function getSectionOrderMap(profile: Profile) {
+  const sections = getPageSections(profile)
+  const defaultOrder: Array<'hero' | 'listings' | 'about' | 'news' | 'contact' | 'working_hours' | 'footer'> = [
+    'hero',
+    'listings',
+    'about',
+    'news',
+    'contact',
+    'working_hours',
+    'footer',
+  ]
+
+  const rawOrder = sections.order ?? defaultOrder
+  const normalized = Array.from(new Set([...rawOrder, ...defaultOrder]))
+
+  return normalized.reduce<Record<string, number>>((acc, key, index) => {
+    acc[key] = index + 1
+    return acc
+  }, {})
 }
 
 export function buildWaLink(tenant: Tenant, profile: Profile, lang: 'ar' | 'en' = 'ar') {
@@ -774,7 +797,7 @@ export function PropertyCard({
         {listing.price != null && (
           <div className="absolute bottom-0 inset-x-0 px-3 pb-3 flex items-end justify-between">
             <p className="text-white font-bold text-base sm:text-lg leading-none drop-shadow-sm">
-              {listing.price.toLocaleString('ar-SA')}
+              {listing.price.toLocaleString('en-US')}
               <span className="text-xs font-medium opacity-80 mr-1">{CURRENCY_SYMBOLS[currency] ?? currency}</span>
             </p>
             {listing.property_type && (

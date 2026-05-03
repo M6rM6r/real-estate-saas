@@ -19,7 +19,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
@@ -30,6 +30,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
@@ -84,7 +85,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         .dsr-chip-active { background: var(--dsr-primary); color: #fff; border-color: var(--dsr-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
 
         {/* Navbar — minimal */}
         <nav className="fixed inset-x-0 z-40 transition-all duration-400 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
@@ -107,7 +108,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — no card, HUGE text */}
         {sections.hero && (
-          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
@@ -146,7 +147,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Featured listing — wide horizontal */}
         {sections.listings && featured && (
-          <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
             <div className="flex items-baseline justify-between mb-8">
 
             </div>
@@ -171,7 +172,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{featured.title}</h3>
                   {featured.price != null && (
                     <p className="text-2xl font-black dsr-text mb-3">
-                      {featured.price.toLocaleString('ar-SA')} {CURRENCY_SYMBOLS[currency] ?? currency}
+                      {featured.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}
                     </p>
                   )}
                   {featured.location && <p className="text-sm text-gray-400 mb-4">📍 {featured.location}</p>}
@@ -205,7 +206,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     </div>
                     <div className="p-3">
                       <h3 className="text-sm font-bold mb-1 line-clamp-1 text-gray-100">{l.title}</h3>
-                      {l.price != null && <p className="text-sm font-black dsr-text">{l.price.toLocaleString('ar-SA')}</p>}
+                      {l.price != null && <p className="text-sm font-black dsr-text">{l.price.toLocaleString('en-US')}</p>}
                       {l.location && <p className="text-xs text-gray-400 mt-1 line-clamp-1">📍 {l.location}</p>}
                     </div>
                   </button>
@@ -217,7 +218,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* About — warm card */}
         {sections.about && (
-          <section data-section="about" className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="about" className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
             <div className="max-w-5xl mx-auto">
               <div className="border p-8 sm:p-10" style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
                 <div className="flex flex-col sm:flex-row items-start gap-8">
@@ -262,7 +263,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* News — large horizontal cards */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.news }}>
             <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
               {news.map(item => (
@@ -271,7 +272,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     <Image src={(item.image_url || item.images?.[0]) as string} alt={item.title} width={320} height={200} className="w-full h-48 object-cover" />
                   )}
                   <div className="p-5">
-                    <p className="text-xs text-gray-400 mb-2 font-mono">{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-xs text-gray-400 mb-2 font-mono">{new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       <h3 className="font-black text-gray-100 mb-2">{item.title}</h3>
                     {item.body && <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{item.body}</p>}
                   </div>
@@ -283,7 +284,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
@@ -301,7 +302,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: pageTheme.headingFont, color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-gray-900 rounded-lg p-6 text-sm text-gray-400">
@@ -313,7 +314,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Footer — warm dark */}
         {sections.footer && (
-          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: '#1c0d02' }}>
+          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: '#1c0d02', order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-gray-500">
               <div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={56} height={56} className="w-14 h-14 object-contain rounded-full mb-3 opacity-80" />}

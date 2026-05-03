@@ -107,6 +107,7 @@ export type Profile = {
     contact?: boolean;
     working_hours?: boolean;
     footer?: boolean;
+    order?: Array<'hero' | 'listings' | 'about' | 'news' | 'contact' | 'working_hours' | 'footer'>;
   };
   page_config?: {
     hero_headline?: string;

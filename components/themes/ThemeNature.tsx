@@ -19,7 +19,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
@@ -30,6 +30,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
@@ -85,7 +86,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         .nat-chip-active { background: var(--nat-primary); color: #fff; border-color: var(--nat-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
 
 
         {/* Navbar */}
@@ -108,7 +109,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {/* Hero */}
         {sections.hero && (
           <section data-section="hero" className="relative flex items-center justify-center overflow-hidden pt-20 sm:pt-24 pb-20"
-            style={{ background: `linear-gradient(160deg, ${primary}22 0%, ${primary}08 50%, #f0fdf4 100%)` }}>
+            style={{ order: sectionOrder.hero, background: `linear-gradient(160deg, ${primary}22 0%, ${primary}08 50%, #f0fdf4 100%)` }}>
             {profile?.cover_url && (
               <>
                 <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
@@ -153,7 +154,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
 
             {/* Filters */}
             {propertyTypes.length > 0 && (
@@ -181,7 +182,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* News — 3 column grid */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -191,7 +192,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                       <Image src={(item.image_url || item.images?.[0]) as string} alt={item.title} width={400} height={200} className="w-full h-44 object-cover" />
                     )}
                     <div className="p-5">
-                      <p className="text-xs text-gray-400 mb-2">{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-xs text-gray-400 mb-2">{new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       <h3 className="font-bold text-gray-100 mb-2">{item.title}</h3>
                       {item.body && <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{item.body}</p>}
                     </div>
@@ -204,7 +205,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* About + Contact — side by side */}
         {(sections.about || (sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email))) && (
-        <section data-section="about" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto">
+        <section data-section="about" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.about }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* About */}
             {sections.about && (
@@ -253,7 +254,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="nat-reveal py-10 px-6" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="working-hours" className="nat-reveal py-10 px-6" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.working_hours }}>
             <div className="max-w-2xl mx-auto">
               <h3 className="text-xl font-bold text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-white/5 rounded-lg p-6 text-sm text-gray-300 border border-white/10">
@@ -265,7 +266,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: primary }}>
+          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: primary, order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-10 h-10 rounded-full object-contain bg-white p-1" />}

@@ -19,7 +19,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
 } from './shared'
 
@@ -30,6 +30,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
@@ -84,7 +85,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         .ocn-chip-active { background: var(--ocn-primary); color: #fff; border-color: var(--ocn-primary); }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
 
         {/* Sticky nav */}
         <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
@@ -107,7 +108,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Hero — full screen with wave */}
         {sections.hero && (
-          <section data-section="hero" className="relative" style={{ minHeight: '100vh' }}>
+          <section data-section="hero" className="relative" style={{ order: sectionOrder.hero, minHeight: '100vh' }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
@@ -163,7 +164,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
 
             <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
               {(['all', 'available', 'sold', 'rented'] as const).map(f => (
@@ -188,7 +189,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* News — 2 large side by side */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               {/* First 2 as large cards */}
@@ -199,7 +200,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                       <Image src={(item.image_url || item.images?.[0]) as string} alt={item.title} width={600} height={300} className="w-full h-56 sm:h-72 object-cover" />
                     )}
                     <div className="p-6">
-                      <p className="text-xs text-gray-400 mb-2">{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-xs text-gray-400 mb-2">{new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       <h3 className="text-lg font-bold mb-2" style={{ color: '#e0f2fe' }}>{item.title}</h3>
                       {item.body && <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{item.body}</p>}
                     </div>
@@ -213,7 +214,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                     <div key={item.id} className="shrink-0 snap-start w-64 overflow-hidden border" style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
                       {(item.image_url || item.images?.[0]) && <Image src={(item.image_url || item.images?.[0]) as string} alt={item.title} width={256} height={140} className="w-full h-36 object-cover" />}
                       <div className="p-4">
-                        <p className="text-xs text-gray-400 mb-1">{new Date(item.created_at).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })}</p>
+                        <p className="text-xs text-gray-400 mb-1">{new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
                         <h3 className="text-sm font-semibold line-clamp-2">{item.title}</h3>
                       </div>
                     </div>
@@ -226,7 +227,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* About */}
         {sections.about && (
-          <section data-section="about" className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center">
+          <section data-section="about" className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center" style={{ order: sectionOrder.about }}>
 
             {profile?.bio && <p className="text-gray-400 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
@@ -240,7 +241,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
@@ -258,7 +259,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg }}>
+          <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="bg-blue-950/30 rounded-lg p-6 text-sm text-gray-300 border border-blue-900/50">
@@ -270,7 +271,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Footer — wave top + navy */}
         {sections.footer && (
-          <footer style={{ backgroundColor: '#0c2340' }}>
+          <footer style={{ backgroundColor: '#0c2340', order: sectionOrder.footer }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" preserveAspectRatio="none" className="w-full" style={{ display: 'block', height: '40px' }}>
               <path fill={pageTheme.sectionAlt} fillOpacity="1" d="M0,32L80,26.7C160,21,320,11,480,16C640,21,800,43,960,48C1120,53,1280,43,1360,37.3L1440,32L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z" />
             </svg>

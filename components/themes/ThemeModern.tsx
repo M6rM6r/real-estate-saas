@@ -8,7 +8,7 @@ import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
-  getPageConfig, getPageSections, buildWaLink, getBtnRadius,
+  getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
 } from './shared'
 
@@ -20,6 +20,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
+  const sectionOrder = getSectionOrderMap(profile)
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
 
@@ -84,7 +85,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         }
       `}</style>
 
-      <div className="min-h-screen" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
@@ -108,7 +109,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`}>
+          <section data-section="hero" className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
             <div className="relative flex-1 min-h-[40vh] lg:min-h-screen">
               {profile?.cover_url ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority /> : <div className="w-full h-full min-h-[40vh]" style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }} />}
             </div>
@@ -124,7 +125,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6 shadow" />}
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
             <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -137,7 +138,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
           <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
-            style={{ background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            style={{ order: sectionOrder.hero, background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
               <div className={`border rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-md' : ''}`}
@@ -160,7 +161,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto">
+          <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
 
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -217,7 +218,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="news" className="reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -225,7 +226,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                   <div key={item.id} className={`overflow-hidden shrink-0 snap-start w-[80vw] sm:w-80 border ${surfaceClass}`} style={cardStyle}>
                     {(item.image_url || item.images?.[0]) && <Image src={(item.image_url || item.images?.[0]) as string} alt={item.title} width={320} height={176} className="w-full h-44 object-cover" />}
                     <div className="p-5">
-                      <p className={`text-xs mb-1 ${mutedClass}`}>{new Date(item.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className={`text-xs mb-1 ${mutedClass}`}>{new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       <h3 className="font-semibold mb-2">{item.title}</h3>
                       {item.body && <p className={`text-sm line-clamp-3 ${mutedClass}`}>{item.body}</p>}
                     </div>
@@ -238,7 +239,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* About */}
         {sections.about && (
-          <section data-section="about" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center">
+          <section data-section="about" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center" style={{ order: sectionOrder.about }}>
 
             {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyClass}`}>{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
@@ -252,7 +253,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt }}>
+          <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
               <p className={`text-sm mb-8 ${mutedClass}`}>{L.contactSubtitle}</p>
@@ -267,7 +268,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb">
+          <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={64} height={64} className="w-16 h-16 object-contain mb-3 rounded" />}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 interface FloatContactButtonsProps {
@@ -9,7 +10,47 @@ interface FloatContactButtonsProps {
 }
 
 export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }: FloatContactButtonsProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    updateMobile();
+
+    const media = window.matchMedia('(max-width: 768px)');
+    const onMediaChange = () => updateMobile();
+    media.addEventListener('change', onMediaChange);
+
+    let heroObserver: IntersectionObserver | null = null;
+    const hero = document.querySelector('[data-section="hero"]');
+
+    if (hero) {
+      heroObserver = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          setIsVisible(!entry.isIntersecting);
+        },
+        { threshold: 0.1 }
+      );
+      heroObserver.observe(hero);
+    } else {
+      const onScroll = () => setIsVisible(window.scrollY > 180);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      return () => {
+        media.removeEventListener('change', onMediaChange);
+        window.removeEventListener('scroll', onScroll);
+      };
+    }
+
+    return () => {
+      media.removeEventListener('change', onMediaChange);
+      heroObserver?.disconnect();
+    };
+  }, []);
+
   if (!whatsapp && !phone) return null;
+  if (!isVisible) return null;
 
   const waLink = whatsapp ? buildWhatsAppLink(whatsapp, 'مرحباً، أريد الاستفسار') : null;
 
@@ -30,9 +71,16 @@ export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }
         @media(prefers-reduced-motion:no-preference){
           .float-bounce{animation:float-bounce 3s ease-in-out infinite}
         }
+        @keyframes float-slide-in-right {
+          from { opacity: 0; transform: translateX(18px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .float-slide-in {
+          animation: float-slide-in-right .28s ease-out;
+        }
       `}</style>
 
-      <div className="fixed bottom-5 right-4 sm:bottom-7 sm:right-6 z-50 flex flex-col items-end gap-2">
+      <div className="float-slide-in fixed bottom-5 right-4 sm:bottom-7 sm:right-6 z-50 flex flex-col items-end gap-2">
         {/* Tooltip label */}
         {whatsapp && (
           <span
@@ -44,12 +92,12 @@ export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }
         )}
 
         {/* Phone button */}
-        {phone && (
+        {phone && isMobile && (
           <a
             href={`tel:${phone}`}
             aria-label={`اتصل بنا: ${phone}`}
             className="flex items-center justify-center w-14 h-14 rounded-full text-white active:scale-90 transition-transform duration-150 shadow-lg"
-            style={{ background: 'linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)', boxShadow: '0 8px 28px rgba(59,130,246,0.4)' }}
+            style={{ background: `linear-gradient(135deg,${accentColor} 0%,#1d4ed8 100%)`, boxShadow: '0 8px 28px rgba(59,130,246,0.4)' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-6 h-6">
               <path d="M6.62 10.79a15.45 15.45 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z"/>

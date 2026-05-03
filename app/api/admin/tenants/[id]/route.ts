@@ -18,11 +18,13 @@ export async function GET(
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  const [tenantDoc, profileDoc, usersSnap, postsSnap] = await Promise.all([
+  const [tenantDoc, profileDoc, usersSnap, postsSnap, listingsSnap, leadsSnap] = await Promise.all([
     adminDb.collection('tenants').doc(params.id).get(),
     adminDb.collection('tenants').doc(params.id).collection('profiles').doc(params.id).get(),
     adminDb.collection('users').where('tenantId', '==', params.id).get(),
     adminDb.collection('posts').where('tenantId', '==', params.id).count().get(),
+    adminDb.collection('posts').where('tenantId', '==', params.id).where('type', '==', 'listing').count().get(),
+    adminDb.collection('leads').where('tenantId', '==', params.id).count().get(),
   ])
 
   if (!tenantDoc.exists) {
@@ -35,6 +37,8 @@ export async function GET(
     profile: profileDoc.exists ? { id: profileDoc.id, ...profileDoc.data() } : null,
     agentCount: usersSnap.size,
     postCount: postsSnap.data().count,
+    listingCount: listingsSnap.data().count,
+    leadCount: leadsSnap.data().count,
     users: usersSnap.docs.map(d => ({ id: d.id, email: d.data().email, role: d.data().role })),
   })
 }
