@@ -127,9 +127,11 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   {profile.tagline}
                 </p>
               )}
-              <p className="text-white/70 text-base sm:text-xl mb-10 max-w-2xl mx-auto font-light">
-                {pageConfig.hero_headline}
-              </p>
+              {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && (
+                <p className="text-white/70 text-base sm:text-xl mb-10 max-w-2xl mx-auto font-light">
+                  {pageConfig.hero_headline}
+                </p>
+              )}
 
             </div>
             {/* Scroll indicator */}

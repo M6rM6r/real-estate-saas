@@ -123,7 +123,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                   {tenant.name}
                 </h1>
                 {profile?.tagline && <p className="text-lg sm:text-2xl font-light mb-4" style={{ color: `${primary}dd` }}>{profile.tagline}</p>}
-                <p className="text-white/70 text-base sm:text-lg mb-8 max-w-lg mx-auto leading-relaxed">{pageConfig.hero_headline}</p>
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-white/70 text-base sm:text-lg mb-8 max-w-lg mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
 
               </div>
             </div>

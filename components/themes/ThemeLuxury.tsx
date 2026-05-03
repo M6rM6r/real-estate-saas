@@ -119,9 +119,11 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                   {profile.tagline}
                 </p>
               )}
-              <p className="text-base sm:text-lg text-white/70 mb-10 max-w-xl mx-auto font-light leading-relaxed">
-                {pageConfig.hero_headline}
-              </p>
+              {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && (
+                <p className="text-base sm:text-lg text-white/70 mb-10 max-w-xl mx-auto font-light leading-relaxed">
+                  {pageConfig.hero_headline}
+                </p>
+              )}
 
             </div>
             {/* Scroll indicator */}

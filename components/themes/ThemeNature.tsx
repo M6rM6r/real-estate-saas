@@ -125,7 +125,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                   {tenant.name}
                 </h1>
                 {profile?.tagline && <p className="nat-text text-lg font-semibold mb-3">{profile.tagline}</p>}
-                <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto">{pageConfig.hero_headline}</p>
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto">{pageConfig.hero_headline}</p>}
 
               </div>
             </div>

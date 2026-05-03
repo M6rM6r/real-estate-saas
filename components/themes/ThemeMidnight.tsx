@@ -121,7 +121,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               <div className="w-12 h-1 rounded-full mb-5" style={{ backgroundColor: primary }} />
               <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
               {profile?.tagline && <p className="text-lg font-medium mb-3" style={{ color: primary }}>{profile.tagline}</p>}
-              <p className="text-base mb-8 text-slate-400">{pageConfig.hero_headline}</p>
+              {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base mb-8 text-slate-400">{pageConfig.hero_headline}</p>}
             </div>
           </section>
         )}
@@ -133,7 +133,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
             {profile?.tagline && <p className="text-xl font-medium mb-3" style={{ color: primary }}>{profile.tagline}</p>}
-            <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto text-slate-400">{pageConfig.hero_headline}</p>
+            {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto text-slate-400">{pageConfig.hero_headline}</p>}
           </section>
         )}
 
@@ -148,7 +148,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-lg" priority />}
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight text-white">{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary }}>{profile.tagline}</p>}
-                <p className="text-sm sm:text-lg text-white/70 mb-6">{pageConfig.hero_headline}</p>
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-lg text-white/70 mb-6">{pageConfig.hero_headline}</p>}
               </div>
             </div>
             <div className="relative z-10 mt-6 flex flex-col items-center gap-1 opacity-50">
