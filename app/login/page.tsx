@@ -94,7 +94,7 @@ export default function LoginPage() {
               </div>
               <h2 className="text-xl font-bold mb-1">جرّب النسخة التجريبية</h2>
               <p className="text-white/70 text-sm mb-5 leading-relaxed">
-                استكشف لوحة التحكم كاملةً — العروض، العملاء المحتملون، التحليلات، وصفحة منشأتك — ببيانات تجريبية جاهزة.
+                استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.
               </p>
               <button
                 type="button"
