@@ -152,6 +152,7 @@ export type Post = {
   property_type?: string | null;
   card_style?: 'standard' | 'featured' | 'compact' | null;
   features?: string[];
+  notes?: string;
   published: boolean;
   published_at?: string;
   publish_at?: string;

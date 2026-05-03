@@ -129,6 +129,7 @@ const emptyListing = {
   published: true,
   images: [] as string[],
   features: [] as string[],
+  notes: '',
 };
 
 export default function ListingsPage() {
@@ -256,6 +257,7 @@ export default function ListingsPage() {
       published: listing.published,
       images: listing.images || [],
       features: listing.features || [],
+      notes: listing.notes || '',
     });
     setFormErrors({});
     setImageUrl('');
@@ -286,6 +288,7 @@ export default function ListingsPage() {
         published: form.published,
         images: form.images,
         features: form.features.filter(f => f.trim()),
+        notes: form.notes || undefined,
       };
       const isDemo = sessionStorage.getItem('demo_auth') === 'true';
       if (isDemo) {
@@ -738,6 +741,17 @@ export default function ListingsPage() {
                 value={form.body}
                 onChange={(e) => setForm({ ...form, body: e.target.value })}
                 rows={4}
+                className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
+              />
+            </div>
+            {/* Notes field */}
+            <div className="space-y-2">
+              <Label className="text-gray-300">ملاحظات (Notes)</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="أي ملاحظات خاصة بهذا العقار (للاستخدام الداخلي فقط)"
+                rows={3}
                 className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
               />
             </div>
