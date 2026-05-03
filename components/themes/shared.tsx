@@ -663,7 +663,7 @@ export function ListingBadges({
   const sLabels = statusLabels ?? STATUS_LABELS
   return (
     <>
-      {listing.listing_status && (
+      {listing.listing_status && listing.listing_status !== 'available' && (
         <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
           style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? primary }}>
           {sLabels[listing.listing_status] ?? listing.listing_status}
