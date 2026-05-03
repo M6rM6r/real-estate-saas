@@ -215,7 +215,7 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export function getPageConfig(profile: Profile) {
   return {
-    hero_headline: 'ابحث عن عقارك المثالي',
+    hero_headline: 'اكتشف أفضل العروض لديك',
     featured_count: 6,
     listings_columns: 3 as 2 | 3 | 4,
     show_listing_filters: true,
@@ -725,7 +725,7 @@ export function PropertyCard({
       onClick={onClick}
       className={`text-right group border overflow-hidden transition-all duration-300 w-full active:scale-[0.97] hover:-translate-y-1.5 hover:shadow-2xl ${surfaceClass}`}
       style={cardStyle}
-      aria-label={lang === 'en' ? `View details: ${listing.title}` : `عرض تفاصيل العقار: ${listing.title}`}
+      aria-label={lang === 'en' ? `View details: ${listing.title}` : `عرض التفاصيل: ${listing.title}`}
     >
       {/* Image area */}
       <div className="relative overflow-hidden">

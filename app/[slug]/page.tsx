@@ -7,6 +7,23 @@ import PageViewTracker from '@/components/PageViewTracker'
 
 const DEMO_SLUG = 'luxury-homes-dubai'
 
+const getSchemaOrgType = (businessType?: string | null) => {
+  switch (businessType) {
+    case 'restaurant':
+      return 'Restaurant'
+    case 'salon':
+      return 'BeautySalon'
+    case 'retail':
+      return 'Store'
+    case 'services':
+      return 'ProfessionalService'
+    case 'real_estate':
+      return 'RealEstateAgent'
+    default:
+      return 'Organization'
+  }
+}
+
 export const revalidate = 60
 
 const serialize = (obj: any): any => {
@@ -23,7 +40,7 @@ const serialize = (obj: any): any => {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
   if (slug === DEMO_SLUG) {
-    return { title: 'Luxury Homes Dubai — عقارات', description: 'Premium luxury real estate in Dubai' }
+    return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
   }
   const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
   if (tenantsSnap.empty) return { title: 'Not Found' }
@@ -43,8 +60,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       ? null
       : fallbackProfilesSnap?.docs[0].data()
 
-  const seoTitle = (profile?.page_config as any)?.seo_title || `${tenant.name} — عقارات`
-  const seoDesc = ((profile?.page_config as any)?.seo_description || (profile?.bio as string)) ?? 'خدمات عقارية متميزة'
+  const seoTitle = (profile?.page_config as any)?.seo_title || `${tenant.name} — الصفحة الرسمية`
+  const seoDesc = ((profile?.page_config as any)?.seo_description || (profile?.bio as string)) ?? 'خدمات احترافية متميزة'
 
   return {
     title: seoTitle,
@@ -106,7 +123,7 @@ const DEMO_DATA = {
     page_config: {
       hero_headline: 'اعثر على منزل أحلامك في دبي',
       hero_style: 'centered',
-      hero_cta_text: 'تصفح العقارات',
+      hero_cta_text: 'تصفح العروض',
       show_listing_filters: true,
       show_listing_search: true,
       listings_columns: 3,
@@ -187,9 +204,9 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'RealEstateAgent',
+    '@type': getSchemaOrgType((tenant as any)?.business_type as string | null | undefined),
     name: tenant.name,
-    description: profileData?.bio ?? 'Professional real estate services',
+    description: profileData?.bio ?? 'Professional business services',
     url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'}/${slug}`,
     ...(profileData?.logo_url ? { logo: profileData.logo_url } : {}),
     ...(profileData?.contact_phone ? { telephone: profileData.contact_phone } : {}),

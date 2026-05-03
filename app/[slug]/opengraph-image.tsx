@@ -23,7 +23,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
     const primaryColor = tenant.primary_color || '#2563eb'
     const logoUrl = profile?.logoUrl || profile?.logo_url
     const coverUrl = profile?.coverUrl || profile?.cover_url
-    const tagline = profile?.tagline || 'Leading Real Estate Experiences'
+    const tagline = profile?.tagline || 'Leading Business Experiences'
 
     return new ImageResponse(
       (
@@ -118,7 +118,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
                 alignItems: 'center',
               }}
             >
-              Explore Exclusive Properties
+              Explore Exclusive Offers
             </div>
             
             {/* Colorful neon accent bar at bottom */}

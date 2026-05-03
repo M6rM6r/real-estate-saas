@@ -69,9 +69,9 @@ export default function LoginPage() {
           </div>
           <div>
             <blockquote className="text-4xl font-bold leading-tight mb-4" dir="rtl">
-              &ldquo;عقاراتك.<br />علامتك.<br />عملاؤك.&rdquo;
+              &ldquo;عروضك.<br />علامتك.<br />عملاؤك.&rdquo;
             </blockquote>
-            <p className="text-blue-300 text-sm" dir="rtl">المنصة الاحترافية للوكالات العقارية الحديثة.</p>
+            <p className="text-blue-300 text-sm" dir="rtl">المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.</p>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function LoginPage() {
               </div>
               <h2 className="text-xl font-bold mb-1">جرّب النسخة التجريبية</h2>
               <p className="text-white/70 text-sm mb-5 leading-relaxed">
-                استكشف لوحة التحكم كاملةً — العقارات، العملاء المحتملون، التحليلات، وصفحة وكالتك — ببيانات تجريبية جاهزة.
+                استكشف لوحة التحكم كاملةً — العروض، العملاء المحتملون، التحليلات، وصفحة منشأتك — ببيانات تجريبية جاهزة.
               </p>
               <button
                 type="button"

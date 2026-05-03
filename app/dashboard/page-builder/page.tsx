@@ -1002,7 +1002,7 @@ export default function PageBuilderPage() {
                   <Input
                     value={pageConfig.hero_headline || ''}
                     onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                    placeholder="ابحث عن عقارك المثالي"
+                    placeholder="اكتشف أفضل العروض لديك"
                     maxLength={200}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
@@ -1426,7 +1426,7 @@ export default function PageBuilderPage() {
                       </>)}
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <Label className="text-slate-400 text-xs">صورة العقار الرئيسية</Label>
+                      <Label className="text-slate-400 text-xs">الصورة الرئيسية للعرض</Label>
                       <ImageUploader
                         value={listingForm.image}
                         onChange={(url) => setListingForm({ ...listingForm, image: url })}
@@ -1476,7 +1476,7 @@ export default function PageBuilderPage() {
                     <div className="flex items-center justify-between py-1">
                       <div>
                         <p className="text-sm text-white">نشر على الصفحة العامة</p>
-                        <p className="text-xs text-slate-500">إيقاف هذا يجعل العقار مسودة فقط</p>
+                        <p className="text-xs text-slate-500">إيقاف هذا يجعل العرض مسودة فقط</p>
                       </div>
                       <button
                         type="button"
