@@ -490,6 +490,7 @@ function SortableSectionRow({
     <div
       ref={setNodeRef}
       style={style}
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
       className="px-4 py-2.5 flex items-center justify-between gap-3 border-b last:border-b-0 border-slate-800/60"
     >
       <div className="flex items-center gap-2">
