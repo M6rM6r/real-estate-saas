@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import { useLanguage } from '@/app/dashboard/LanguageContext';
 import { Plus, Pencil, Trash2, Loader as Loader2, X, Megaphone, Search } from 'lucide-react';
 
 const demoAnnouncements: Post[] = [
@@ -37,6 +38,40 @@ const demoAnnouncements: Post[] = [
   { id: 'da2', title: 'New Property Listings Now Available', body: 'We have just added 12 new premium listings in Dubai Marina and Palm Jumeirah. Browse them now in our latest collection.', published: true, images: [], created_at: new Date(Date.now() - 86400000 * 5).toISOString(), type: 'announcement', tenant_id: 'demo' },
   { id: 'da3', title: 'Upcoming Open House — Emirates Hills', body: 'Join us this Friday for an exclusive open house at our Emirates Hills mansion listing. RSVP to reserve your spot.', published: false, images: [], created_at: new Date(Date.now() - 86400000 * 8).toISOString(), type: 'announcement', tenant_id: 'demo' },
 ];
+const ANN_T = {
+  ar: {
+    pageTitle: 'الإعلانات',
+    newAnnouncement: 'إعلان جديد',
+    searchPlaceholder: 'البحث في الإعلانات...',
+    all: 'الكل', published: 'منشور', draft: 'مسودة',
+    noMatch: 'لا توجد إعلانات تطابق المرشحات', noItems: 'لا توجد إعلانات بعد',
+    clickToStart: 'اضغط "إعلان جديد" للبدء',
+    titleLabel: 'العنوان *', contentLabel: 'المحتوى', publishedLabel: 'منشور',
+    scheduleLabel: 'جدولة النشر (اختياري)', imagesLabel: 'الصور', imageUrlPlaceholder: 'أدخل رابط الصورة',
+    cancel: 'إلغاء', update: 'تحديث', create: 'إنشاء',
+    deleteTitle: 'حذف الإعلان', deleteWarning: 'لا يمكن التراجع عن هذا الإجراء.', delete: 'حذف',
+    editAnn: 'تعديل الإعلان', newAnn: 'إعلان جديد',
+    invalidDateTitle: 'تاريخ غير صحيح', invalidDateDesc: 'يجب أن يكون تاريخ النشر المجدول في المستقبل',
+    noContent: 'لا يوجد محتوى', scheduled: 'مجدول',
+    total: 'إجمالي', publishedCount: 'منشور', draftCount: 'مسودة',
+  },
+  en: {
+    pageTitle: 'Announcements',
+    newAnnouncement: 'New Announcement',
+    searchPlaceholder: 'Search announcements…',
+    all: 'All', published: 'Published', draft: 'Draft',
+    noMatch: 'No announcements match your filters', noItems: 'No announcements yet',
+    clickToStart: 'Click "New Announcement" to get started',
+    titleLabel: 'Title *', contentLabel: 'Content', publishedLabel: 'Published',
+    scheduleLabel: 'Schedule publish (optional)', imagesLabel: 'Images', imageUrlPlaceholder: 'Enter image URL',
+    cancel: 'Cancel', update: 'Update', create: 'Create',
+    deleteTitle: 'Delete announcement', deleteWarning: 'This action cannot be undone.', delete: 'Delete',
+    editAnn: 'Edit Announcement', newAnn: 'New Announcement',
+    invalidDateTitle: 'Invalid date', invalidDateDesc: 'Scheduled publish date must be in the future',
+    noContent: 'No content', scheduled: 'Scheduled',
+    total: 'total', publishedCount: 'published', draftCount: 'draft',
+  },
+};
 
 const emptyForm = {
   title: '',
@@ -47,6 +82,8 @@ const emptyForm = {
 };
 
 export default function AnnouncementsPage() {
+  const { lang } = useLanguage();
+  const t = ANN_T[lang];
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -126,7 +163,7 @@ export default function AnnouncementsPage() {
     }
     if (!form.published && form.publish_at && new Date(form.publish_at) <= new Date()) {
       nextErrors.title = nextErrors.title || undefined;
-      toast({ title: 'تاريخ غير صحيح', description: 'يجب أن يكون تاريخ النشر المجدول في المستقبل', variant: 'destructive' });
+      toast({ title: t.invalidDateTitle, description: t.invalidDateDesc, variant: 'destructive' });
       setSaving(false);
       return;
     }
@@ -244,13 +281,13 @@ export default function AnnouncementsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Announcements</h1>
+          <h1 className="text-2xl font-bold text-white">{t.pageTitle}</h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            {items.length} total · {publishedCount} published · {draftCount} draft
+            {items.length} {t.total} · {publishedCount} {t.publishedCount} · {draftCount} {t.draftCount}
           </p>
         </div>
         <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" /> New Announcement
+          <Plus className="h-4 w-4 mr-2" /> {t.newAnnouncement}
         </Button>
       </div>
 
@@ -259,7 +296,7 @@ export default function AnnouncementsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
           <Input
-            placeholder="Search announcements…"
+            placeholder={t.searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-9 bg-[#12121a] border-gray-800 text-white placeholder:text-gray-600"
@@ -270,9 +307,9 @@ export default function AnnouncementsPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-[#1a1a2e] border-gray-700 text-white">
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="all">{t.all}</SelectItem>
+            <SelectItem value="published">{t.published}</SelectItem>
+            <SelectItem value="draft">{t.draft}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -282,13 +319,13 @@ export default function AnnouncementsPage() {
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
             <Megaphone className="h-12 w-12 text-gray-700 mb-4" />
             <p className="text-gray-400 font-medium">
-              {query || filter !== 'all' ? 'No announcements match your filters' : 'No announcements yet'}
+              {query || filter !== 'all' ? t.noMatch : t.noItems}
             </p>
             {!query && filter === 'all' ? (
               <>
-                <p className="text-gray-600 text-sm mt-1">Click &quot;New Announcement&quot; to get started</p>
+                <p className="text-gray-600 text-sm mt-1">{t.clickToStart}</p>
                 <Button onClick={openCreate} className="mt-5 bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" /> New Announcement
+                  <Plus className="h-4 w-4 mr-2" /> {t.newAnnouncement}
                 </Button>
               </>
             ) : null}
@@ -310,15 +347,15 @@ export default function AnnouncementsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-white truncate">{item.title}</h3>
                     <Badge className={item.published ? 'bg-emerald-500/20 text-emerald-400 border-0' : 'bg-gray-500/20 text-gray-400 border-0'}>
-                      {item.published ? 'Published' : 'Draft'}
+                      {item.published ? t.published : t.draft}
                     </Badge>
                     {!item.published && item.publish_at && (
                       <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">
-                        مجدول · {new Date(item.publish_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {t.scheduled} · {new Date(item.publish_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-gray-400 text-sm line-clamp-2">{item.body || 'No content'}</p>
+                  <p className="text-gray-400 text-sm line-clamp-2">{item.body || t.noContent}</p>
                   <p className="text-gray-600 text-xs mt-1.5">
                     {new Date(item.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </p>
@@ -354,12 +391,12 @@ export default function AnnouncementsPage() {
         <DialogContent className="bg-[#12121a] border-gray-800 text-white max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingId ? 'Edit Announcement' : 'New Announcement'}
+              {editingId ? t.editAnn : t.newAnn}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-gray-300">Title *</Label>
+              <Label className="text-gray-300">{t.titleLabel}</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -368,7 +405,7 @@ export default function AnnouncementsPage() {
               {formErrors.title && <p className="text-xs text-red-400">{formErrors.title}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">Content</Label>
+              <Label className="text-gray-300">{t.contentLabel}</Label>
               <Textarea
                 value={form.body}
                 onChange={(e) => setForm({ ...form, body: e.target.value })}
@@ -381,11 +418,11 @@ export default function AnnouncementsPage() {
                 checked={form.published}
                 onCheckedChange={(v) => setForm({ ...form, published: v, publish_at: v ? '' : form.publish_at })}
               />
-              <Label className="text-gray-300">Published</Label>
+              <Label className="text-gray-300">{t.publishedLabel}</Label>
             </div>
             {!form.published && (
               <div className="space-y-2">
-                <Label className="text-gray-300">جدولة النشر (اختياري)</Label>
+                <Label className="text-gray-300">{t.scheduleLabel}</Label>
                 <Input
                   type="datetime-local"
                   value={form.publish_at}
@@ -395,12 +432,12 @@ export default function AnnouncementsPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label className="text-gray-300">Images</Label>
+              <Label className="text-gray-300">{t.imagesLabel}</Label>
               <div className="flex gap-2">
                 <Input
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="Enter image URL"
+                  placeholder={t.imageUrlPlaceholder}
                   className="bg-[#1a1a2e] border-gray-700 text-white flex-1"
                 />
                 <Button
@@ -437,7 +474,7 @@ export default function AnnouncementsPage() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setModalOpen(false)} className="text-gray-400">
-              Cancel
+              {t.cancel}
             </Button>
             <Button
               onClick={handleSave}
@@ -445,7 +482,7 @@ export default function AnnouncementsPage() {
               className="bg-blue-600 hover:bg-blue-700"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingId ? 'Update' : 'Create'}
+              {editingId ? t.update : t.create}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -454,13 +491,13 @@ export default function AnnouncementsPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="bg-[#12121a] border-gray-800 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete announcement</AlertDialogTitle>
+            <AlertDialogTitle>{t.deleteTitle}</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              This action cannot be undone.
+              {t.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">{t.cancel}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               onClick={() => {
@@ -470,7 +507,7 @@ export default function AnnouncementsPage() {
                 }
               }}
             >
-              Delete
+              {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

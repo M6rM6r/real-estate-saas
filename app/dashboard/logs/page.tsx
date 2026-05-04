@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ClipboardList, Loader } from 'lucide-react'
+import { useLanguage } from '@/app/dashboard/LanguageContext'
 
 const ACTION_COLORS: Record<string, string> = {
   create: 'bg-green-500/20 text-green-400',
@@ -11,21 +12,22 @@ const ACTION_COLORS: Record<string, string> = {
   publish: 'bg-yellow-500/20 text-yellow-400',
 }
 
-const RESOURCE_LABELS: Record<string, string> = {
-  listing: 'عقار',
-  news: 'خبر',
-  announcement: 'إعلان',
-  profile: 'الملف الشخصي',
-  gallery: 'معرض',
-  team: 'الفريق',
-}
-
-const ACTION_LABELS: Record<string, string> = {
-  create: 'إنشاء',
-  update: 'تعديل',
-  delete: 'حذف',
-  publish: 'نشر',
-}
+const LOGS_T = {
+  ar: {
+    pageTitle: 'سجل التغييرات', last50: 'آخر 50 عملية',
+    loadFailed: 'فشل في تحميل السجلات', noLogs: 'لا توجد سجلات بعد',
+    colDate: 'التاريخ', colAction: 'الإجراء', colType: 'النوع', colId: 'المعرّف',
+    rListing: 'عقار', rNews: 'خبر', rAnnouncement: 'إعلان', rProfile: 'الملف الشخصي', rGallery: 'معرض', rTeam: 'الفريق',
+    aCreate: 'إنشاء', aUpdate: 'تعديل', aDelete: 'حذف', aPublish: 'نشر',
+  },
+  en: {
+    pageTitle: 'Activity Log', last50: 'Last 50 actions',
+    loadFailed: 'Failed to load logs', noLogs: 'No logs yet',
+    colDate: 'Date', colAction: 'Action', colType: 'Type', colId: 'ID',
+    rListing: 'Listing', rNews: 'News', rAnnouncement: 'Announcement', rProfile: 'Profile', rGallery: 'Gallery', rTeam: 'Team',
+    aCreate: 'Create', aUpdate: 'Update', aDelete: 'Delete', aPublish: 'Publish',
+  },
+};
 
 interface LogEntry {
   id: string
@@ -37,6 +39,15 @@ interface LogEntry {
 }
 
 export default function LogsPage() {
+  const { lang } = useLanguage()
+  const t = LOGS_T[lang]
+  const RESOURCE_LABELS: Record<string, string> = {
+    listing: t.rListing, news: t.rNews, announcement: t.rAnnouncement,
+    profile: t.rProfile, gallery: t.rGallery, team: t.rTeam,
+  }
+  const ACTION_LABELS: Record<string, string> = {
+    create: t.aCreate, update: t.aUpdate, delete: t.aDelete, publish: t.aPublish,
+  }
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +59,7 @@ export default function LogsPage() {
         if (data.error) setError(data.error)
         else setLogs(data.logs ?? [])
       })
-      .catch(() => setError('فشل في تحميل السجلات'))
+      .catch(() => setError(t.loadFailed))
       .finally(() => setLoading(false))
   }, [])
 
@@ -56,12 +67,12 @@ export default function LogsPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <ClipboardList className="h-6 w-6 text-blue-400" />
-        <h1 className="text-2xl font-bold">سجل التغييرات</h1>
+        <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
       </div>
 
       <Card className="bg-[#12121a] border-gray-800">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base text-gray-300">آخر 50 عملية</CardTitle>
+          <CardTitle className="text-base text-gray-300">{t.last50}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -71,16 +82,16 @@ export default function LogsPage() {
           ) : error ? (
             <p className="text-red-400 text-center py-10">{error}</p>
           ) : logs.length === 0 ? (
-            <p className="text-gray-500 text-center py-10">لا توجد سجلات بعد</p>
+            <p className="text-gray-500 text-center py-10">{t.noLogs}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm" dir="rtl">
                 <thead>
                   <tr className="border-b border-gray-800 text-gray-400">
-                    <th className="text-right py-2 pr-2 font-medium">التاريخ</th>
-                    <th className="text-right py-2 font-medium">الإجراء</th>
-                    <th className="text-right py-2 font-medium">النوع</th>
-                    <th className="text-right py-2 font-medium">المعرّف</th>
+                    <th className="text-right py-2 pr-2 font-medium">{t.colDate}</th>
+                    <th className="text-right py-2 font-medium">{t.colAction}</th>
+                    <th className="text-right py-2 font-medium">{t.colType}</th>
+                    <th className="text-right py-2 font-medium">{t.colId}</th>
                   </tr>
                 </thead>
                 <tbody>

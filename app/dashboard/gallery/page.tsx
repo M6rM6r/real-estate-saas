@@ -12,7 +12,29 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
+import { useLanguage } from '@/app/dashboard/LanguageContext';
 import { Upload, Trash2, Loader as Loader2, Image as ImageIcon } from 'lucide-react';
+
+const GALLERY_T = {
+  ar: {
+    pageTitle: 'معرض الصور', pageSubtitle: 'إدارة صور العرض المستخدمة في صفحتك العامة.',
+    images: 'صورة', imagesPlural: 'صور',
+    uploading: 'جاري الرفع...', uploadImages: 'رفع صور',
+    noImages: 'لا توجد صور بعد.', noImagesSub: 'ارفع أول مجموعة لبناء معرض جذاب.',
+    deleteTitle: 'حذف الصورة', deleteConfirm: 'هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا.',
+    cancel: 'إلغاء', delete: 'حذف',
+    demoTitle: 'وضع العرض التجريبي', demoUpload: 'رفع الصور غير متاح في الوضع التجريبي.', demoDelete: 'حذف الصور غير متاح في الوضع التجريبي.',
+  },
+  en: {
+    pageTitle: 'Gallery', pageSubtitle: 'Manage showcase images used across your public agency page.',
+    images: 'image', imagesPlural: 'images',
+    uploading: 'Uploading...', uploadImages: 'Upload Images',
+    noImages: 'No images yet.', noImagesSub: 'Upload your first set to build an attractive gallery.',
+    deleteTitle: 'Delete Image', deleteConfirm: 'Are you sure you want to delete this image? This cannot be undone.',
+    cancel: 'Cancel', delete: 'Delete',
+    demoTitle: 'Demo Mode', demoUpload: 'Image upload is not available in demo mode.', demoDelete: 'Image deletion is not available in demo mode.',
+  },
+};
 
 const demoMedia: Media[] = [
   { id: '1', tenant_id: 'demo', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'villa-exterior.jpg', created_at: '2026-04-01T00:00:00Z', sort_order: 0 },
@@ -24,6 +46,8 @@ const demoMedia: Media[] = [
 ];
 
 export default function GalleryPage() {
+  const { lang } = useLanguage();
+  const t = GALLERY_T[lang];
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -52,7 +76,7 @@ export default function GalleryPage() {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isDemo) {
-      toast({ title: 'وضع العرض التجريبي', description: 'رفع الصور غير متاح في الوضع التجريبي.' });
+      toast({ title: t.demoTitle, description: t.demoUpload });
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
@@ -96,7 +120,7 @@ export default function GalleryPage() {
   const handleDelete = async () => {
     if (isDemo) {
       setDeleteId(null);
-      toast({ title: 'وضع العرض التجريبي', description: 'حذف الصور غير متاح في الوضع التجريبي.' });
+      toast({ title: t.demoTitle, description: t.demoDelete });
       return;
     }
     if (!deleteId) return;
@@ -124,14 +148,14 @@ export default function GalleryPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">Gallery</h1>
-        <p className="text-sm text-gray-400">Manage showcase images used across your public agency page.</p>
+        <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
+        <p className="text-sm text-gray-400">{t.pageSubtitle}</p>
       </div>
 
       <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0a0f]/80 border border-gray-800 rounded-xl p-3">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
-            {media.length} image{media.length === 1 ? '' : 's'}
+            {media.length} {media.length === 1 ? t.images : t.imagesPlural}
           </span>
           <div>
             <input
@@ -152,7 +176,7 @@ export default function GalleryPage() {
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
               )}
-              {uploading ? 'Uploading...' : 'Upload Images'}
+              {uploading ? t.uploading : t.uploadImages}
             </Button>
           </div>
         </div>
@@ -161,8 +185,8 @@ export default function GalleryPage() {
       {media.length === 0 ? (
         <div className="text-center text-gray-500 py-20 border border-dashed border-gray-700 rounded-2xl bg-[#12121a]">
           <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-          <p className="text-gray-300 font-medium">No images yet.</p>
-          <p className="text-gray-500 text-sm mt-2">Upload your first set to build an attractive gallery.</p>
+          <p className="text-gray-300 font-medium">{t.noImages}</p>
+          <p className="text-gray-500 text-sm mt-2">{t.noImagesSub}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -196,12 +220,12 @@ export default function GalleryPage() {
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <DialogContent className="bg-[#12121a] border-gray-800 text-white">
           <DialogHeader>
-            <DialogTitle>Delete Image</DialogTitle>
+            <DialogTitle>{t.deleteTitle}</DialogTitle>
           </DialogHeader>
-          <p className="text-gray-400">Are you sure you want to delete this image? This cannot be undone.</p>
+          <p className="text-gray-400">{t.deleteConfirm}</p>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDeleteId(null)} className="text-gray-400">
-              Cancel
+              {t.cancel}
             </Button>
             <Button
               onClick={handleDelete}
@@ -209,7 +233,7 @@ export default function GalleryPage() {
               className="bg-red-600 hover:bg-red-700"
             >
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
+              {t.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,8 +4,32 @@ import { useEffect, useState } from 'react'
 import { authFetch } from '@/lib/api'
 import { TrendingUp, Users, Eye, BarChart2, Trophy } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { useLanguage } from '@/app/dashboard/LanguageContext'
 
 type Period = '7d' | '30d' | '12m'
+
+const ANALYTICS_T = {
+  ar: {
+    pageTitle: 'الإحصائيات', pageSubtitle: 'نظرة عامة على أداء صفحتك',
+    period7d: '7 أيام', period30d: '30 يوم', period12m: '12 شهر',
+    periodLabel: 'الفترة الزمنية',
+    loadFailed: 'فشل تحميل الإحصائيات', retry: 'إعادة المحاولة',
+    totalViews: 'إجمالي المشاهدات', totalLeads: 'إجمالي العملاء المحتملين', conversionRate: 'معدل التحويل',
+    viewsOverTime: 'المشاهدات بمرور الوقت',
+    noViewData: 'لا توجد بيانات مشاهدات بعد', noViewDataSub: 'ستظهر البيانات بعد أن يزور الزوار صفحتك العامة',
+    topListings: 'أعلى العقارات مشاهدةً',
+  },
+  en: {
+    pageTitle: 'Analytics', pageSubtitle: 'Overview of your page performance',
+    period7d: '7 Days', period30d: '30 Days', period12m: '12 Months',
+    periodLabel: 'Time period',
+    loadFailed: 'Failed to load analytics', retry: 'Retry',
+    totalViews: 'Total Views', totalLeads: 'Total Leads', conversionRate: 'Conversion Rate',
+    viewsOverTime: 'Views Over Time',
+    noViewData: 'No view data yet', noViewDataSub: 'Data will appear after visitors visit your public page',
+    topListings: 'Top Performing Listings',
+  },
+};
 
 type Analytics = {
   pageViews: { date: string; views: number }[]
@@ -16,11 +40,6 @@ type Analytics = {
   labelFormat?: 'day' | 'month'
 }
 
-const PERIODS: { key: Period; label: string }[] = [
-  { key: '7d', label: '7 أيام' },
-  { key: '30d', label: '30 يوم' },
-  { key: '12m', label: '12 شهر' },
-]
 
 function formatXLabel(date: string, fmt: 'day' | 'month' | undefined) {
   if (!fmt || fmt === 'month') {
@@ -57,6 +76,13 @@ const demoPageViews: Record<Period, Analytics['pageViews']> = {
 }
 
 export default function AnalyticsPage() {
+  const { lang } = useLanguage()
+  const t = ANALYTICS_T[lang]
+  const PERIODS: { key: Period; label: string }[] = [
+    { key: '7d', label: t.period7d },
+    { key: '30d', label: t.period30d },
+    { key: '12m', label: t.period12m },
+  ]
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -106,12 +132,12 @@ export default function AnalyticsPage() {
   if (error || !analytics) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 text-slate-400 text-sm">
-        <p>{error || 'فشل تحميل الإحصائيات'}</p>
+        <p>{error || t.loadFailed}</p>
         <button
           onClick={() => { setError(''); setRetryKey(k => k + 1) }}
           className="px-4 py-2 text-xs rounded-lg border border-gray-700 bg-[#12121a] text-gray-300 hover:text-white hover:border-gray-500 transition-colors"
         >
-          إعادة المحاولة
+          {t.retry}
         </button>
       </div>
     )
@@ -128,13 +154,13 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-white">الإحصائيات</h1>
-          <p className="text-sm text-slate-400 mt-0.5">نظرة عامة على أداء صفحتك</p>
+          <h1 className="text-xl font-bold text-white">{t.pageTitle}</h1>
+          <p className="text-sm text-slate-400 mt-0.5">{t.pageSubtitle}</p>
         </div>
         {/* Period toggle */}
         <div
           role="radiogroup"
-          aria-label="الفترة الزمنية"
+          aria-label={t.periodLabel}
           className="flex rounded-lg overflow-hidden border border-slate-700 shrink-0"
         >
           {PERIODS.map(p => (
@@ -158,7 +184,7 @@ export default function AnalyticsPage() {
             <Eye className="h-5 w-5 text-blue-400" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي المشاهدات</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">{t.totalViews}</p>
             <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalViews.toLocaleString('en-US')}</p>
           </div>
         </div>
@@ -167,7 +193,7 @@ export default function AnalyticsPage() {
             <Users className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">إجمالي العملاء المحتملين</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">{t.totalLeads}</p>
             <p className="text-2xl font-bold text-white mt-0.5">{analytics.totalLeads.toLocaleString('en-US')}</p>
           </div>
         </div>
@@ -176,7 +202,7 @@ export default function AnalyticsPage() {
             <TrendingUp className="h-5 w-5 text-purple-400" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">معدل التحويل</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">{t.conversionRate}</p>
             <p className="text-2xl font-bold text-white mt-0.5">{conversionRate}%</p>
           </div>
         </div>
@@ -186,7 +212,7 @@ export default function AnalyticsPage() {
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-4 w-4 text-blue-400" />
-          <p className="text-sm font-semibold text-white">المشاهدات بمرور الوقت</p>
+          <p className="text-sm font-semibold text-white">{t.viewsOverTime}</p>
         </div>
         {hasViews ? (
           <ResponsiveContainer width="100%" height={260}>
@@ -212,8 +238,8 @@ export default function AnalyticsPage() {
         ) : (
           <div className="flex flex-col items-center justify-center h-40 text-slate-600">
             <BarChart2 className="h-8 w-8 mb-2 opacity-40" />
-            <p className="text-sm">لا توجد بيانات مشاهدات بعد</p>
-            <p className="text-xs text-slate-700 mt-1">ستظهر البيانات بعد أن يزور الزوار صفحتك العامة</p>
+            <p className="text-sm">{t.noViewData}</p>
+            <p className="text-xs text-slate-700 mt-1">{t.noViewDataSub}</p>
           </div>
         )}
       </div>
@@ -223,7 +249,7 @@ export default function AnalyticsPage() {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="h-4 w-4 text-yellow-400" />
-            <p className="text-sm font-semibold text-white">أعلى العقارات مشاهدةً</p>
+            <p className="text-sm font-semibold text-white">{t.topListings}</p>
           </div>
           <div className="space-y-3">
             {topListings.map((item, idx) => {

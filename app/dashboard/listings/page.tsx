@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Post, ListingStatus } from '@/lib/types';
+import { useLanguage } from '@/app/dashboard/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,53 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const LISTINGS_T = {
+  ar: {
+    pageTitle: 'العروض', addListing: 'إضافة عرض', noListings: 'لا توجد عروض بعد',
+    noListingsSub: 'أضف أول عرض وابدأ في استقطاب العملاء', addFirst: 'إضافة عرض',
+    searchPlaceholder: 'ابحث بالعنوان أو الموقع...', showing: 'عرض', of: 'من', filteredFrom: 'مصفى من',
+    prevPage: 'الصفحة السابقة', nextPage: 'الصفحة التالية',
+    editListing: 'تعديل العرض', newListing: 'عرض جديد',
+    titleLabel: 'العنوان *', priceLabel: 'السعر (SAR)', locationLabel: 'الموقع',
+    locationUrlLabel: 'رابط الموقع على الخريطة', bedroomsLabel: 'الغرف', bathroomsLabel: 'الحمامات',
+    areaLabel: 'المساحة (م²)', statusLabel: 'الحالة',
+    statusAvailable: 'متاح', statusSold: 'مباع', statusRented: 'مؤجر', draft: 'مسودة',
+    featuresLabel: 'المميزات', addFeature: 'إضافة ميزة',
+    featurePlaceholder: 'مثال: موقع استراتيجي',
+    noFeatures: 'لا توجد مميزات — اضغط "إضافة ميزة" لإضافتها',
+    descriptionLabel: 'الوصف', notesLabel: 'ملاحظات',
+    notesPlaceholder: 'أي ملاحظات خاصة بهذا العقار (للاستخدام الداخلي فقط)',
+    publishedLabel: 'منشور', imagesLabel: 'الصور', imageUrlPlaceholder: 'أدخل رابط الصورة',
+    cancel: 'إلغاء', update: 'تحديث', create: 'إنشاء',
+    deleteListing: 'حذف العرض', deleteWarning: 'لا يمكن التراجع عن هذا الإجراء.', delete: 'حذف',
+    dragToSort: 'سحب للترتيب', copyOf: 'نسخة من',
+    duplicated: 'تم نسخ العرض', duplicateFailed: 'فشل نسخ العرض', error: 'خطأ',
+    aiFailed: 'فشل توليد النص بالذكاء الاصطناعي',
+  },
+  en: {
+    pageTitle: 'Listings', addListing: 'Add Listing', noListings: 'No listings yet',
+    noListingsSub: 'Add your first listing to start attracting clients', addFirst: 'Add Listing',
+    searchPlaceholder: 'Search by title or location...', showing: 'Showing', of: 'of', filteredFrom: 'filtered from',
+    prevPage: 'Previous page', nextPage: 'Next page',
+    editListing: 'Edit Listing', newListing: 'New Listing',
+    titleLabel: 'Title *', priceLabel: 'Price (SAR)', locationLabel: 'Location',
+    locationUrlLabel: 'Map URL', bedroomsLabel: 'Bedrooms', bathroomsLabel: 'Bathrooms',
+    areaLabel: 'Area (m²)', statusLabel: 'Status',
+    statusAvailable: 'Available', statusSold: 'Sold', statusRented: 'Rented', draft: 'Draft',
+    featuresLabel: 'Features', addFeature: 'Add Feature',
+    featurePlaceholder: 'e.g. Prime location',
+    noFeatures: 'No features — click "Add Feature" to add one',
+    descriptionLabel: 'Description', notesLabel: 'Notes',
+    notesPlaceholder: 'Any notes about this listing (internal use only)',
+    publishedLabel: 'Published', imagesLabel: 'Images', imageUrlPlaceholder: 'Enter image URL',
+    cancel: 'Cancel', update: 'Update', create: 'Create',
+    deleteListing: 'Delete listing', deleteWarning: 'This action cannot be undone.', delete: 'Delete',
+    dragToSort: 'Drag to sort', copyOf: 'Copy of',
+    duplicated: 'Listing duplicated', duplicateFailed: 'Failed to duplicate listing', error: 'Error',
+    aiFailed: 'Failed to generate AI text',
+  },
+};
+
 function SortableImage({ url, index, onRemove }: { url: string; index: number; onRemove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: url + index });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -64,7 +112,7 @@ function SortableImage({ url, index, onRemove }: { url: string; index: number; o
         {...listeners}
         type="button"
         className="absolute bottom-0 left-0 w-5 h-5 rounded-tr rounded-bl bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
-        aria-label="سحب للترتيب"
+        aria-label="Drag to sort"
       >
         <GripVertical className="h-3 w-3 text-white" />
       </button>
@@ -133,6 +181,8 @@ const emptyListing = {
 };
 
 export default function ListingsPage() {
+  const { lang } = useLanguage();
+  const t = LISTINGS_T[lang];
   const [listings, setListings] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -166,7 +216,7 @@ export default function ListingsPage() {
       });
       setForm(prev => ({ ...prev, body: result.arabic + '\n\n' + result.english }));
     } catch {
-      toast({ title: 'AI Failed', description: 'فشل توليد النص بالذكاء الاصطناعي', variant: 'destructive' });
+      toast({ title: t.error, description: t.aiFailed, variant: 'destructive' });
     } finally {
       setAiGenerating(false);
     }
@@ -175,7 +225,7 @@ export default function ListingsPage() {
   const duplicateListing = async (listing: Post) => {
     const isDemo = sessionStorage.getItem('demo_auth') === 'true';
     const payload = {
-      title: `نسخة من ${listing.title}`,
+      title: `${t.copyOf} ${listing.title}`,
       body: listing.body || '',
       price: listing.price,
       location: listing.location,
@@ -190,15 +240,15 @@ export default function ListingsPage() {
     if (isDemo) {
       const fake: Post = { ...listing, id: Date.now().toString(), title: payload.title, published: false, created_at: new Date().toISOString() };
       setListings(prev => [fake, ...prev]);
-      toast({ title: 'تم نسخ العقار' });
+      toast({ title: t.duplicated });
       return;
     }
     try {
       const created = await authFetch<Post>('/api/dashboard/listings', { method: 'POST', body: JSON.stringify(payload) });
       setListings(prev => [created, ...prev]);
-      toast({ title: 'تم نسخ العقار' });
+      toast({ title: t.duplicated });
     } catch {
-      toast({ title: 'خطأ', description: 'فشل نسخ العقار', variant: 'destructive' });
+      toast({ title: t.error, description: t.duplicateFailed, variant: 'destructive' });
     }
   };
 
@@ -400,9 +450,9 @@ export default function ListingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Listings</h1>
+        <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
         <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" /> Add Listing
+          <Plus className="h-4 w-4 mr-2" /> {t.addListing}
         </Button>
       </div>
 
@@ -410,10 +460,10 @@ export default function ListingsPage() {
         <Card className="bg-[#12121a] border-gray-800 border-dashed">
           <CardContent className="py-20 flex flex-col items-center justify-center text-center gap-3">
             <span className="text-6xl" role="img" aria-label="منزل">🏠</span>
-            <p className="text-lg font-semibold text-gray-200">لا توجد عقارات بعد</p>
-            <p className="text-sm text-gray-500 max-w-xs">أضف أول عقار لك وابدأ في استقطاب العملاء وعرض مشاريعك</p>
+            <p className="text-lg font-semibold text-gray-200">{t.noListings}</p>
+            <p className="text-sm text-gray-500 max-w-xs">{t.noListingsSub}</p>
             <Button onClick={openCreate} className="mt-2 bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" /> إضافة عقار
+              <Plus className="h-4 w-4 mr-2" /> {t.addFirst}
             </Button>
           </CardContent>
         </Card>
@@ -425,7 +475,7 @@ export default function ListingsPage() {
             <Input
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
-              placeholder="ابحث بالعنوان أو الموقع..."
+              placeholder={t.searchPlaceholder}
               dir="rtl"
               className="bg-[#12121a] border-gray-700 text-white pr-10 placeholder:text-gray-500"
             />
@@ -438,8 +488,8 @@ export default function ListingsPage() {
 
           <div className="flex items-center justify-between text-xs text-gray-400 px-1">
             <span>
-              عرض {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} من {filtered.length}
-              {searchQuery && ` (مصفى من ${listings.length})`}
+              {t.showing} {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} {t.of} {filtered.length}
+              {searchQuery && ` (${t.filteredFrom} ${listings.length})`}
             </span>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -465,12 +515,12 @@ export default function ListingsPage() {
                   <Badge
                     className={`absolute top-2 left-2 ${statusColor(listing.listing_status)}`}
                   >
-                    {listing.listing_status}
+                  {listing.listing_status === 'available' ? t.statusAvailable : listing.listing_status === 'sold' ? t.statusSold : t.statusRented}
                   </Badge>
                 )}
                 {!listing.published && (
                   <Badge className="absolute top-2 right-2 bg-gray-500/20 text-gray-400">
-                    Draft
+                    {t.draft}
                   </Badge>
                 )}
                 {viewCounts[listing.id] != null && viewCounts[listing.id] > 0 && (
@@ -528,7 +578,7 @@ export default function ListingsPage() {
                     onClick={() => duplicateListing(listing)}
                     className="text-gray-400 hover:text-blue-400"
                     aria-label={`Duplicate ${listing.title}`}
-                    title="نسخ العقار"
+                    title={t.duplicated}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -554,7 +604,7 @@ export default function ListingsPage() {
               className="h-8 w-8 border-gray-700 bg-[#12121a] text-gray-400 hover:text-white"
               disabled={safePage === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              aria-label="الصفحة السابقة"
+              aria-label={t.prevPage}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -576,7 +626,7 @@ export default function ListingsPage() {
               className="h-8 w-8 border-gray-700 bg-[#12121a] text-gray-400 hover:text-white"
               disabled={safePage >= totalPages}
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              aria-label="الصفحة التالية"
+              aria-label={t.nextPage}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -590,12 +640,12 @@ export default function ListingsPage() {
         <DialogContent className="bg-[#12121a] border-gray-800 text-white max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingId ? 'Edit Listing' : 'New Listing'}
+              {editingId ? t.editListing : t.newListing}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-gray-300">Title *</Label>
+              <Label className="text-gray-300">{t.titleLabel}</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -605,7 +655,7 @@ export default function ListingsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300">Price (SAR)</Label>
+                <Label className="text-gray-300">{t.priceLabel}</Label>
                 <Input
                   type="number"
                   value={form.price}
@@ -614,7 +664,7 @@ export default function ListingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300">Location</Label>
+                <Label className="text-gray-300">{t.locationLabel}</Label>
                 <Input
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
@@ -622,7 +672,7 @@ export default function ListingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300">رابط الموقع على الخريطة</Label>
+                <Label className="text-gray-300">{t.locationUrlLabel}</Label>
                 <Input
                   value={form.location_url}
                   onChange={(e) => setForm({ ...form, location_url: e.target.value })}
@@ -633,7 +683,7 @@ export default function ListingsPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300">Bedrooms</Label>
+                <Label className="text-gray-300">{t.bedroomsLabel}</Label>
                 <Input
                   type="number"
                   value={form.bedrooms}
@@ -642,7 +692,7 @@ export default function ListingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300">Bathrooms</Label>
+                <Label className="text-gray-300">{t.bathroomsLabel}</Label>
                 <Input
                   type="number"
                   value={form.bathrooms}
@@ -651,7 +701,7 @@ export default function ListingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300">Area (m&sup2;)</Label>
+                <Label className="text-gray-300">{t.areaLabel}</Label>
                 <Input
                   type="number"
                   value={form.area_sqm}
@@ -661,7 +711,7 @@ export default function ListingsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">Status</Label>
+              <Label className="text-gray-300">{t.statusLabel}</Label>
               <Select
                 value={form.listing_status}
                 onValueChange={(v) =>
@@ -672,16 +722,16 @@ export default function ListingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a2e] border-gray-700">
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
-                  <SelectItem value="rented">Rented</SelectItem>
+                  <SelectItem value="available">{t.statusAvailable}</SelectItem>
+                  <SelectItem value="sold">{t.statusSold}</SelectItem>
+                  <SelectItem value="rented">{t.statusRented}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {/* Features */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-gray-300">المميزات (Features)</Label>
+                <Label className="text-gray-300">{t.featuresLabel}</Label>
                 <Button
                   type="button"
                   size="sm"
@@ -689,7 +739,7 @@ export default function ListingsPage() {
                   className="h-7 text-xs border-gray-700 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-1"
                   onClick={() => setForm({ ...form, features: [...form.features, ''] })}
                 >
-                  <Plus className="h-3 w-3" /> إضافة ميزة
+                  <Plus className="h-3 w-3" /> {t.addFeature}
                 </Button>
               </div>
               <div className="space-y-2">
@@ -702,7 +752,7 @@ export default function ListingsPage() {
                         next[i] = e.target.value;
                         setForm({ ...form, features: next });
                       }}
-                      placeholder="مثال: موقع استراتيجي"
+                      placeholder={t.featurePlaceholder}
                       className="bg-[#1a1a2e] border-gray-700 text-white text-sm h-8"
                     />
                     <Button
@@ -717,14 +767,14 @@ export default function ListingsPage() {
                   </div>
                 ))}
                 {form.features.length === 0 && (
-                  <p className="text-xs text-gray-500">لا توجد مميزات — اضغط &quot;إضافة ميزة&quot; لإضافتها</p>
+                  <p className="text-xs text-gray-500">{t.noFeatures}</p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-gray-300">Description</Label>
+                <Label className="text-gray-300">{t.descriptionLabel}</Label>
                 <Button
                   type="button"
                   size="sm"
@@ -746,11 +796,11 @@ export default function ListingsPage() {
             </div>
             {/* Notes field */}
             <div className="space-y-2">
-              <Label className="text-gray-300">ملاحظات (Notes)</Label>
+              <Label className="text-gray-300">{t.notesLabel}</Label>
               <Textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="أي ملاحظات خاصة بهذا العقار (للاستخدام الداخلي فقط)"
+                placeholder={t.notesPlaceholder}
                 rows={3}
                 className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
               />
@@ -760,15 +810,15 @@ export default function ListingsPage() {
                 checked={form.published}
                 onCheckedChange={(v) => setForm({ ...form, published: v })}
               />
-              <Label className="text-gray-300">Published</Label>
+              <Label className="text-gray-300">{t.publishedLabel}</Label>
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">Images</Label>
+              <Label className="text-gray-300">{t.imagesLabel}</Label>
               <div className="flex gap-2">
                 <Input
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="Enter image URL"
+                  placeholder={t.imageUrlPlaceholder}
                   className="bg-[#1a1a2e] border-gray-700 text-white flex-1"
                 />
                 <Button
@@ -810,7 +860,7 @@ export default function ListingsPage() {
               onClick={() => setModalOpen(false)}
               className="text-gray-400"
             >
-              Cancel
+              {t.cancel}
             </Button>
             <Button
               onClick={handleSave}
@@ -818,7 +868,7 @@ export default function ListingsPage() {
               className="bg-blue-600 hover:bg-blue-700"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingId ? 'Update' : 'Create'}
+              {editingId ? t.update : t.create}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -827,13 +877,13 @@ export default function ListingsPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="bg-[#12121a] border-gray-800 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete listing</AlertDialogTitle>
+            <AlertDialogTitle>{t.deleteListing}</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              This action cannot be undone.
+              {t.deleteWarning}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800">{t.cancel}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               onClick={() => {
@@ -843,7 +893,7 @@ export default function ListingsPage() {
                 }
               }}
             >
-              Delete
+              {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

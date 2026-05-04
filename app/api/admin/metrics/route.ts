@@ -21,14 +21,14 @@ const DEMO_METRICS = {
     { month: '2025-04', count: 0 },
   ],
   topAgencies: [
-    { name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', postCount: 45 },
+    { name: 'Luxury Homes Dubai', slug: 'demo', postCount: 45 },
     { name: 'Palm Realty', slug: 'palm-realty', postCount: 32 },
     { name: 'Marina Estates', slug: 'marina-estates', postCount: 28 },
     { name: 'Downtown Properties', slug: 'downtown-properties', postCount: 15 },
     { name: 'JBR Residences', slug: 'jbr-residences', postCount: 7 },
   ],
   allAgencies: [
-    { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', status: 'active', postCount: 45, createdAt: '2024-08-15' },
+    { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'demo', status: 'active', postCount: 45, createdAt: '2024-08-15' },
     { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', postCount: 32, createdAt: '2024-07-20' },
     { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', postCount: 28, createdAt: '2024-09-05' },
     { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', postCount: 15, createdAt: '2024-10-12' },

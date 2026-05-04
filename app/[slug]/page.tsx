@@ -1,11 +1,12 @@
 ﻿import { adminDb } from '@/lib/firebase-admin'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
 import PageViewTracker from '@/components/PageViewTracker'
 
-const DEMO_SLUG = 'luxury-homes-dubai'
+const DEMO_SLUG = 'demo'
+const LEGACY_DEMO_SLUG = 'luxury-homes-dubai'
 
 const getSchemaOrgType = (businessType?: string | null) => {
   switch (businessType) {
@@ -39,11 +40,13 @@ const serialize = (obj: any): any => {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
-  if (slug === DEMO_SLUG) {
-    return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
-  }
   const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
-  if (tenantsSnap.empty) return { title: 'Not Found' }
+  if (tenantsSnap.empty) {
+    if (slug === DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
+      return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
+    }
+    return { title: 'Not Found' }
+  }
   const tenant = { id: tenantsSnap.docs[0].id, ...tenantsSnap.docs[0].data() } as { id: string; name: string; slug: string }
   const profileDoc = await adminDb
     .collection('tenants')
@@ -160,22 +163,27 @@ const DEMO_DATA = {
 export default async function AgencyPage({ params }: { params: { slug: string } }) {
   const { slug } = params
 
-  // Serve static demo page for the demo slug (no Firestore needed)
-  if (slug === DEMO_SLUG) {
-    return (
-      <PublicAgencyPage
-        tenant={DEMO_DATA.tenant as any}
-        profile={DEMO_DATA.profile as any}
-        listings={DEMO_DATA.listings as any}
-        news={DEMO_DATA.news as any}
-        gallery={DEMO_DATA.gallery as any}
-        team={DEMO_DATA.team as any}
-      />
-    )
+  if (slug === LEGACY_DEMO_SLUG) {
+    redirect('/demo')
   }
 
   const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
-  if (tenantsSnap.empty) notFound()
+  if (tenantsSnap.empty) {
+    // Fallback static demo page only when there is no matching tenant.
+    if (slug === DEMO_SLUG) {
+      return (
+        <PublicAgencyPage
+          tenant={DEMO_DATA.tenant as any}
+          profile={DEMO_DATA.profile as any}
+          listings={DEMO_DATA.listings as any}
+          news={DEMO_DATA.news as any}
+          gallery={DEMO_DATA.gallery as any}
+          team={DEMO_DATA.team as any}
+        />
+      )
+    }
+    notFound()
+  }
 
   const tenantDoc = tenantsSnap.docs[0]
   const tenant = serialize({ id: tenantDoc.id, ...tenantDoc.data() }) as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }

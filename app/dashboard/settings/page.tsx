@@ -11,6 +11,34 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { Loader as Loader2, Save, ExternalLink, Copy, Check, Lock } from 'lucide-react';
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
+import { useLanguage } from '@/app/dashboard/LanguageContext';
+
+const SETTINGS_T = {
+  ar: {
+    pageTitle: 'الإعدادات',
+    unsavedBanner: 'لديك تغييرات غير محفوظة', saveNow: 'حفظ الآن',
+    publicPageTitle: 'صفحتك العامة', publicPageDesc: 'شارك هذا الرابط مع عملائك — يعرض عروضك ومعلومات الاتصال والمزيد.',
+    agencyProfileTitle: 'ملف الوكالة', agencyName: 'اسم الوكالة', contactEmail: 'بريد التواصل', logoUrl: 'رابط الشعار',
+    savedBtn: 'تم الحفظ!', saveChanges: 'حفظ التغييرات',
+    customDomainTitle: 'نطاق مخصص', customDomainDesc: 'وجّه نطاقك الخاص إلى صفحتك العامة.',
+    yourDomain: 'نطاقك', dnsTitle: 'تعليمات إعداد ال DNS', dnsDesc: 'أضف سجل CNAME في مزود ال DNS:', dnsPropagation: 'قد يستغرق نشر التغييرات حتى 48 ساعة.',
+    changePwdTitle: 'تغيير كلمة المرور', currentPwd: 'كلمة المرور الحالية', newPwd: 'كلمة المرور الجديدة', confirmPwd: 'تأكيد كلمة المرور الجديدة',
+    allRequired: 'جميع الحقول مطلوبة', pwdMismatch: 'كلمتا المرور غير متطابقتين', pwdTooShort: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+    notLoggedIn: 'المستخدم غير مسجل', pwdChanged: 'تم تغيير كلمة المرور بنجاح', error: 'خطأ', pwdFailed: 'فشل تغيير كلمة المرور',
+  },
+  en: {
+    pageTitle: 'Settings',
+    unsavedBanner: 'You have unsaved changes', saveNow: 'Save now',
+    publicPageTitle: 'Your Public Page', publicPageDesc: 'Share this link with your clients — it shows your listings, contact info, and more.',
+    agencyProfileTitle: 'Agency Profile', agencyName: 'Agency Name', contactEmail: 'Contact Email', logoUrl: 'Logo URL',
+    savedBtn: 'Saved!', saveChanges: 'Save Changes',
+    customDomainTitle: 'Custom Domain', customDomainDesc: 'Point your own domain to your public page.',
+    yourDomain: 'Your Domain', dnsTitle: 'DNS Setup Instructions', dnsDesc: 'Add a CNAME record in your DNS provider pointing to this app:', dnsPropagation: 'Changes may take up to 48 hours to propagate globally.',
+    changePwdTitle: 'Change Password', currentPwd: 'Current Password', newPwd: 'New Password', confirmPwd: 'Confirm New Password',
+    allRequired: 'All fields are required', pwdMismatch: 'Passwords do not match', pwdTooShort: 'Password must be at least 8 characters',
+    notLoggedIn: 'User not logged in', pwdChanged: 'Password changed successfully', error: 'Error', pwdFailed: 'Failed to change password',
+  },
+};
 
 type ProfileResponse = {
   profile: Profile;
@@ -18,6 +46,8 @@ type ProfileResponse = {
 };
 
 export default function SettingsPage() {
+  const { lang } = useLanguage();
+  const t = SETTINGS_T[lang];
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,7 +78,7 @@ export default function SettingsPage() {
     if (isDemo) {
       const demoProfile: ProfileResponse = {
         profile: { contact_email: 'hello@luxuryhomesdubai.ae', logo_url: '', bio: '', contact_phone: '+971 4 000 0000', contact_address: 'Dubai Marina, Dubai, UAE' } as any,
-        tenant: { name: 'Luxury Homes Dubai', slug: 'luxury-homes-dubai', primary_color: '#1d4ed8' } as any,
+        tenant: { name: 'Luxury Homes Dubai', slug: 'demo', primary_color: '#1d4ed8' } as any,
       };
       setData(demoProfile);
       setName(demoProfile.tenant.name);
@@ -161,21 +191,21 @@ export default function SettingsPage() {
 
   const handleChangePassword = async () => {
     if (!pwdForm.current || !pwdForm.next || !pwdForm.confirm) {
-      toast({ title: 'جميع الحقول مطلوبة', variant: 'destructive' });
+      toast({ title: t.allRequired, variant: 'destructive' });
       return;
     }
     if (pwdForm.next !== pwdForm.confirm) {
-      toast({ title: 'كلمتا المرور غير متطابقتين', variant: 'destructive' });
+      toast({ title: t.pwdMismatch, variant: 'destructive' });
       return;
     }
     if (pwdForm.next.length < 8) {
-      toast({ title: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', variant: 'destructive' });
+      toast({ title: t.pwdTooShort, variant: 'destructive' });
       return;
     }
     const auth = getAuth();
     const user = auth.currentUser;
     if (!user || !user.email) {
-      toast({ title: 'المستخدم غير مسجل', variant: 'destructive' });
+      toast({ title: t.notLoggedIn, variant: 'destructive' });
       return;
     }
     setPwdSaving(true);
@@ -184,10 +214,10 @@ export default function SettingsPage() {
       await reauthenticateWithCredential(user, cred);
       await updatePassword(user, pwdForm.next);
       setPwdForm({ current: '', next: '', confirm: '' });
-      toast({ title: 'تم تغيير كلمة المرور بنجاح' });
+      toast({ title: t.pwdChanged });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'فشل تغيير كلمة المرور';
-      toast({ title: 'خطأ', description: msg, variant: 'destructive' });
+      const msg = e instanceof Error ? e.message : t.pwdFailed;
+      toast({ title: t.error, description: msg, variant: 'destructive' });
     } finally {
       setPwdSaving(false);
     }
@@ -195,14 +225,14 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
 
       {/* Unsaved changes banner */}
       {hasUnsaved && (
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-lg bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm">
-          <span className="text-amber-300">لديك تغييرات غير محفوظة</span>
+          <span className="text-amber-300">{t.unsavedBanner}</span>
           <Button size="sm" onClick={handleSave} disabled={saving} aria-busy={saving} className="bg-amber-500 hover:bg-amber-400 text-black">
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'حفظ الآن'}
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : t.saveNow}
           </Button>
         </div>
       )}
@@ -210,10 +240,10 @@ export default function SettingsPage() {
       {publicUrl && (
         <Card className="bg-[#12121a] border-gray-800">
           <CardHeader>
-            <CardTitle className="text-lg">Your Public Page</CardTitle>
+            <CardTitle className="text-lg">{t.publicPageTitle}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-400 mb-3">Share this link with your clients — it shows your listings, contact info, and more.</p>
+            <p className="text-sm text-gray-400 mb-3">{t.publicPageDesc}</p>
             <div className="flex items-center gap-2">
               <div className="flex-1 bg-[#1a1a2e] border border-gray-700 rounded-md px-3 py-2 text-sm text-blue-400 font-mono truncate">
                 {publicUrl}
@@ -231,11 +261,11 @@ export default function SettingsPage() {
 
       <Card className="bg-[#12121a] border-gray-800">
         <CardHeader>
-          <CardTitle className="text-lg">Agency Profile</CardTitle>
+            <CardTitle className="text-lg">{t.agencyProfileTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-gray-300">Agency Name</Label>
+            <Label className="text-gray-300">{t.agencyName}</Label>
             <Input
               value={name}
               onChange={(e) => { setName(e.target.value); setHasUnsaved(true); }}
@@ -243,7 +273,7 @@ export default function SettingsPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-gray-300">Contact Email</Label>
+            <Label className="text-gray-300">{t.contactEmail}</Label>
             <Input
               type="email"
               value={email}
@@ -257,7 +287,7 @@ export default function SettingsPage() {
             {errors.email && <p className="text-xs text-red-400">{errors.email}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-gray-300">Logo URL</Label>
+            <Label className="text-gray-300">{t.logoUrl}</Label>
             <Input
               value={logoUrl}
               onChange={(e) => {
@@ -279,19 +309,19 @@ export default function SettingsPage() {
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {saved ? 'Saved!' : 'Save Changes'}
+            {saved ? t.savedBtn : t.saveChanges}
           </Button>
         </CardContent>
       </Card>
 
       <Card className="bg-[#12121a] border-gray-800">
         <CardHeader>
-          <CardTitle className="text-lg">Custom Domain</CardTitle>
+            <CardTitle className="text-lg">{t.customDomainTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-400">Point your own domain to your public page.</p>
+          <p className="text-sm text-gray-400">{t.customDomainDesc}</p>
           <div className="space-y-2">
-            <Label className="text-gray-300">Your Domain</Label>
+            <Label className="text-gray-300">{t.yourDomain}</Label>
             <Input
               value={customDomain}
               onChange={(e) => setCustomDomain(e.target.value)}
@@ -300,10 +330,10 @@ export default function SettingsPage() {
             />
           </div>
           <div className="bg-[#1a1a2e] border border-gray-700 rounded-md p-4 text-sm text-gray-400 space-y-2">
-            <p className="font-semibold text-gray-300">DNS Setup Instructions</p>
-            <p>Add a CNAME record in your DNS provider pointing to this app:</p>
+            <p className="font-semibold text-gray-300">{t.dnsTitle}</p>
+            <p>{t.dnsDesc}</p>
             <code className="block bg-black/40 rounded px-3 py-2 text-green-400 text-xs font-mono">{`CNAME  @  →  ${origin || 'your-app.vercel.app'}`}</code>
-            <p className="text-xs">Changes may take up to 48 hours to propagate globally.</p>
+            <p className="text-xs">{t.dnsPropagation}</p>
           </div>
           <Button
             onClick={handleSave}
@@ -315,7 +345,7 @@ export default function SettingsPage() {
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {saved ? 'Saved!' : 'Save Changes'}
+            {saved ? t.savedBtn : t.saveChanges}
           </Button>
         </CardContent>
       </Card>
@@ -324,12 +354,12 @@ export default function SettingsPage() {
         <Card className="bg-[#12121a] border-gray-800">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Lock className="h-4 w-4" /> تغيير كلمة المرور
+              <Lock className="h-4 w-4" /> {t.changePwdTitle}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-gray-300">كلمة المرور الحالية</Label>
+              <Label className="text-gray-300">{t.currentPwd}</Label>
               <Input
                 type="password"
                 value={pwdForm.current}
@@ -339,7 +369,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">كلمة المرور الجديدة</Label>
+              <Label className="text-gray-300">{t.newPwd}</Label>
               <Input
                 type="password"
                 value={pwdForm.next}
@@ -349,7 +379,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300">تأكيد كلمة المرور الجديدة</Label>
+              <Label className="text-gray-300">{t.confirmPwd}</Label>
               <Input
                 type="password"
                 value={pwdForm.confirm}
@@ -364,7 +394,7 @@ export default function SettingsPage() {
               className="bg-blue-600 hover:bg-blue-700"
             >
               {pwdSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
-              تغيير كلمة المرور
+              {t.changePwdTitle}
             </Button>
           </CardContent>
         </Card>

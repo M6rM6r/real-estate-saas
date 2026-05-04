@@ -9,12 +9,6 @@ const ADMIN_JWT_SECRET = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ── Redirect /demo to /try to avoid conflict with tenant slug ──
-  if (pathname === '/demo' || pathname.startsWith('/demo/')) {
-    const newPath = pathname.replace(/^\/demo/, '/try')
-    return NextResponse.redirect(new URL(newPath + request.nextUrl.search, request.url))
-  }
-
   // ── Super admin routes ──────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const token = request.cookies.get('admin_session')?.value
@@ -44,5 +38,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/demo', '/demo/:path*', '/admin/:path*', '/dashboard/:path*'],
+  matcher: ['/admin/:path*', '/dashboard/:path*'],
 }

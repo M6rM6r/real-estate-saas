@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -25,6 +25,149 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import 'react-image-crop/dist/ReactCrop.css';
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp';
+import { useLanguage } from '@/app/dashboard/LanguageContext';
+
+const PB_T = {
+  ar: {
+    cropTitle: 'اقتصاص الصورة', cancel: 'إلغاء', confirmCrop: 'تأكيد الاقتصاص',
+    changeImg: 'تغيير', clickUpload: 'اضغط لاختيار صورة', clickOrDrag: 'اضغط أو اسحب صورة هنا',
+    changeImage: 'تغيير الصورة', uploadFailed: 'فشل الرفع', uploadHint: 'JPG · PNG · WebP · حتى 5 MB',
+    reorderSection: 'إعادة ترتيب القسم',
+    sectionHero: 'القسم الرئيسي', sectionListings: 'العروض', sectionAbout: 'من نحن',
+    sectionContact: 'تواصل معنا', sectionWorkingHours: 'أوقات العمل', sectionFooter: 'التذييل',
+    sun: 'الأحد', mon: 'الإثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس', fri: 'الجمعة', sat: 'السبت',
+    loadingPage: 'جاري تحميل إعدادات صفحتك...',
+    pageBuilderTitle: 'منشئ الصفحة', pageBuilderSub: 'خصّص صفحتك العامة التي يراها عملاؤك',
+    publicPageUrl: 'رابط صفحتك العامة',
+    invalidBaseUrl: 'قيمة NEXT_PUBLIC_APP_URL غير صالحة — سيتم استخدام رابط البيئة الحالية.',
+    missingBaseUrl: 'لم يتم ضبط NEXT_PUBLIC_APP_URL — يفضّل إضافتها في بيئة التشغيل.',
+    autoSavingSoon: 'حفظ تلقائي خلال ثوانٍ...', saving: 'جاري الحفظ...', saved: 'تم الحفظ',
+    copyLink: 'نسخ الرابط', copied: 'تم النسخ!', openPage: 'فتح الصفحة',
+    qrTitle: 'رمز QR لصفحتك', downloadPng: 'تحميل PNG', whatsapp: 'واتساب',
+    tabControl: '🎛️ تحكم', tabDesign: '🎨 التصميم', tabIdentity: '✍️ الهوية', tabListings: '🏠 العروض', tabConnect: '🔗 تواصل',
+    pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
+    pageSettingsTitle: '🎛️ إعدادات الصفحة', heroHeadlineLabel: 'العنوان الرئيسي للصفحة',
+    heroHeadlinePlaceholder: 'اكتشف أفضل العروض لديك', pageLangLabel: 'لغة الصفحة',
+    chooseDesign: 'اختر تصميم صفحتك', chooseDesignSub: 'سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ',
+    brandColor: '🎨 لون العلامة التجارية', brandColorHint: 'يُستخدم كلون رئيسي في صفحتك',
+    logoLabel: '🖼️ الشعار (Logo)', logoUploadLabel: 'شعار المكتب — اضغط لرفع صورة',
+    coverLabel: '🖼️ صورة الغلاف', coverHint: 'مقترح: 1200×400 بكسل أو أوسع',
+    businessNameLabel: '🏢 اسم المنشأة', businessNamePlaceholder: 'مثال: مطعم الواحة، مكتب الأفق، صالون نور...',
+    businessTypeLabel: '💼 نوع النشاط التجاري', businessTypeSub: 'يحدد الحقول المتاحة في نماذج العروض',
+    btRealEstate: '🏠 عقارات', btRestaurant: '🍽️ مطعم / كافيه', btSalon: '✂️ صالون / سبا',
+    btRetail: '🛍️ متجر / بيع بالتجزئة', btServices: '⚙️ خدمات', btOther: '📋 أخرى',
+    pageContentLabel: '✍️ محتوى الصفحة', taglineLabel: 'الشعار النصي',
+    taglinePlaceholder: 'مثال: شريكك الموثوق، جودة لا تُضاهى...',
+    bioLabel: 'نبذة عنا', bioPlaceholder: 'أخبر الزوار عن منشأتك — خبرتك، قيمك، وما يميزك...',
+    licenceLabel: 'أرقام التراخيص', addLicence: 'إضافة رقم ترخيص',
+    noLicences: 'لا توجد أرقام ترخيص — اضغط "إضافة" لإضافة رقم',
+    licenceTypePlaceholder: 'نوع الترخيص (مثال: وساطة عقارية)', licenceNumPlaceholder: 'رقم الترخيص (مثال: RE-12345)',
+    seoLabel: '🔍 محركات البحث والمشاركة', seoSub: 'هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل',
+    seoTitleLabel: 'عنوان الصفحة (SEO Title)', seoCharsHint: 'يُنصح بـ 60 حرفاً',
+    seoDescLabel: 'وصف الصفحة (Meta Description)', seoDescPlaceholder: 'وصف موجز لمنشأتك يظهر في نتائج البحث...',
+    ogPreviewLabel: 'معاينة عند المشاركة على واتساب', businessNameFallback: 'اسم المنشأة', bizDescFallback: 'وصف المنشأة يظهر هنا',
+    manageListings: 'إدارة العروض', manageListingsSub: 'أضف وعدّل عروضك أو منتجاتك أو خدماتك التي تظهر في صفحتك العامة',
+    addListing: 'إضافة عرض', editListingTitle: 'تعديل العرض', newListingTitle: 'إضافة عرض جديد',
+    fieldCategory: 'الفئة', fieldName: 'الاسم', fieldPrice: 'السعر', fieldLocation: 'الموقع',
+    fieldBedrooms: 'الغرف', fieldBathrooms: 'الحمامات', fieldArea: 'المساحة (م²)',
+    mainImage: 'الصورة الرئيسية للعرض', extraPhotos: 'صور إضافية (اختياري)', addPhoto: 'إضافة صورة',
+    publishLabel: 'نشر على الصفحة العامة', publishSub: 'إيقاف هذا يجعل العرض مسودة فقط',
+    update: 'تحديث', noListings: 'لا توجد عروض مضافة بعد',
+    statusAvailable: 'متاح', statusSold: 'مباع', statusRented: 'مؤجر', statusDraft: 'مسودة',
+    editListing: 'تعديل', listingError: 'حدث خطأ، حاول مجدداً', areaSqm: 'م²',
+    categoryPlaceholder: 'مثال: شقة، منتج، خدمة...',
+    contactTitle: '📞 بيانات التواصل', contactEmail: 'البريد الإلكتروني',
+    contactPhone: 'رقم الهاتف الرئيسي', contactAddress: 'العنوان',
+    extraNumbers: 'أرقام إضافية', addNumber: 'إضافة رقم',
+    workingHoursTitle: '🕐 ساعات العمل',
+    workingHoursSub: 'أيام معطلة يمكن تعطيلها، والأيام المفعلة يجب أن تحتوي وقت فتح/إغلاق صحيح.',
+    resetHours: 'إعادة الضبط', closed: 'مغلق',
+    socialTitle: '🌐 روابط التواصل الاجتماعي',
+    socialSub: 'اكتب اسم المستخدم فقط (بدون رابط) — التطبيق يبني الرابط تلقائياً عند الضغط على الأيقونة',
+    whatsappHint: 'يمكنك إدخال رقم الهاتف أو رابط واتساب، وسيتم تحويله تلقائياً.',
+    saveNow: 'حفظ الآن', autoSaved: 'تم الحفظ تلقائياً', autoSaveHint: 'يُحفظ تلقائياً بعد 2.5 ثانية من آخر تغيير',
+    livePreview: 'معاينة مباشرة', live: 'مباشر',
+    emailInvalidMsg: 'البريد الإلكتروني — الصيغة غير صحيحة', emailInvalidField: 'صيغة غير صحيحة',
+    logoUrlLabel: 'رابط الشعار', coverUrlLabel: 'رابط صورة الغلاف',
+    invalidUrlMsg: 'الرجاء إدخال رابط صحيح يبدأ بـ http أو https', invalidUrlField: 'رابط غير صحيح',
+    workingHoursError: 'ساعات العمل — تحقق من توقيت يوم',
+  },
+  en: {
+    cropTitle: 'Crop Image', cancel: 'Cancel', confirmCrop: 'Confirm Crop',
+    changeImg: 'Change', clickUpload: 'Click to upload', clickOrDrag: 'Click or drag image here',
+    changeImage: 'Change Image', uploadFailed: 'Upload failed', uploadHint: 'JPG · PNG · WebP · up to 5 MB',
+    reorderSection: 'Reorder section',
+    sectionHero: 'Hero', sectionListings: 'Listings', sectionAbout: 'About Us',
+    sectionContact: 'Contact', sectionWorkingHours: 'Working Hours', sectionFooter: 'Footer',
+    sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday',
+    loadingPage: 'Loading your page settings...',
+    pageBuilderTitle: 'Page Builder', pageBuilderSub: 'Customize your public page that clients see',
+    publicPageUrl: 'Your Public Page URL',
+    invalidBaseUrl: 'NEXT_PUBLIC_APP_URL value is invalid — the current environment URL will be used.',
+    missingBaseUrl: 'NEXT_PUBLIC_APP_URL is not set — recommended to add it in production.',
+    autoSavingSoon: 'Auto-saving in a few seconds...', saving: 'Saving...', saved: 'Saved',
+    copyLink: 'Copy Link', copied: 'Copied!', openPage: 'Open Page',
+    qrTitle: 'QR Code for Your Page', downloadPng: 'Download PNG', whatsapp: 'WhatsApp',
+    tabControl: '🎛️ Control', tabDesign: '🎨 Design', tabIdentity: '✍️ Identity', tabListings: '🏠 Listings', tabConnect: '🔗 Connect',
+    pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
+    pageSettingsTitle: '🎛️ Page Settings', heroHeadlineLabel: 'Main Page Headline',
+    heroHeadlinePlaceholder: 'Discover the best listings', pageLangLabel: 'Page Language',
+    chooseDesign: 'Choose Your Page Design', chooseDesignSub: 'The design will be applied instantly to the preview and saved to your page',
+    brandColor: '🎨 Brand Color', brandColorHint: 'Used as the primary color in your page',
+    logoLabel: '🖼️ Logo', logoUploadLabel: 'Agency logo — click to upload',
+    coverLabel: '🖼️ Cover Image', coverHint: 'Recommended: 1200×400 px or wider',
+    businessNameLabel: '🏢 Business Name', businessNamePlaceholder: 'e.g. Oasis Restaurant, Horizon Office, Noor Salon...',
+    businessTypeLabel: '💼 Business Type', businessTypeSub: 'Determines available fields in listing forms',
+    btRealEstate: '🏠 Real Estate', btRestaurant: '🍽️ Restaurant / Café', btSalon: '✂️ Salon / Spa',
+    btRetail: '🛍️ Store / Retail', btServices: '⚙️ Services', btOther: '📋 Other',
+    pageContentLabel: '✍️ Page Content', taglineLabel: 'Tagline',
+    taglinePlaceholder: 'e.g. Your trusted partner, unmatched quality...',
+    bioLabel: 'About Us', bioPlaceholder: 'Tell visitors about your business — your experience, values, and what sets you apart...',
+    licenceLabel: 'License Numbers', addLicence: 'Add License Number',
+    noLicences: 'No license numbers — click "Add" to add one',
+    licenceTypePlaceholder: 'License type (e.g. Real Estate Broker)', licenceNumPlaceholder: 'License number (e.g. RE-12345)',
+    seoLabel: '🔍 SEO & Sharing', seoSub: 'This data appears when sharing your link on WhatsApp and Google',
+    seoTitleLabel: 'Page Title (SEO Title)', seoCharsHint: '60 chars recommended',
+    seoDescLabel: 'Page Description (Meta Description)', seoDescPlaceholder: 'A brief description of your business for search results...',
+    ogPreviewLabel: 'WhatsApp Share Preview', businessNameFallback: 'Business Name', bizDescFallback: 'Business description appears here',
+    manageListings: 'Manage Listings', manageListingsSub: 'Add and edit your listings, products, or services shown on your public page',
+    addListing: 'Add Listing', editListingTitle: 'Edit Listing', newListingTitle: 'Add New Listing',
+    fieldCategory: 'Category', fieldName: 'Name', fieldPrice: 'Price', fieldLocation: 'Location',
+    fieldBedrooms: 'Bedrooms', fieldBathrooms: 'Bathrooms', fieldArea: 'Area (sqm)',
+    mainImage: 'Main Listing Image', extraPhotos: 'Additional Photos (optional)', addPhoto: 'Add Photo',
+    publishLabel: 'Publish to Public Page', publishSub: 'Disabling this makes the listing a draft only',
+    update: 'Update', noListings: 'No listings added yet',
+    statusAvailable: 'Available', statusSold: 'Sold', statusRented: 'Rented', statusDraft: 'Draft',
+    editListing: 'Edit', listingError: 'An error occurred, please try again', areaSqm: 'sqm',
+    categoryPlaceholder: 'e.g. Apartment, Product, Service...',
+    contactTitle: '📞 Contact Details', contactEmail: 'Email Address',
+    contactPhone: 'Primary Phone', contactAddress: 'Address',
+    extraNumbers: 'Additional Numbers', addNumber: 'Add Number',
+    workingHoursTitle: '🕐 Working Hours',
+    workingHoursSub: 'Disabled days can be turned off; enabled days must have valid open/close times.',
+    resetHours: 'Reset', closed: 'Closed',
+    socialTitle: '🌐 Social Links',
+    socialSub: 'Enter username only (without URL) — the app builds the link automatically when clicked',
+    whatsappHint: 'You can enter a phone number or WhatsApp link, it will be converted automatically.',
+    saveNow: 'Save Now', autoSaved: 'Auto-saved', autoSaveHint: 'Auto-saves 2.5s after the last change',
+    livePreview: 'Live Preview', live: 'Live',
+    emailInvalidMsg: 'Email — invalid format', emailInvalidField: 'Invalid format',
+    logoUrlLabel: 'Logo URL', coverUrlLabel: 'Cover Image URL',
+    invalidUrlMsg: 'Please enter a valid URL starting with http or https', invalidUrlField: 'Invalid URL',
+    workingHoursError: 'Working hours — check timing for',
+  },
+} as const;
+
+type PBTranslations = typeof PB_T['en'];
+
+const SECTION_LABEL_KEY: Record<SectionOrderKey, keyof PBTranslations> = {
+  hero: 'sectionHero',
+  listings: 'sectionListings',
+  about: 'sectionAbout',
+  contact: 'sectionContact',
+  working_hours: 'sectionWorkingHours',
+  footer: 'sectionFooter',
+};
 
 type ProfileResponse = {
   profile: Profile | null;
@@ -64,6 +207,8 @@ function CropModal({
   const [crop, setCrop] = useState<CropType>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+  const { lang } = useLanguage();
+  const t = PB_T[lang];
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -85,7 +230,7 @@ function CropModal({
       <div className="bg-[#12121a] border border-slate-700 rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4">
         <div className="flex items-center gap-2 text-white font-semibold">
           <Crop className="h-4 w-4 text-blue-400" />
-          <span>اقتصاص الصورة</span>
+          <span>{t.cropTitle}</span>
         </div>
         <div className="overflow-auto max-h-[60vh] flex justify-center">
           <ReactCrop
@@ -106,14 +251,14 @@ function CropModal({
             onClick={onCancel}
             className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors"
           >
-            إلغاء
+            {t.cancel}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
           >
-            تأكيد الاقتصاص
+            {t.confirmCrop}
           </button>
         </div>
       </div>
@@ -140,6 +285,8 @@ function ImageUploader({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const demoObjUrl = useRef<string | null>(null);
   const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+  const { lang } = useLanguage();
+  const t = PB_T[lang];
 
   const aspectRatio = aspect === 'square' ? 1 : 16 / 9;
 
@@ -187,7 +334,7 @@ function ImageUploader({
       const urls = data.urls as string[] | undefined;
       if (urls?.[0]) onChange(urls[0]);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'فشل الرفع');
+      setErr(e instanceof Error ? e.message : t.uploadFailed);
     } finally {
       setUploading(false);
     }
@@ -228,7 +375,7 @@ function ImageUploader({
               type="button"
               onClick={() => inputRef.current?.click()}
               className="h-16 w-16 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-colors relative"
-              title={label ?? 'رفع صورة'}
+              title={label ?? t.clickUpload}
             >
               {uploading ? (
                 <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
@@ -238,13 +385,13 @@ function ImageUploader({
                 <ImageIcon className="h-6 w-6 text-slate-600" />
               )}
               {value && !uploading && (
-                <span className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-medium">تغيير</span>
+                <span className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-medium">{t.changeImg}</span>
               )}
             </button>
           </div>
           <div className="flex-1 space-y-1">
-            <p className="text-xs text-slate-400">{label ?? 'اضغط لاختيار صورة'}</p>
-            <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+            <p className="text-xs text-slate-400">{label ?? t.clickUpload}</p>
+            <p className="text-[11px] text-slate-600">{t.uploadHint}</p>
             {err && <p className="text-[11px] text-red-400">{err}</p>}
           </div>
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
@@ -260,7 +407,7 @@ function ImageUploader({
             <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
               <img src={value} alt="cover preview" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
-                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> تغيير الصورة</>}
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> {t.changeImage}</>}
               </div>
             </div>
           ) : (
@@ -270,8 +417,8 @@ function ImageUploader({
               ) : (
                 <>
                   <ImageIcon className="h-6 w-6 text-slate-500" />
-                  <p className="text-xs text-slate-400">اضغط أو اسحب صورة هنا</p>
-                  <p className="text-[11px] text-slate-600">JPG · PNG · WebP · حتى 5 MB</p>
+                  <p className="text-xs text-slate-400">{t.clickOrDrag}</p>
+                  <p className="text-[11px] text-slate-600">{t.uploadHint}</p>
                 </>
               )}
             </div>
@@ -327,6 +474,8 @@ function SortableSectionRow({
   onToggle: (key: SectionOrderKey) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
+  const { lang } = useLanguage();
+  const t = PB_T[lang];
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -342,7 +491,7 @@ function SortableSectionRow({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label="إعادة ترتيب القسم"
+          aria-label={t.reorderSection}
           className="text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing"
           {...attributes}
           {...listeners}
@@ -350,7 +499,7 @@ function SortableSectionRow({
           ☰
         </button>
         <span className="w-5 text-center">{SECTION_ORDER_LABELS[sectionKey].icon}</span>
-        <span className="text-sm text-slate-200">{SECTION_ORDER_LABELS[sectionKey].label}</span>
+        <span className="text-sm text-slate-200">{t[SECTION_LABEL_KEY[sectionKey]]}</span>
       </div>
 
       <button
@@ -433,11 +582,32 @@ const CURRENCY_OPTIONS = [
 ] as const;
 
 const demoListings = [
-  { id: '1', title: 'فيلا فاخرة في بالم جميرا', price: 12000000, location: 'Palm Jumeirah, Dubai', bedrooms: 5, bathrooms: 6, area_sqm: 820, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg'] },
-  { id: '2', title: 'شقة بإطلالة برج خليفة', price: 2800000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 145, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg'] },
-  { id: '3', title: 'استوديو بإطلالة قناة مائية', price: 750000, location: 'Business Bay, Dubai', bedrooms: 0, bathrooms: 1, area_sqm: 48, listing_status: 'sold' as const, type: 'sale', images: ['https://images.pexels.com/photos/271816/pexels-photo-271816.jpeg'] },
-  { id: '4', title: 'بنتهاوس في دبي مارينا', price: 8500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 4, area_sqm: 560, listing_status: 'available' as const, type: 'sale', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'] },
-  { id: '5', title: 'شقة للإيجار في جي بي آر', price: 180000, location: 'JBR, Dubai', bedrooms: 3, bathrooms: 2, area_sqm: 185, listing_status: 'available' as const, type: 'rent', images: ['https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg'] },
+  { id: 'l1', title: 'بنتهاوس مارينا', body: 'إطلالات بانورامية على المرسى من كل غرفة. تراس خاص على السطح مع مسبح لا نهاية له.', price: 12500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 4, area_sqm: 390, listing_status: 'available' as const, offer_type: 'sale', property_type: 'penthouse', images: ['https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l2', title: 'فيلا نخلة جميرا', body: 'فيلا على الشاطئ في جزيرة النخلة الشهيرة مع شاطئ خاص ومسبح ووصول مباشر للبحر.', price: 28000000, location: 'Palm Jumeirah', bedrooms: 6, bathrooms: 7, area_sqm: 790, listing_status: 'available' as const, offer_type: 'sale', property_type: 'villa', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l3', title: 'جناح وسط المدينة', body: 'إطلالات بانورامية على برج خليفة والنافورة. تشطيبات فاخرة ونظام منزل ذكي.', price: 5800000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 167, listing_status: 'available' as const, offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l4', title: 'شقة بزنس باي', body: 'معيشة عصرية في قلب الحي التجاري. إطلالات على القناة، صالة رياضية وخدمة كونسيرج.', price: 3200000, location: 'Business Bay', bedrooms: 3, bathrooms: 3, area_sqm: 195, listing_status: 'sold' as const, offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l5', title: 'دوبلكس جي بي آر', body: 'على بُعد خطوات من الشاطئ، يجمع هذا الدوبلكس بين الفخامة الداخلية والمعيشة في الهواء الطلق.', price: 9100000, location: 'Jumeirah Beach Residence', bedrooms: 3, bathrooms: 3, area_sqm: 279, listing_status: 'available' as const, offer_type: 'rent', property_type: 'duplex', images: ['https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l6', title: 'قصر إمارات هيلز', body: 'قصر فاخر في أرقى عنوان في دبي. إطلالات على ملعب الغولف، غرفة سينما ومرافق للموظفين.', price: 45000000, location: 'Emirates Hills', bedrooms: 8, bathrooms: 9, area_sqm: 1300, listing_status: 'available' as const, offer_type: 'sale', property_type: 'mansion', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+];
+
+const demoNews = [
+  { id: 'n1', title: 'سوق العقارات في دبي يسجل أرقاماً قياسية في الربع الأول 2026', body: 'ارتفعت أحجام المعاملات بنسبة 34% على أساس سنوي مع تدفق استثمارات المستثمرين الدوليين إلى مناطق دبي مارينا وداون تاون والنخلة.', image_url: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+  { id: 'n2', title: 'قواعد التأشيرة الذهبية الجديدة تعزز الطلب على العقارات الفاخرة', body: 'يُحفز برنامج التأشيرة لمدة 10 سنوات لملاك العقارات بقيمة 2 مليون درهم+ موجةً من الاستثمارات الأجنبية طويلة الأجل في الإمارات.', image_url: 'https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+  { id: 'n3', title: 'Luxury Homes Dubai تفوز بجائزة أفضل وكالة 2025', body: 'نفخر بحصولنا على لقب أفضل وكالة عقارات سكنية فاخرة في دبي للعام الثاني على التوالي في حفل جوائز الخليج للعقارات.', image_url: 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+];
+
+const demoGallery = [
+  { id: 'g1', url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Marina Penthouse Living Room', sort_order: 0 },
+  { id: 'g2', url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Palm Jumeirah Aerial View', sort_order: 1 },
+  { id: 'g3', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Beachfront Villa Exterior', sort_order: 2 },
+  { id: 'g4', url: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Downtown Skyline at Night', sort_order: 3 },
+  { id: 'g5', url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'JBR Beachfront Terrace', sort_order: 4 },
+  { id: 'g6', url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Emirates Hills Mansion Pool', sort_order: 5 },
+];
+
+const demoTeam = [
+  { id: 't1', email: 'sarah@luxuryhomesdubai.ae', role: 'agent', display_name: 'Sarah Al-Mansouri', photo_url: '', phone: '+971500000001' },
+  { id: 't2', email: 'james@luxuryhomesdubai.ae', role: 'agent', display_name: 'James Porter', photo_url: '', phone: '+971500000002' },
 ];
 
 const DAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -476,6 +646,9 @@ const isValidUrl = (value: string) => {
 };
 
 export default function PageBuilderPage() {
+  const { lang } = useLanguage();
+  const t = PB_T[lang];
+  const DAY_LABELS = { sun: t.sun, mon: t.mon, tue: t.tue, wed: t.wed, thu: t.thu, fri: t.fri, sat: t.sat };
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -494,6 +667,10 @@ export default function PageBuilderPage() {
   const [autoSavePending, setAutoSavePending] = useState(0);
   const pendingImageAutoSave = useRef(false);
   const [listings, setListings] = useState<any[]>([]);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [galleryItems, setGalleryItems] = useState<any[]>([]);
+  const [teamItems, setTeamItems] = useState<any[]>([]);
+  const [isDemoSession, setIsDemoSession] = useState(false);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [] as string[], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '' });
@@ -508,38 +685,39 @@ export default function PageBuilderPage() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const profileCompletionItems = [
-    { key: 'name',      label: 'اسم المنشأة',          done: Boolean(agencyName),                tab: 'identity' },
-    { key: 'logo',      label: 'الشعار',               done: Boolean(profile.logo_url),          tab: 'design'   },
-    { key: 'cover',     label: 'صورة الغلاف',          done: Boolean(profile.cover_url),         tab: 'design'   },
-    { key: 'bio',       label: 'نبذة عن المنشأة',      done: Boolean(profile.bio),               tab: 'identity' },
-    { key: 'whatsapp',  label: 'رقم واتساب',           done: Boolean(profile.social_links?.whatsapp), tab: 'connect' },
-    { key: 'listing',   label: 'عرض واحد على الأقل',   done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
-    { key: 'theme',     label: 'تصميم مخصص',           done: selectedTheme !== 'modern',         tab: 'design'   },
+    { key: 'name',      label: t.businessNameLabel,    done: Boolean(agencyName),                tab: 'identity' },
+    { key: 'logo',      label: t.logoLabel,            done: Boolean(profile.logo_url),          tab: 'design'   },
+    { key: 'cover',     label: t.coverLabel,           done: Boolean(profile.cover_url),         tab: 'design'   },
+    { key: 'bio',       label: t.bioLabel,             done: Boolean(profile.bio),               tab: 'identity' },
+    { key: 'whatsapp',  label: 'WhatsApp',             done: Boolean(profile.social_links?.whatsapp), tab: 'connect' },
+    { key: 'listing',   label: t.tabListings,          done: listings.filter(l => l.published !== false).length > 0, tab: 'posts' },
+    { key: 'theme',     label: t.tabDesign,            done: selectedTheme !== 'modern',         tab: 'design'   },
   ];
 
   useEffect(() => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
     if (isDemo) {
+      setIsDemoSession(true);
       const d = {
         profile: {
           tenant_id: 'demo',
-          logo_url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=100',
-          cover_url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200',
-          bio: 'وكالة عقارية رائدة متخصصة في العقارات الفاخرة بدبي. بخبرة تمتد أكثر من 15 عامًا، نساعدك على إيجاد منزل أحلامك في أرقى المواقع.',
-          tagline: 'حيث تلتقي الفخامة بالمنزل',
-          contact_email: 'info@luxuryhomesdubai.com',
-          contact_phone: '+971 4 123 4567',
-          extra_phones: ['+971 50 123 4567'],
-          contact_address: 'برج A، بزنس باي، دبي، الإمارات',
+          logo_url: '',
+          cover_url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1600',
+          bio: 'Luxury Homes Dubai is an award-winning agency specialising in premium residential and commercial properties across Dubai.',
+          tagline: 'اعثر على منزل أحلامك في دبي',
+          contact_email: 'hello@luxuryhomesdubai.ae',
+          contact_phone: '+971500000000',
+          extra_phones: ['+966559707955'],
+          contact_address: 'Dubai Marina, Dubai, UAE',
           licence_no: 'RE-12345',
           licence_numbers: [{ label: 'رقم الرخصة', number: 'RE-12345' }],
           social_links: {
-            instagram: 'https://instagram.com/luxuryhomesdubai',
-            x: 'https://x.com/luxuryhomesdubai',
-            linkedin: 'https://linkedin.com/company/luxuryhomesdubai',
-            whatsapp: '971501234567',
-            snapchat: 'https://snapchat.com/add/luxuryhomesdubai',
-            tiktok: 'https://tiktok.com/@luxuryhomesdubai',
+            instagram: 'luxuryhomesdubai',
+            x: '',
+            linkedin: '',
+            whatsapp: '971500000000',
+            snapchat: '',
+            tiktok: '',
           },
           working_hours: {
             sun: { enabled: true,  open: '09:00', close: '18:00' },
@@ -547,53 +725,63 @@ export default function PageBuilderPage() {
             tue: { enabled: true,  open: '09:00', close: '18:00' },
             wed: { enabled: true,  open: '09:00', close: '18:00' },
             thu: { enabled: true,  open: '09:00', close: '18:00' },
-            fri: { enabled: true,  open: '14:00', close: '20:00' },
-            sat: { enabled: false, open: '09:00', close: '17:00' },
+            fri: { enabled: false, open: '09:00', close: '13:00' },
+            sat: { enabled: false, open: '09:00', close: '13:00' },
+          },
+          page_sections: {
+            hero: true,
+            listings: true,
+            about: true,
+            news: true,
+            contact: true,
+            working_hours: true,
+            footer: true,
+          },
+          page_config: {
+            hero_headline: 'اعثر على منزل أحلامك في دبي',
+            hero_style: 'centered',
+            hero_cta_text: 'تصفح العروض',
+            show_listing_filters: true,
+            show_listing_search: true,
+            listings_columns: 3,
+            currency: 'AED',
           },
         },
         tenant: {
           id: 'demo',
-          slug: 'luxury-homes-dubai',
+          slug: 'demo',
           name: 'Luxury Homes Dubai',
           status: 'active' as const,
           created_at: '2025-10-15T10:00:00Z',
-          primary_color: '#0ea5e9',
-          theme: 'modern',
+          primary_color: '#8b5cf6',
+          theme: 'midnight',
           business_type: 'real_estate',
         },
       };
       setData(d);
       setProfile({
         ...d.profile,
-        page_sections: { ...DEFAULT_PAGE_SECTIONS, news: false },
-        page_config: {
-          ...DEFAULT_PAGE_CONFIG,
-          hero_headline: 'اكتشف منزل أحلامك في دبي',
-          hero_style: 'split',
-          hero_cta_text: 'تواصل عبر واتساب',
-          button_shape: 'pill',
-          currency: 'AED',
-          offer_label_1: 'للبيع',
-          offer_label_2: 'للإيجار',
-          announcement_text: '🎉 عروض حصرية على فلل بالم جميرا — تواصل معنا الآن!',
-          announcement_color: 'accent',
-          listings_columns: 3,
-          show_listing_filters: true,
-          show_listing_search: true,
-        },
+        page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(d.profile.page_sections ?? {}) },
+        page_config: { ...DEFAULT_PAGE_CONFIG, ...(d.profile.page_config ?? {}) },
       });
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
       setSelectedTheme(d.tenant.theme);
       setBusinessType((d.tenant as any).business_type || 'real_estate');
       setListings(demoListings);
+      setNewsItems(demoNews);
+      setGalleryItems(demoGallery);
+      setTeamItems(demoTeam);
       setLoading(false);
       return;
     }
     Promise.all([
       authFetch<ProfileResponse>('/api/dashboard/profile'),
       authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
-    ]).then(([profileRes, listingsRes]) => {
+      authFetch<any[]>('/api/dashboard/news').catch(() => []),
+      authFetch<any[]>('/api/dashboard/media').catch(() => []),
+    ]).then(([profileRes, listingsRes, newsRes, mediaRes]) => {
+        setIsDemoSession(false);
         setData(profileRes);
         if (profileRes.profile) {
           setProfile({
@@ -608,6 +796,9 @@ export default function PageBuilderPage() {
         setSelectedTheme(profileRes.tenant?.theme || 'modern');
         setBusinessType((profileRes.tenant as any)?.business_type || 'real_estate');
         setListings(listingsRes.data ?? []);
+        setNewsItems(Array.isArray(newsRes) ? newsRes : []);
+        setGalleryItems(Array.isArray(mediaRes) ? mediaRes : []);
+        setTeamItems([]);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -759,7 +950,7 @@ export default function PageBuilderPage() {
       resetListingForm();
       setShowListingForm(false);
     } catch (e) {
-      setListingError(e instanceof Error ? e.message : 'حدث خطأ، حاول مجدداً');
+      setListingError(e instanceof Error ? e.message : t.listingError);
     } finally {
       setListingSaving(false);
     }
@@ -784,22 +975,22 @@ export default function PageBuilderPage() {
     const email = (profile.contact_email || '').trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setSaveStatus('error');
-      setSaveError('البريد الإلكتروني — الصيغة غير صحيحة');
-      setFieldErrors({ contact_email: 'صيغة غير صحيحة' });
+      setSaveError(t.emailInvalidMsg);
+      setFieldErrors({ contact_email: t.emailInvalidField });
       setActiveTab('connect');
       return;
     }
 
     const urlCandidates: Array<{ label: string; value?: string; field: string; tab: string }> = [
-      { label: 'رابط الشعار',       value: profile.logo_url || '',                    field: 'logo_url',   tab: 'design'  },
-      { label: 'رابط صورة الغلاف', value: profile.cover_url || '',                   field: 'cover_url',  tab: 'design'  },
+      { label: t.logoUrlLabel,  value: profile.logo_url || '',  field: 'logo_url',  tab: 'design' },
+      { label: t.coverUrlLabel, value: profile.cover_url || '', field: 'cover_url', tab: 'design' },
     ];
     for (const candidate of urlCandidates) {
       const v = candidate.value?.trim();
       if (v && !isValidUrl(v)) {
         setSaveStatus('error');
-        setSaveError(`${candidate.label} — الرجاء إدخال رابط صحيح يبدأ بـ http أو https`);
-        setFieldErrors({ [candidate.field]: 'رابط غير صحيح' });
+        setSaveError(`${candidate.label} — ${t.invalidUrlMsg}`);
+        setFieldErrors({ [candidate.field]: t.invalidUrlField });
         setActiveTab(candidate.tab);
         return;
       }
@@ -810,7 +1001,7 @@ export default function PageBuilderPage() {
       if (!h?.enabled) continue;
       if (!h.open || !h.close || toMinutes(h.open) >= toMinutes(h.close)) {
         setSaveStatus('error');
-        setSaveError(`ساعات العمل — تحقق من توقيت يوم ${DAY_AR[day]}`);
+        setSaveError(`${t.workingHoursError} ${DAY_LABELS[day]}`);
         setActiveTab('connect');
         return;
       }
@@ -892,7 +1083,7 @@ export default function PageBuilderPage() {
       <div className="flex items-center justify-center h-72">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">جاري تحميل إعدادات صفحتك...</p>
+          <p className="text-sm text-slate-400">{t.loadingPage}</p>
         </div>
       </div>
     );
@@ -930,7 +1121,7 @@ export default function PageBuilderPage() {
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-blue-400" /> رمز QR لصفحتك
+              <QrCode className="h-5 w-5 text-blue-400" /> {t.qrTitle}
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-2">
@@ -947,7 +1138,7 @@ export default function PageBuilderPage() {
             <p className="text-xs text-slate-400 font-mono break-all text-center">{publicUrl}</p>
             <div className="flex gap-2 w-full">
               <Button onClick={downloadQr} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
-                <Download className="h-4 w-4" /> تحميل PNG
+                <Download className="h-4 w-4" /> {t.downloadPng}
               </Button>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent('صفحتي: ' + publicUrl)}`}
@@ -963,25 +1154,25 @@ export default function PageBuilderPage() {
         </DialogContent>
       </Dialog>
       <div className="mb-1">
-        <h1 className="text-2xl font-bold text-white">منشئ الصفحة</h1>
-        <p className="text-sm text-slate-400">خصّص صفحتك العامة التي يراها عملاؤك</p>
+        <h1 className="text-2xl font-bold text-white">{t.pageBuilderTitle}</h1>
+        <p className="text-sm text-slate-400">{t.pageBuilderSub}</p>
       </div>
 
       {/* Top bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">رابط صفحتك العامة</p>
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">{t.publicPageUrl}</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
           {shouldShowInvalidUrlWarning && (
             <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              قيمة NEXT_PUBLIC_APP_URL غير صالحة — سيتم استخدام رابط البيئة الحالية.
+              {t.invalidBaseUrl}
             </p>
           )}
           {shouldShowMissingUrlInfo && (
             <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              لم يتم ضبط NEXT_PUBLIC_APP_URL — يفضّل إضافتها في بيئة التشغيل.
+              {t.missingBaseUrl}
             </p>
           )}
         </div>
@@ -995,13 +1186,13 @@ export default function PageBuilderPage() {
           {saveStatus === 'saving' && (
             <span className="text-xs text-slate-400 flex items-center gap-1.5">
               <Loader2 className="h-3 w-3 animate-spin" />
-              جاري الحفظ...
+              {t.saving}
             </span>
           )}
           {saveStatus === 'saved' && !dirty && (
             <span className="text-xs text-green-400 flex items-center gap-1.5">
               <Check className="h-3 w-3" />
-              تم الحفظ
+              {t.saved}
             </span>
           )}
           <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
@@ -1009,11 +1200,11 @@ export default function PageBuilderPage() {
           </Button>
           <Button size="sm" variant="ghost" onClick={copyLink} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
             {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? 'تم النسخ!' : 'نسخ الرابط'}
+            {copied ? t.copied : t.copyLink}
           </Button>
           <a href={publicPath} target="_blank" rel="noopener noreferrer">
             <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
-              <ExternalLink className="h-3.5 w-3.5" /> فتح الصفحة
+              <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
             </Button>
           </a>
         </div>
@@ -1028,11 +1219,11 @@ export default function PageBuilderPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
               {([
-                { value: 'control', icon: SlidersHorizontal, label: '🎛️ تحكم' },
-                { value: 'design',   icon: Layout,   label: '🎨 التصميم' },
-                { value: 'identity', icon: Palette,  label: '✍️ الهوية'  },
-                { value: 'posts',    icon: Building2, label: '🏠 العروض' },
-                { value: 'connect',  icon: Phone,    label: '🔗 تواصل'  },
+                { value: 'control', icon: SlidersHorizontal, label: t.tabControl },
+                { value: 'design',   icon: Layout,   label: t.tabDesign   },
+                { value: 'identity', icon: Palette,  label: t.tabIdentity },
+                { value: 'posts',    icon: Building2, label: t.tabListings },
+                { value: 'connect',  icon: Phone,    label: t.tabConnect  },
               ] as const).map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -1050,9 +1241,9 @@ export default function PageBuilderPage() {
               <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <div className="px-4 pt-4 pb-3 border-b border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-white">🎛️ تحكّم الصفحة</p>
+                    <p className="text-sm font-bold text-white">{t.pageControlTitle}</p>
                   </div>
-                  <p className="text-xs text-slate-500">اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.</p>
+                  <p className="text-xs text-slate-500">{t.pageControlSub}</p>
                 </div>
 
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
@@ -1073,15 +1264,15 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🎛️ إعدادات الصفحة
+                  {t.pageSettingsTitle}
                 </p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">العنوان الرئيسي للصفحة</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.heroHeadlineLabel}</Label>
                   <Input
                     value={pageConfig.hero_headline || ''}
                     onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                    placeholder="اكتشف أفضل العروض لديك"
+                    placeholder={t.heroHeadlinePlaceholder}
                     maxLength={200}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
@@ -1089,7 +1280,7 @@ export default function PageBuilderPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">لغة الصفحة</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.pageLangLabel}</Label>
                   <div className="flex gap-2">
                     {(['ar', 'en'] as const).map(l => (
                       <button key={l} type="button"
@@ -1111,8 +1302,8 @@ export default function PageBuilderPage() {
             {/* ── DESIGN: themes + visual brand ── */}
             <TabsContent value="design" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 xl:p-5">
-                <p className="text-sm font-bold text-white mb-1">اختر تصميم صفحتك</p>
-                <p className="text-slate-400 text-sm mb-4">سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ</p>
+                <p className="text-sm font-bold text-white mb-1">{t.chooseDesign}</p>
+                <p className="text-slate-400 text-sm mb-4">{t.chooseDesignSub}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.values(PAGE_THEMES).filter((theme) => theme.dark).map((theme) => (
                     <button
@@ -1196,7 +1387,7 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🎨 لون العلامة التجارية
+                  {t.brandColor}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-1">
                   {COLOR_PRESETS.map((c) => (
@@ -1230,32 +1421,32 @@ export default function PageBuilderPage() {
                     maxLength={7}
                     className="bg-slate-800 border-slate-700 text-white w-28 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
-                  <span className="text-xs text-slate-500">يُستخدم كلون رئيسي في صفحتك</span>
+                  <span className="text-xs text-slate-500">{t.brandColorHint}</span>
                 </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🖼️ الشعار (Logo)
+                  {t.logoLabel}
                 </p>
                 <ImageUploader
                   value={profile.logo_url || ''}
                   onChange={(url) => updateProfile({ logo_url: url })}
                   aspect="square"
-                  label="شعار المكتب — اضغط لرفع صورة"
+                  label={t.logoUploadLabel}
                 />
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🖼️ صورة الغلاف
+                  {t.coverLabel}
                 </p>
                 <ImageUploader
                   value={profile.cover_url || ''}
                   onChange={(url) => updateProfile({ cover_url: url })}
                   aspect="cover"
                 />
-                <p className="text-xs text-slate-500">مقترح: 1200×400 بكسل أو أوسع</p>
+                <p className="text-xs text-slate-500">{t.coverHint}</p>
               </div>
             </TabsContent>
 
@@ -1264,21 +1455,21 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🏢 اسم المنشأة
+                  {t.businessNameLabel}
                 </p>
                 <Input
                   value={agencyName}
                   onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
-                  placeholder="مثال: مطعم الواحة، مكتب الأفق، صالون نور..."
+                  placeholder={t.businessNamePlaceholder}
                   className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  💼 نوع النشاط التجاري
+                  {t.businessTypeLabel}
                 </p>
-                <p className="text-xs text-slate-500">يحدد الحقول المتاحة في نماذج العروض</p>
+                <p className="text-xs text-slate-500">{t.businessTypeSub}</p>
                 <select
                   value={businessType}
                   onChange={(e) => {
@@ -1299,26 +1490,26 @@ export default function PageBuilderPage() {
                 }}
                   className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
                 >
-                  <option value="real_estate">🏠 عقارات</option>
-                  <option value="restaurant">🍽️ مطعم / كافيه</option>
-                  <option value="salon">✂️ صالون / سبا</option>
-                  <option value="retail">🛍️ متجر / بيع بالتجزئة</option>
-                  <option value="services">⚙️ خدمات</option>
-                  <option value="other">📋 أخرى</option>
+                  <option value="real_estate">{t.btRealEstate}</option>
+                  <option value="restaurant">{t.btRestaurant}</option>
+                  <option value="salon">{t.btSalon}</option>
+                  <option value="retail">{t.btRetail}</option>
+                  <option value="services">{t.btServices}</option>
+                  <option value="other">{t.btOther}</option>
                 </select>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  ✍️ محتوى الصفحة
+                  {t.pageContentLabel}
                 </p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">الشعار النصي</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.taglineLabel}</Label>
                   <Input
                     value={profile.tagline || ''}
                     onChange={(e) => updateProfile({ tagline: e.target.value })}
-                    placeholder="مثال: شريكك الموثوق، جودة لا تُضاهى..."
+                    placeholder={t.taglinePlaceholder}
                     maxLength={200}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
@@ -1326,11 +1517,11 @@ export default function PageBuilderPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">نبذة عنا</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.bioLabel}</Label>
                   <Textarea
                     value={profile.bio || ''}
                     onChange={(e) => updateProfile({ bio: e.target.value })}
-                    placeholder="أخبر الزوار عن منشأتك — خبرتك، قيمك، وما يميزك..."
+                    placeholder={t.bioPlaceholder}
                     rows={6}
                     maxLength={2000}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
@@ -1341,7 +1532,7 @@ export default function PageBuilderPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> أرقام التراخيص
+                      <Hash className="h-3 w-3" /> {t.licenceLabel}
                     </Label>
                     {(profile.licence_numbers?.length ?? 0) < 6 && (
                       <button
@@ -1349,12 +1540,12 @@ export default function PageBuilderPage() {
                         onClick={() => updateProfile({ licence_numbers: [...(profile.licence_numbers ?? []), { label: '', number: '' }] })}
                         className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
                       >
-                        <Plus className="h-3 w-3" /> إضافة رقم ترخيص
+                        <Plus className="h-3 w-3" /> {t.addLicence}
                       </button>
                     )}
                   </div>
                   {(profile.licence_numbers ?? []).length === 0 && (
-                    <p className="text-xs text-slate-500 italic">لا توجد أرقام ترخيص — اضغط &quot;إضافة&quot; لإضافة رقم</p>
+                    <p className="text-xs text-slate-500 italic">{t.noLicences}</p>
                   )}
                   {(profile.licence_numbers ?? []).map((entry, idx) => (
                     <div key={idx} className="flex gap-2 items-start">
@@ -1366,7 +1557,7 @@ export default function PageBuilderPage() {
                             updated[idx] = { ...updated[idx], label: e.target.value };
                             updateProfile({ licence_numbers: updated });
                           }}
-                          placeholder="نوع الترخيص (مثال: وساطة عقارية)"
+                          placeholder={t.licenceTypePlaceholder}
                           className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         />
                         <Input
@@ -1376,7 +1567,7 @@ export default function PageBuilderPage() {
                             updated[idx] = { ...updated[idx], number: e.target.value };
                             updateProfile({ licence_numbers: updated });
                           }}
-                          placeholder="رقم الترخيص (مثال: RE-12345)"
+                          placeholder={t.licenceNumPlaceholder}
                           className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
@@ -1397,29 +1588,29 @@ export default function PageBuilderPage() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🔍 محركات البحث والمشاركة
+                  {t.seoLabel}
                 </p>
-                <p className="text-xs text-slate-500">هذه البيانات تظهر عند مشاركة رابطك على واتساب وجوجل</p>
+                <p className="text-xs text-slate-500">{t.seoSub}</p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">عنوان الصفحة (SEO Title)</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.seoTitleLabel}</Label>
                   <Input
                     value={pageConfig.seo_title || ''}
                     onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                    placeholder={`${agencyName || 'اسم منشأتك'}`}
+                    placeholder={`${agencyName || t.businessNameFallback}`}
                     maxLength={120}
                   />
-                  <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 (يُنصح بـ 60 حرفاً)</p>
+                  <p className={`text-[11px] text-left ${ (pageConfig.seo_title || '').length > 60 ? 'text-amber-400' : 'text-slate-500' }`}>{(pageConfig.seo_title || '').length}/120 ({t.seoCharsHint})</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">وصف الصفحة (Meta Description)</Label>
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.seoDescLabel}</Label>
                   <Textarea
                     value={pageConfig.seo_description || ''}
                     onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
-                    placeholder="وصف موجز لمنشأتك يظهر في نتائج البحث..."
+                    placeholder={t.seoDescPlaceholder}
                     rows={3}
                     maxLength={160}
                   />
@@ -1428,17 +1619,17 @@ export default function PageBuilderPage() {
 
                 {/* WhatsApp preview */}
                 <div className="space-y-2">
-                  <p className="text-xs text-slate-400 font-medium">معاينة عند المشاركة على واتساب</p>
+                  <p className="text-xs text-slate-400 font-medium">{t.ogPreviewLabel}</p>
                   <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
                     {profile.cover_url && (
                       <img src={profile.cover_url} alt="OG preview" className="w-full h-24 object-cover" />
                     )}
                     <div className="p-3">
                       <p className="text-sm font-semibold text-white truncate">
-                        {pageConfig.seo_title || agencyName || 'اسم المنشأة'}
+                        {pageConfig.seo_title || agencyName || t.businessNameFallback}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
-                        {pageConfig.seo_description || profile.bio || 'وصف المنشأة يظهر هنا'}
+                        {pageConfig.seo_description || profile.bio || t.bizDescFallback}
                       </p>
                       <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
                     </div>
@@ -1452,60 +1643,60 @@ export default function PageBuilderPage() {
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-white">إدارة العروض</p>
-                    <p className="text-xs text-slate-400 mt-0.5">أضف وعدّل عروضك أو منتجاتك أو خدماتك التي تظهر في صفحتك العامة</p>
+                    <p className="text-sm font-bold text-white">{t.manageListings}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{t.manageListingsSub}</p>
                   </div>
                   <Button
                     onClick={() => { setShowListingForm(!showListingForm); resetListingForm(); }}
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 gap-1.5"
                   >
-                    <Plus className="h-4 w-4" /> إضافة عرض
+                    <Plus className="h-4 w-4" /> {t.addListing}
                   </Button>
                 </div>
 
                 {showListingForm && (
                   <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
-                    <p className="text-sm font-medium text-white">{editingListing ? 'تعديل العرض' : 'إضافة عرض جديد'}</p>
+                    <p className="text-sm font-medium text-white">{editingListing ? t.editListingTitle : t.newListingTitle}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">الفئة</Label>
-                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="مثال: شقة، منتج، خدمة..." />
+                        <Label className="text-slate-400 text-xs">{t.fieldCategory}</Label>
+                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder={t.categoryPlaceholder} />
                       </div>
                     <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">الاسم</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldName}</Label>
                         <Input
                           value={listingForm.title}
                           onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
                           className="bg-slate-900 border-slate-700 text-white text-sm"
-                          placeholder="اكتب الاسم..."
+                          placeholder={t.fieldName}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">السعر</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldPrice}</Label>
                         <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="1000000" />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">الموقع</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldLocation}</Label>
                         <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="Dubai Marina" />
                       </div>
                       {(!businessType || businessType === 'real_estate') && (<>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">الغرف</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldBedrooms}</Label>
                         <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="4" />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">الحمامات</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldBathrooms}</Label>
                         <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="3" />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">المساحة (م²)</Label>
+                        <Label className="text-slate-400 text-xs">{t.fieldArea}</Label>
                         <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
                       </div>
                       </>)}
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <Label className="text-slate-400 text-xs">الصورة الرئيسية للعرض</Label>
+                      <Label className="text-slate-400 text-xs">{t.mainImage}</Label>
                       <ImageUploader
                         value={listingForm.image}
                         onChange={(url) => setListingForm({ ...listingForm, image: url })}
@@ -1516,14 +1707,14 @@ export default function PageBuilderPage() {
                     {/* Extra photos */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-slate-400 text-xs">صور إضافية (اختياري)</Label>
+                        <Label className="text-slate-400 text-xs">{t.extraPhotos}</Label>
                         {listingForm.extra_images.length < 4 && (
                           <button
                             type="button"
                             onClick={() => setListingForm({ ...listingForm, extra_images: [...listingForm.extra_images, ''] })}
                             className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
                           >
-                            <Plus className="h-3 w-3" /> إضافة صورة
+                            <Plus className="h-3 w-3" /> {t.addPhoto}
                           </button>
                         )}
                       </div>
@@ -1554,8 +1745,8 @@ export default function PageBuilderPage() {
 
                     <div className="flex items-center justify-between py-1">
                       <div>
-                        <p className="text-sm text-white">نشر على الصفحة العامة</p>
-                        <p className="text-xs text-slate-500">إيقاف هذا يجعل العرض مسودة فقط</p>
+                        <p className="text-sm text-white">{t.publishLabel}</p>
+                        <p className="text-xs text-slate-500">{t.publishSub}</p>
                       </div>
                       <button
                         type="button"
@@ -1575,9 +1766,9 @@ export default function PageBuilderPage() {
                     <div className="flex gap-2 pt-1">
                       <Button onClick={addListing} disabled={listingSaving} size="sm" className="bg-blue-600 hover:bg-blue-700 gap-1.5">
                         {listingSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {editingListing ? 'تحديث' : 'إضافة'}
+                        {editingListing ? t.update : t.addListing}
                       </Button>
-                      <Button onClick={() => { setShowListingForm(false); resetListingForm(); }} size="sm" variant="outline" className="border-slate-600 text-slate-300">إلغاء</Button>
+                      <Button onClick={() => { setShowListingForm(false); resetListingForm(); }} size="sm" variant="outline" className="border-slate-600 text-slate-300">{t.cancel}</Button>
                     </div>
                   </div>
                 )}
@@ -1585,7 +1776,7 @@ export default function PageBuilderPage() {
                 {listings.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
                     <Building2 className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">لا توجد عروض مضافة بعد</p>
+                    <p className="text-sm">{t.noListings}</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -1601,17 +1792,17 @@ export default function PageBuilderPage() {
                             {listing.location && <span>{listing.location}</span>}
                             {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
                             {listing.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="h-3 w-3" />{listing.bathrooms}</span>}
-                            {listing.area_sqm > 0 && <span className="flex items-center gap-0.5"><Maximize className="h-3 w-3" />{listing.area_sqm}م²</span>}
+                            {listing.area_sqm > 0 && <span className="flex items-center gap-0.5"><Maximize className="h-3 w-3" />{listing.area_sqm}{t.areaSqm}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${ listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400' }`}>
-                            {listing.listing_status === 'available' ? 'متاح' : listing.listing_status === 'sold' ? 'مباع' : 'مؤجر'}
+                            {listing.listing_status === 'available' ? t.statusAvailable : listing.listing_status === 'sold' ? t.statusSold : t.statusRented}
                           </span>
                           {listing.published === false && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">مسودة</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">{t.statusDraft}</span>
                           )}
-                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">تعديل</Button>
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">{t.editListing}</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
@@ -1625,13 +1816,13 @@ export default function PageBuilderPage() {
             <TabsContent value="connect" className="mt-4 space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  📞 بيانات التواصل
+                  {t.contactTitle}
                 </p>
 
                 {([
-                  { key: 'contact_email',   icon: Mail,   label: 'البريد الإلكتروني', placeholder: 'agency@example.com',   type: 'email' },
-                  { key: 'contact_phone',   icon: Phone,  label: 'رقم الهاتف الرئيسي', placeholder: '+966 50 000 0000',   type: 'tel'   },
-                  { key: 'contact_address', icon: MapPin, label: 'العنوان',             placeholder: 'الرياض، المملكة العربية السعودية', type: 'text'  },
+                  { key: 'contact_email',   icon: Mail,   label: t.contactEmail, placeholder: 'agency@example.com',   type: 'email' },
+                  { key: 'contact_phone',   icon: Phone,  label: t.contactPhone, placeholder: '+966 50 000 0000',   type: 'tel'   },
+                  { key: 'contact_address', icon: MapPin, label: t.contactAddress,             placeholder: 'Riyadh, Saudi Arabia', type: 'text'  },
                 ] as const).map(({ key, icon: Icon, label, placeholder, type }) => (
                   <div key={key} className="space-y-1.5">
                     <Label className="text-slate-400 text-xs uppercase tracking-wider">{label}</Label>
@@ -1656,14 +1847,14 @@ export default function PageBuilderPage() {
                 {/* Extra phones */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-slate-400 text-xs uppercase tracking-wider">أرقام إضافية</Label>
+                    <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.extraNumbers}</Label>
                     {(profile.extra_phones?.length ?? 0) < 4 && (
                       <button
                         type="button"
                         onClick={() => updateProfile({ extra_phones: [...(profile.extra_phones ?? []), ''] })}
                         className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
                       >
-                        <Plus className="h-3 w-3" /> إضافة رقم
+                        <Plus className="h-3 w-3" /> {t.addNumber}
                       </button>
                     )}
                   </div>
@@ -1699,10 +1890,10 @@ export default function PageBuilderPage() {
               {/* Working hours */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🕐 ساعات العمل
+                  {t.workingHoursTitle}
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500">أيام معطلة يمكن تعطيلها، والأيام المفعلة يجب أن تحتوي وقت فتح/إغلاق صحيح.</p>
+                  <p className="text-xs text-slate-500">{t.workingHoursSub}</p>
                   <Button
                     type="button"
                     size="sm"
@@ -1710,7 +1901,7 @@ export default function PageBuilderPage() {
                     className="text-slate-300 hover:text-white"
                     onClick={() => updateProfile({ working_hours: WORKING_HOURS_DEFAULT })}
                   >
-                    إعادة الضبط
+                    {t.resetHours}
                   </Button>
                 </div>
                 {DAY_ORDER.map((day) => {
@@ -1724,12 +1915,12 @@ export default function PageBuilderPage() {
                         type="button"
                         onClick={() => setDay({ enabled: !h.enabled })}
                         className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ h.enabled ? 'bg-blue-600' : 'bg-slate-700' }`}
-                        aria-label={`Toggle working hours for ${DAY_AR[day]}`}
+                        aria-label={`Toggle working hours for ${DAY_LABELS[day]}`}
                         aria-pressed={h.enabled}
                       >
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ h.enabled ? 'translate-x-4' : 'translate-x-1' }`} />
                       </button>
-                      <span className={`w-16 text-sm ${h.enabled ? 'text-white' : 'text-slate-500'}`}>{DAY_AR[day]}</span>
+                      <span className={`w-16 text-sm ${h.enabled ? 'text-white' : 'text-slate-500'}`}>{DAY_LABELS[day]}</span>
                       {h.enabled ? (
                         <div className="flex items-center gap-1.5 flex-1">
                           <input
@@ -1747,7 +1938,7 @@ export default function PageBuilderPage() {
                           />
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-600 flex-1">مغلق</span>
+                        <span className="text-xs text-slate-600 flex-1">{t.closed}</span>
                       )}
                     </div>
                   );
@@ -1755,14 +1946,14 @@ export default function PageBuilderPage() {
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
-                  🌐 روابط التواصل الاجتماعي
+                  {t.socialTitle}
                 </p>
-                <p className="text-xs text-slate-500">اكتب اسم المستخدم فقط (بدون رابط) — التطبيق يبني الرابط تلقائياً عند الضغط على الأيقونة</p>
+                <p className="text-xs text-slate-500">{t.socialSub}</p>
 
                 {([
-                  { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'm6r_dev',              color: 'text-pink-400'  },
-                  { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'm6r_dev',              color: 'text-sky-400'   },
-                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'm6r_dev أو company/..', color: 'text-blue-400'  },
+                  { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'username',              color: 'text-pink-400'  },
+                  { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'username',              color: 'text-sky-400'   },
+                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'username or company/..', color: 'text-blue-400'  },
                   { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp',    placeholder: '966500000000',         color: 'text-green-400' },
                 ] as const).map(({ key, icon: Icon, label, placeholder, color }) => (
                   <div key={key} className="space-y-1.5">
@@ -1779,7 +1970,7 @@ export default function PageBuilderPage() {
                         className={`bg-slate-800 text-white placeholder:text-slate-500 pl-9 focus:ring-1 transition-colors ${fieldErrors[key] ? 'border-amber-400 ring-1 ring-amber-400/30 focus:border-amber-400 focus:ring-amber-400/30' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500'}`}
                       />
                       {key === 'whatsapp' && (
-                        <p className="mt-1 text-[11px] text-slate-500">يمكنك إدخال رقم الهاتف أو رابط واتساب، وسيتم تحويله تلقائياً.</p>
+                        <p className="mt-1 text-[11px] text-slate-500">{t.whatsappHint}</p>
                       )}
                       {fieldErrors[key] && (
                         <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
@@ -1798,7 +1989,7 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.snapchat || ''}
                       onChange={(e) => updateSocial('snapchat', e.target.value)}
-                      placeholder="m6r_dev"
+                      placeholder="username"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -1816,7 +2007,7 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.tiktok || ''}
                       onChange={(e) => updateSocial('tiktok', e.target.value)}
-                      placeholder="m6r_dev"
+                      placeholder="username"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -1834,7 +2025,7 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.telegram || ''}
                       onChange={(e) => updateSocial('telegram', e.target.value)}
-                      placeholder="m6r_dev"
+                      placeholder="username"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -1871,12 +2062,12 @@ export default function PageBuilderPage() {
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
               >
                 {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-                {saveStatus === 'saving' ? 'جاري الحفظ...' : 'حفظ الآن'}
+                {saveStatus === 'saving' ? t.saving : t.saveNow}
               </Button>
 
               {saveStatus === 'saved' && (
                 <span className="flex items-center gap-1.5 text-sm text-green-400">
-                  <CheckCircle2 className="h-4 w-4" /> تم الحفظ تلقائياً
+                  <CheckCircle2 className="h-4 w-4" /> {t.autoSaved}
                 </span>
               )}
               {saveStatus === 'error' && saveError && (
@@ -1886,7 +2077,7 @@ export default function PageBuilderPage() {
                 </div>
               )}
               {dirty && saveStatus === 'idle' && (
-                <span className="text-xs text-slate-500">يُحفظ تلقائياً بعد 2.5 ثانية من آخر تغيير</span>
+                <span className="text-xs text-slate-500">{t.autoSaveHint}</span>
               )}
             </div>
           </div>
@@ -1897,11 +2088,11 @@ export default function PageBuilderPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden h-full flex flex-col">
 
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">معاينة مباشرة</span>
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t.livePreview}</span>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1.5 text-[10px] text-green-400">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
-                    مباشر
+                    {t.live}
                   </span>
               </div>
             </div>
@@ -1988,9 +2179,9 @@ export default function PageBuilderPage() {
                       published: l.published !== false,
                       created_at: l.created_at ?? new Date().toISOString(),
                     }))}
-                  news={[]}
-                  gallery={[]}
-                  team={[]}
+                  news={isDemoSession ? demoNews : newsItems}
+                  gallery={isDemoSession ? demoGallery : galleryItems}
+                  team={isDemoSession ? demoTeam : teamItems}
                   isPreview={true}
                 />
                 </div>

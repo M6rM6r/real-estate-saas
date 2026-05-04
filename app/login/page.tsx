@@ -95,6 +95,9 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? 'Session creation failed');
       }
+      // Clear any leftover demo session so real profile loads correctly
+      sessionStorage.removeItem('demo_auth');
+      document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
       router.push('/dashboard');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : t.loginFailed);
@@ -157,9 +160,6 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.15),transparent_60%)]" />
             <div className="relative p-6 text-white">
               <div className="flex items-center gap-2 mb-3">
-                <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-xs font-semibold px-2.5 py-1 rounded-full">
-                  <Sparkles className="h-3 w-3" /> {t.demoBadge}
-                </span>
                 <span className="text-white/60 text-xs">{t.noAccount}</span>
               </div>
               <h2 className="text-xl font-bold mb-1">{t.demoTitle}</h2>
