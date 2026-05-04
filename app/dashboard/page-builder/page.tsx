@@ -2161,6 +2161,12 @@ export default function PageBuilderPage() {
                   profile={profile as any}
                   listings={listings
                     .filter((l) => l.published !== false)
+                    .sort((a, b) => {
+                      const ta = new Date(a.created_at ?? a.createdAt ?? 0).getTime();
+                      const tb = new Date(b.created_at ?? b.createdAt ?? 0).getTime();
+                      return tb - ta;
+                    })
+                    .slice(0, 9)
                     .map((l) => ({
                       id: l.id,
                       title: l.title,
@@ -2179,8 +2185,31 @@ export default function PageBuilderPage() {
                       published: l.published !== false,
                       created_at: l.created_at ?? new Date().toISOString(),
                     }))}
-                  news={isDemoSession ? demoNews : newsItems}
-                  gallery={isDemoSession ? demoGallery : galleryItems}
+                  news={(isDemoSession ? demoNews : newsItems)
+                    .filter((n) => n.published !== false)
+                    .sort((a, b) => {
+                      const ta = new Date(a.created_at ?? a.createdAt ?? 0).getTime();
+                      const tb = new Date(b.created_at ?? b.createdAt ?? 0).getTime();
+                      return tb - ta;
+                    })
+                    .slice(0, 6)
+                    .map((n) => ({
+                      id: n.id,
+                      title: n.title,
+                      body: n.body ?? null,
+                      image_url: n.image_url ?? n.images?.[0] ?? null,
+                      images: n.images ?? [],
+                      published: n.published !== false,
+                      created_at: n.created_at ?? n.createdAt ?? new Date().toISOString(),
+                      price: null,
+                      location: null,
+                      bedrooms: null,
+                      bathrooms: null,
+                      area_sqm: null,
+                      listing_status: null,
+                    }))}
+                  gallery={(isDemoSession ? demoGallery : galleryItems)
+                    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))}
                   team={isDemoSession ? demoTeam : teamItems}
                   isPreview={true}
                 />
