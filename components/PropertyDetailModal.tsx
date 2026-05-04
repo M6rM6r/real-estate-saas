@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle } from 'lucide-react';
-import { InquiryForm } from './InquiryForm';
 import type { Post } from '@/lib/types';
 
 const MODAL_LABELS = {
@@ -25,7 +24,6 @@ const MODAL_LABELS = {
     shareWhatsApp: 'واتساب',
     shareCopy: 'نسخ',
     shareCopied: 'تم النسخ',
-    inquiry: 'إرسال استفسار',
   },
   en: {
     statusAvailable: 'Available',
@@ -45,7 +43,6 @@ const MODAL_LABELS = {
     shareWhatsApp: 'WhatsApp',
     shareCopy: 'Copy',
     shareCopied: 'Copied!',
-    inquiry: 'Send Inquiry',
   },
 } as const
 
@@ -69,7 +66,6 @@ export function PropertyDetailModal({
   lang = 'ar',
 }: PropertyDetailModalProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
-  const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const L = MODAL_LABELS[lang];
@@ -305,27 +301,6 @@ export function PropertyDetailModal({
               <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString('en-US') : L.priceUnset}</p>
               <p className="text-gray-300 text-sm mt-2">⃁</p>
             </div>
-
-            {/* Inquiry Form or Button */}
-            {!showInquiryForm ? (
-              <Button
-                onClick={() => setShowInquiryForm(true)}
-                className="w-full text-white font-semibold py-3 rounded-lg"
-                style={{ backgroundColor: accentColor }}
-              >
-                {L.inquiry}
-              </Button>
-            ) : (
-              <div className="border border-gray-700 rounded-lg p-4">
-                <InquiryForm
-                  slug={slug}
-                  propertyId={property.id}
-                  propertyTitle={property.title}
-                  accentColor={accentColor}
-                  onSuccess={() => setTimeout(() => setShowInquiryForm(false), 2000)}
-                />
-              </div>
-            )}
 
             {/* Features */}
             {(property.features && property.features.length > 0) && (

@@ -70,7 +70,9 @@ const PB_T = {
     addListing: 'إضافة عرض', editListingTitle: 'تعديل العرض', newListingTitle: 'إضافة عرض جديد',
     fieldCategory: 'الفئة', fieldName: 'الاسم', fieldPrice: 'السعر', fieldLocation: 'الموقع',
     fieldBedrooms: 'الغرف', fieldBathrooms: 'الحمامات', fieldArea: 'المساحة (م²)',
+    descriptionLabel: 'الوصف (اختياري)', descriptionPlaceholder: 'اكتب وصفاً تفصيلياً لهذا العرض...',
     mainImage: 'الصورة الرئيسية للعرض', extraPhotos: 'صور إضافية (اختياري)', addPhoto: 'إضافة صورة',
+    notesLabel: 'ملاحظات (اختياري)', notesPlaceholder: 'أضف ملاحظات خاصة بهذا العرض (للاستخدام الداخلي فقط)...',
     publishLabel: 'نشر على الصفحة العامة', publishSub: 'إيقاف هذا يجعل العرض مسودة فقط',
     update: 'تحديث', noListings: 'لا توجد عروض مضافة بعد',
     statusAvailable: 'متاح', statusSold: 'مباع', statusRented: 'مؤجر', statusDraft: 'مسودة',
@@ -134,7 +136,9 @@ const PB_T = {
     addListing: 'Add Listing', editListingTitle: 'Edit Listing', newListingTitle: 'Add New Listing',
     fieldCategory: 'Category', fieldName: 'Name', fieldPrice: 'Price', fieldLocation: 'Location',
     fieldBedrooms: 'Bedrooms', fieldBathrooms: 'Bathrooms', fieldArea: 'Area (sqm)',
+    descriptionLabel: 'Description (optional)', descriptionPlaceholder: 'Write a detailed description for this listing...',
     mainImage: 'Main Listing Image', extraPhotos: 'Additional Photos (optional)', addPhoto: 'Add Photo',
+    notesLabel: 'Notes (optional)', notesPlaceholder: 'Add private notes about this listing (internal use only)...',
     publishLabel: 'Publish to Public Page', publishSub: 'Disabling this makes the listing a draft only',
     update: 'Update', noListings: 'No listings added yet',
     statusAvailable: 'Available', statusSold: 'Sold', statusRented: 'Rented', statusDraft: 'Draft',
@@ -673,7 +677,7 @@ export default function PageBuilderPage() {
   const [isDemoSession, setIsDemoSession] = useState(false);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
-  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [] as string[], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '' });
+  const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [] as string[], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '', body: '', notes: '' });
   const [listingSaving, setListingSaving] = useState(false);
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
@@ -898,7 +902,7 @@ export default function PageBuilderPage() {
   };
 
   const resetListingForm = () => {
-    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '' });
+    setListingForm({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '', body: '', notes: '' });
     setEditingListing(null);
     setListingError('');
     setListingPublished(true);
@@ -918,6 +922,8 @@ export default function PageBuilderPage() {
       listing_status: listingForm.status as 'available' | 'sold' | 'rented',
       offer_type: listingForm.offer_type as 'sale' | 'rent',
       property_type: listingForm.property_type || null,
+      body: listingForm.body || undefined,
+      notes: listingForm.notes || undefined,
       published: listingPublished,
     };
     if (isDemo) {
@@ -1696,6 +1702,16 @@ export default function PageBuilderPage() {
                       </>)}
                     </div>
                     <div className="col-span-2 space-y-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">{t.descriptionLabel}</label>
+                      <textarea
+                        value={listingForm.body}
+                        onChange={(e) => setListingForm({ ...listingForm, body: e.target.value })}
+                        placeholder={t.descriptionPlaceholder}
+                        rows={3}
+                        className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1">
                       <Label className="text-slate-400 text-xs">{t.mainImage}</Label>
                       <ImageUploader
                         value={listingForm.image}
@@ -1741,6 +1757,17 @@ export default function PageBuilderPage() {
                           ))}
                         </div>
                       )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">{t.notesLabel}</label>
+                      <textarea
+                        value={listingForm.notes}
+                        onChange={(e) => setListingForm({ ...listingForm, notes: e.target.value })}
+                        placeholder={t.notesPlaceholder}
+                        rows={2}
+                        className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                      />
                     </div>
 
                     <div className="flex items-center justify-between py-1">
@@ -1802,7 +1829,7 @@ export default function PageBuilderPage() {
                           {listing.published === false && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">{t.statusDraft}</span>
                           )}
-                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">{t.editListing}</Button>
+                          <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '', body: listing.body || '', notes: listing.notes || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">{t.editListing}</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>

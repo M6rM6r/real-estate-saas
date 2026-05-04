@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 const ListingSchema = z.object({
   title: z.string().max(200).optional().nullable(),
   body: z.string().max(5000).optional(),
+  notes: z.string().max(2000).optional().nullable(),
   price: z.number().positive().optional().nullable(),
   location: z.string().max(200).optional().nullable(),
   location_url: z.string().url().max(500).optional().nullable(),

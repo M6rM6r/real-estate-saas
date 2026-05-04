@@ -8,6 +8,7 @@ import { z } from 'zod'
 const UpdatePostSchema = z.object({
   title: z.string().min(1).max(300).optional(),
   body: z.string().max(20000).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
   images: z.array(z.string().url()).max(20).optional(),
   price: z.number().positive().optional().nullable(),
   location: z.string().max(300).optional().nullable(),
