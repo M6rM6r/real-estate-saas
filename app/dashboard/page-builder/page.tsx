@@ -739,7 +739,7 @@ export default function PageBuilderPage() {
           },
           page_config: {
             hero_headline: 'اعثر على منزل أحلامك في دبي',
-            hero_style: 'centered',
+            hero_style: 'centered' as 'centered' | 'split' | 'minimal',
             hero_cta_text: 'تصفح العروض',
             show_listing_filters: true,
             show_listing_search: true,
