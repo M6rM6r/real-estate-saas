@@ -743,7 +743,7 @@ export default function PageBuilderPage() {
             hero_cta_text: 'تصفح العروض',
             show_listing_filters: true,
             show_listing_search: true,
-            listings_columns: 3,
+            listings_columns: 3 as 2 | 3 | 4,
             currency: 'AED',
           },
         },
@@ -758,11 +758,11 @@ export default function PageBuilderPage() {
           business_type: 'real_estate',
         },
       };
-      setData(d);
+      setData(d as ProfileResponse);
       setProfile({
         ...d.profile,
         page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(d.profile.page_sections ?? {}) },
-        page_config: { ...DEFAULT_PAGE_CONFIG, ...(d.profile.page_config ?? {}) },
+        page_config: { ...DEFAULT_PAGE_CONFIG, ...((d.profile.page_config ?? {}) as NonNullable<Profile['page_config']>) },
       });
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
