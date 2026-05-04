@@ -27,6 +27,18 @@ const getSchemaOrgType = (businessType?: string | null) => {
 
 export const revalidate = 60
 
+async function withRetry<T>(fn: () => Promise<T>, attempts = 2, delayMs = 600): Promise<T> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (i === attempts - 1) throw err
+      await new Promise(r => setTimeout(r, delayMs))
+    }
+  }
+  throw new Error('unreachable')
+}
+
 const serialize = (obj: any): any => {
   if (obj === null || obj === undefined) return obj
   if (typeof obj?.toDate === 'function') return obj.toDate().toISOString()
@@ -40,7 +52,9 @@ const serialize = (obj: any): any => {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
-  const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+  const tenantsSnap = await withRetry(() =>
+    adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+  )
   if (tenantsSnap.empty) {
     if (slug === DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
       return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
@@ -189,14 +203,14 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   const tenant = serialize({ id: tenantDoc.id, ...tenantDoc.data() }) as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }
   const tenantId = tenantDoc.id
 
-  const [profileDoc, fallbackProfilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await Promise.all([
+  const [profileDoc, fallbackProfilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await withRetry(() => Promise.all([
     adminDb.collection('tenants').doc(tenantId).collection('profiles').doc(tenantId).get(),
     adminDb.collection('profiles').where('tenantId', '==', tenantId).limit(1).get(),
     adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'listing').where('published', '==', true).limit(50).get(),
     adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'news').where('published', '==', true).limit(20).get(),
     adminDb.collection('media').where('tenantId', '==', tenantId).limit(12).get(),
     adminDb.collection('users').where('tenantId', '==', tenantId).get(),
-  ])
+  ]))
 
   const sortByDate = (docs: any[]) =>
     [...docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))
