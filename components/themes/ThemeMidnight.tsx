@@ -141,7 +141,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
           <section data-section="hero" className="relative min-h-[72dvh] sm:min-h-[82dvh] lg:min-h-[92dvh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24"
-            style={{ order: sectionOrder.hero, background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            {profile?.cover_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
+            )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
               <div className="border rounded-2xl px-4 sm:px-6 py-6 sm:py-8 shadow-2xl mx-auto backdrop-blur-md mid-glow"

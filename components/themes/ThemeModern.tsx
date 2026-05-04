@@ -138,7 +138,11 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
           <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
-            style={{ order: sectionOrder.hero, background: profile?.cover_url ? `url(${profile.cover_url}) center/cover no-repeat, linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 60%, ${primary}22 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            {profile?.cover_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
+            )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
               <div className={`border rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-md' : ''}`}
