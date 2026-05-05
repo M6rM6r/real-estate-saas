@@ -28,13 +28,14 @@ export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }
       heroObserver = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
-          setIsVisible(!entry.isIntersecting);
+          // Only show buttons after scrolling past 60% of hero section
+          setIsVisible(entry.intersectionRatio < 0.4);
         },
-        { threshold: 0.1 }
+        { threshold: [0, 0.4, 0.6, 1] }
       );
       heroObserver.observe(hero);
     } else {
-      const onScroll = () => setIsVisible(window.scrollY > 180);
+      const onScroll = () => setIsVisible(window.scrollY > 300);
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
       return () => {
@@ -80,7 +81,7 @@ export function FloatContactButtons({ whatsapp, phone, accentColor = '#2563eb' }
         }
       `}</style>
 
-      <div className="float-slide-in fixed bottom-5 right-4 sm:bottom-7 sm:right-6 z-50 flex flex-col items-end gap-2">
+      <div className="float-slide-in fixed bottom-8 right-4 sm:bottom-10 sm:right-6 z-50 flex flex-col items-end gap-2">
         {/* Tooltip label */}
         {whatsapp && (
           <span
