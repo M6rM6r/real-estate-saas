@@ -85,9 +85,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     || (profile?.bio as string | undefined)
     || (pageLang === 'ar' ? 'خدمات احترافية متميزة' : 'Professional business services')
   const seoDesc = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
-  // Use only local opengraph-image route to avoid external URL preload selector issues
-  // External Firebase Storage URLs with special chars break Next.js CSS selector preloading
-  const coverUrl = `${appUrl}/${slug}/opengraph-image`
+  // Use the actual cover URL for og:image (CSS selector issue only affects <Image> component, not meta tags)
+  const rawCoverUrl = profile?.cover_url || profile?.coverUrl
+  const coverUrl = rawCoverUrl || `${appUrl}/${slug}/opengraph-image`
   const canonicalUrl = `${appUrl}/${slug}`
 
   return {
