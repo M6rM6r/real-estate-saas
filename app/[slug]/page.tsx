@@ -82,13 +82,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     || (profile?.bio as string | undefined)
     || (pageLang === 'ar' ? 'خدمات احترافية متميزة' : 'Professional business services')
   const seoDesc = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
-  const rawCoverUrl = (profile?.cover_url as string | undefined) || `${appUrl}/${slug}/opengraph-image`
-  // Sanitize URL: remove newlines, carriage returns, whitespace, and replace backslashes with forward slashes
-  // Backslashes break CSS selectors (\a is interpreted as line feed escape sequence)
-  const sanitizedUrl = rawCoverUrl.replace(/[\r\n\s]+/g, '').replace(/\\/g, '/')
-  // Decode percent-encoded chars (e.g. %2F from Firebase Storage paths) so Next.js can use the
-  // URL as a CSS selector when inserting preload hints without throwing a SyntaxError.
-  const coverUrl = sanitizedUrl.includes('%') ? decodeURIComponent(sanitizedUrl) : sanitizedUrl
+  // Use only local opengraph-image route to avoid external URL preload selector issues
+  // External Firebase Storage URLs with special chars break Next.js CSS selector preloading
+  const coverUrl = `${appUrl}/${slug}/opengraph-image`
   const canonicalUrl = `${appUrl}/${slug}`
 
   return {
@@ -103,13 +99,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       type: 'website',
       locale: pageLang === 'ar' ? 'ar_SA' : 'en_US',
       url: canonicalUrl,
-      images: [coverUrl],
+      images: [{ url: coverUrl, width: 1200, height: 630 }],
     },
     twitter: {
       card: 'summary_large_image',
       title: seoTitle,
       description: seoDesc,
-      images: [coverUrl],
+      images: [{ url: coverUrl, width: 1200, height: 630 }],
     },
   }
   } catch {
