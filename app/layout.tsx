@@ -22,6 +22,15 @@ export const metadata: Metadata = {
   title: 'منصة Rew',
   description: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app'),
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png' }],
+    other: [{ rel: 'manifest', url: '/site.webmanifest' }],
+  },
 };
 
 export const viewport: Viewport = {

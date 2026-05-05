@@ -17,8 +17,13 @@ export default async function Image({ params }: { params: { slug: string } }) {
     const tenantDoc = tenantsSnap.docs[0]
     const tenant = { id: tenantDoc.id, ...tenantDoc.data() } as any
 
-    const profilesSnap = await adminDb.collection('profiles').where('tenantId', '==', tenantDoc.id).limit(1).get()
-    const profile = profilesSnap.empty ? null : (profilesSnap.docs[0].data() as any)
+    const profileDoc = await adminDb.collection('tenants').doc(tenantDoc.id).collection('profiles').doc(tenantDoc.id).get()
+    const fallbackProfilesSnap = profileDoc.exists
+      ? null
+      : await adminDb.collection('profiles').where('tenantId', '==', tenantDoc.id).limit(1).get()
+    const profile = profileDoc.exists
+      ? (profileDoc.data() as any)
+      : (fallbackProfilesSnap?.empty ? null : (fallbackProfilesSnap?.docs[0].data() as any))
 
     const primaryColor = tenant.primary_color || '#2563eb'
     const coverUrl = profile?.coverUrl || profile?.cover_url
@@ -33,7 +38,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             height: '100%',
             width: '100%',
             backgroundColor: '#0b1220',
-            backgroundImage: coverUrl ? `url(${coverUrl})` : undefined,
+            backgroundImage: coverUrl ? `url(${coverUrl})` : 'linear-gradient(135deg,#111827,#0b1220,#1e293b)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             position: 'relative',

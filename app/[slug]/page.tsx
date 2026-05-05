@@ -25,7 +25,7 @@ const getSchemaOrgType = (businessType?: string | null) => {
   }
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 800): Promise<T> {
   for (let i = 0; i < attempts; i++) {
@@ -200,9 +200,14 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
     redirect('/demo')
   }
 
-  const tenantsSnap = await withRetry(() =>
-    adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
-  , 3, 800)
+  let tenantsSnap: any
+  try {
+    tenantsSnap = await withRetry(() =>
+      adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+    , 3, 600)
+  } catch {
+    tenantsSnap = { empty: true, docs: [] }
+  }
   if (tenantsSnap.empty) {
     // Fallback static demo page only when there is no matching tenant.
     if (slug === DEMO_SLUG) {
@@ -224,14 +229,17 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   const tenant = serialize({ id: tenantDoc.id, ...tenantDoc.data() }) as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }
   const tenantId = tenantDoc.id
 
-  const [profileDoc, fallbackProfilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await withRetry(() => Promise.all([
-    adminDb.collection('tenants').doc(tenantId).collection('profiles').doc(tenantId).get(),
-    adminDb.collection('profiles').where('tenantId', '==', tenantId).limit(1).get(),
-    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'listing').where('published', '==', true).limit(50).get(),
-    adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'news').where('published', '==', true).limit(20).get(),
-    adminDb.collection('media').where('tenantId', '==', tenantId).limit(12).get(),
-    adminDb.collection('users').where('tenantId', '==', tenantId).get(),
-  ]))
+  const safe = <T,>(p: Promise<T>, fallback: T): Promise<T> => p.catch(() => fallback)
+  const emptySnap = { docs: [], empty: true } as any
+
+  const [profileDoc, fallbackProfilesSnap, listingsSnap, newsSnap, gallerySnap, usersSnap] = await Promise.all([
+    safe(withRetry(() => adminDb.collection('tenants').doc(tenantId).collection('profiles').doc(tenantId).get(), 3, 600), { exists: false } as any),
+    safe(withRetry(() => adminDb.collection('profiles').where('tenantId', '==', tenantId).limit(1).get(), 3, 600), emptySnap),
+    safe(withRetry(() => adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'listing').where('published', '==', true).limit(50).get(), 3, 600), emptySnap),
+    safe(withRetry(() => adminDb.collection('posts').where('tenantId', '==', tenantId).where('type', '==', 'news').where('published', '==', true).limit(20).get(), 3, 600), emptySnap),
+    safe(withRetry(() => adminDb.collection('media').where('tenantId', '==', tenantId).limit(12).get(), 3, 600), emptySnap),
+    safe(withRetry(() => adminDb.collection('users').where('tenantId', '==', tenantId).get(), 3, 600), emptySnap),
+  ])
 
   const sortByDate = (docs: any[]) =>
     [...docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))

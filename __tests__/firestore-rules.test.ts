@@ -152,7 +152,6 @@ describeIfEmulator('Firestore Security Rules', () => {
   describe('/tenants/{tenantId}/audit_logs/{logId}', () => {
     it('denies anyone from writing audit logs directly', async () => {
       const ownerDb = testEnv.authenticatedContext('owner', { tenantId: 't1' }).firestore()
-      await assertFails(db => db.doc('tenants/t1/audit_logs/x').set({ action: 'tamper' }))
       // Re-check via the actual DB object
       await assertFails(ownerDb.doc('tenants/t1/audit_logs/x').set({ action: 'tamper' }))
     })

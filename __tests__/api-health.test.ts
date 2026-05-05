@@ -32,8 +32,16 @@ jest.mock('@/lib/firebase-admin', () => ({
 }))
 
 describe('/api/health', () => {
+  const mockRequest = {
+    headers: {
+      get: jest.fn().mockReturnValue('test-id'),
+    },
+    method: 'GET',
+    nextUrl: { pathname: '/api/health' },
+  } as any
+
   it('should return healthy status when database is accessible', async () => {
-    const response = await GET()
+    const response = await GET(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(200)
@@ -51,7 +59,7 @@ describe('/api/health', () => {
       }),
     })
 
-    const response = await GET()
+    const response = await GET(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(503)

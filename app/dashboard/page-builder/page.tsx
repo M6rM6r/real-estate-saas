@@ -848,7 +848,7 @@ export default function PageBuilderPage() {
           setProfile({
             ...profileRes.profile,
             working_hours: { ...WORKING_HOURS_DEFAULT, ...(profileRes.profile.working_hours ?? {}) },
-            page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(profileRes.profile.page_sections ?? {}), news: false },
+            page_sections: { ...DEFAULT_PAGE_SECTIONS, ...(profileRes.profile.page_sections ?? {}) },
             page_config: { ...DEFAULT_PAGE_CONFIG, ...(profileRes.profile.page_config ?? {}) },
           });
         }
@@ -1140,7 +1140,7 @@ export default function PageBuilderPage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
+    const img = new window.Image();
     img.onload = () => { ctx.drawImage(img, 0, 0, 360, 360); canvas.toBlob((blob) => { if (!blob) return; const a = document.createElement('a'); const objUrl = URL.createObjectURL(blob); a.href = objUrl; a.download = `qr-${slug || 'page'}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(objUrl), 1000); }); };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
   };
@@ -2264,7 +2264,7 @@ export default function PageBuilderPage() {
                     .map((l) => ({
                       id: l.id,
                       title: l.title,
-                      body: null,
+                      body: l.body ?? null,
                       image_url: l.images?.[0] ?? null,
                       images: l.images ?? [],
                       price: l.price ?? null,

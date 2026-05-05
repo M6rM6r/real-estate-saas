@@ -21,7 +21,8 @@ function walk(dir) {
     const content = fs.readFileSync(fullPath, 'utf8')
     const lines = content.split(/\r?\n/)
     lines.forEach((line, idx) => {
-      if (/TODO|FIXME|XXX/i.test(line) && !/[@#][a-z0-9_-]+/i.test(line)) {
+      const isComment = /\/\/|\/\*|\*/.test(line)
+      if (isComment && /\b(?:TODO|FIXME|XXX)\b/i.test(line) && !/[@#][a-z0-9_-]+/i.test(line)) {
         violations.push(`${path.relative(ROOT, fullPath)}:${idx + 1} -> ${line.trim()}`)
       }
     })

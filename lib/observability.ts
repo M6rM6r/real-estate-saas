@@ -85,6 +85,7 @@ export function logRouteInfo(request: NextRequest, route: string, payload: Omit<
   emit('info', {
     route,
     requestId: getRequestId(request),
+    message: payload.message,
     method: request.method,
     pathname: request.nextUrl.pathname,
     ...(sanitize(payload) as Record<string, unknown>),
