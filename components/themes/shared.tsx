@@ -672,15 +672,11 @@ export function WorkingHours({ hours, textClass = 'text-gray-400', lang = 'ar' }
 export function ListingBadges({
   listing,
   primary,
-  offerLabel1 = 'للبيع',
-  offerLabel2 = 'للإيجار',
   statusLabels,
   lang = 'ar',
 }: {
   listing: Post
   primary: string
-  offerLabel1?: string
-  offerLabel2?: string
   statusLabels?: Record<string, string>
   lang?: 'ar' | 'en'
 }) {
@@ -691,12 +687,6 @@ export function ListingBadges({
         <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
           style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? primary }}>
           {sLabels[listing.listing_status] ?? listing.listing_status}
-        </span>
-      )}
-      {listing.offer_type && (
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-          style={{ backgroundColor: listing.offer_type === 'sale' ? '#2563eb' : '#7c3aed' }}>
-          {listing.offer_type === 'sale' ? offerLabel1 : offerLabel2}
         </span>
       )}
       {listing.images.length > 1 && (
@@ -720,8 +710,6 @@ export function PropertyCard({
   sectionAlt,
   currency = 'SAR',
   showRealEstateFields = true,
-  offerLabel1 = 'للبيع',
-  offerLabel2 = 'للإيجار',
   imageHeight = 'h-52',
   statusLabels,
   lang = 'ar',
@@ -735,8 +723,6 @@ export function PropertyCard({
   sectionAlt: string
   currency?: string
   showRealEstateFields?: boolean
-  offerLabel1?: string
-  offerLabel2?: string
   imageHeight?: string
   statusLabels?: Record<string, string>
   lang?: 'ar' | 'en'
@@ -774,16 +760,7 @@ export function PropertyCard({
         {/* Bottom gradient for price overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
-        {/* Offer type badge — top right */}
-        {listing.offer_type && (
-          <span
-            className="absolute top-3 right-3 text-white text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: offerColor }}
-          >
-            {listing.offer_type === 'sale' ? offerLabel1 : offerLabel2}
-          </span>
-        )}
-
+        
         {/* Status badge — top left (if not available) */}
         {listing.listing_status && listing.listing_status !== 'available' && (
           <span

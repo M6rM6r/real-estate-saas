@@ -212,7 +212,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             ) : (
               <div className={`grid grid-cols-1 ${colsClass} gap-6`}>
                 {displayed.map(l => (
-                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-white" mutedClass="text-slate-400" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={pageConfig.currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
+                  <PropertyCard key={l.id} listing={l} onClick={() => setActiveListing(l)} cardStyle={cardStyle} surfaceClass="text-white" mutedClass="text-slate-400" primary={primary} sectionAlt={pageTheme.sectionAlt} currency={pageConfig.currency} showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                 ))}
               </div>
             )}

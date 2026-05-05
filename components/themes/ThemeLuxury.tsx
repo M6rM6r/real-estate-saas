@@ -202,7 +202,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                         <div className="w-full h-full" style={{ backgroundColor: '#141414' }} />
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      <ListingBadges listing={featured} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
+                      <ListingBadges listing={featured} primary={primary} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                     </div>
                     <div className="flex-1 p-8 flex flex-col justify-center" style={{ backgroundColor: '#111' }}>
                       <span className="text-xs tracking-widest uppercase mb-3" style={{ color: primary }}>مميز</span>
@@ -245,7 +245,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                           <div className="w-full h-full" style={{ backgroundColor: '#1a1a1a' }} />
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors" />
-                        <ListingBadges listing={l} primary={primary} offerLabel1={pageConfig.offer_label_1} offerLabel2={pageConfig.offer_label_2} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
+                        <ListingBadges listing={l} primary={primary} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                       </div>
                       <div className="p-5">
                         <h3 className="font-semibold mb-2 text-gray-200">{l.title}</h3>
