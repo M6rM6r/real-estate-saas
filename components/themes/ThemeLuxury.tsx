@@ -216,8 +216,6 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       )}
                       {featured.location && <p className="text-sm text-gray-500 mb-4">📍 {featured.location}</p>}
                       <div className="flex gap-4 text-sm text-gray-500">
-                        {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
-                        {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
                         {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
                       </div>
                       <div className="mt-6">
@@ -252,8 +250,6 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                         {l.price != null && <p className="font-bold text-lg mb-1" style={{ color: primary }}>{l.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}</p>}
                         {l.location && <p className="text-xs text-gray-600 mb-3">📍 {l.location}</p>}
                         <div className="flex gap-3 text-xs text-gray-600">
-                          {l.bedrooms != null && <span>🛏 {l.bedrooms}</span>}
-                          {l.bathrooms != null && <span>🚿 {l.bathrooms}</span>}
                           {l.area_sqm != null && <span>📐 {l.area_sqm} م²</span>}
                         </div>
                       </div>
