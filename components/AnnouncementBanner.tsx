@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, CircleAlert as AlertCircle, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Info } from 'lucide-react';
 
 interface AnnouncementBannerProps {
@@ -25,6 +25,15 @@ export function AnnouncementBanner({
   const [isVisible, setIsVisible] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleDismiss = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      try { localStorage.setItem(`announcement-${id}`, 'true'); } catch {}
+      setIsVisible(false);
+      onDismiss?.();
+    }, 300);
+  }, [id, onDismiss]);
+
   useEffect(() => {
     try {
       const dismissed = localStorage.getItem(`announcement-${id}`);
@@ -39,16 +48,7 @@ export function AnnouncementBanner({
       }, autoClose);
       return () => clearTimeout(timer);
     }
-  }, [autoClose, isVisible]);
-
-  const handleDismiss = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      try { localStorage.setItem(`announcement-${id}`, 'true'); } catch {}
-      setIsVisible(false);
-      onDismiss?.();
-    }, 300);
-  };
+  }, [autoClose, isVisible, handleDismiss]);
 
   if (!isVisible) return null;
 

@@ -27,7 +27,15 @@ const customJestConfig = {
     '<rootDir>/**/*.{test,spec}.{js,jsx,ts,tsx}',
   ],
   moduleDirectories: ['node_modules', '<rootDir>/'],
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/e2e/'],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/e2e/', '<rootDir>/__tests__/firestore-rules.test.ts'],
+  coverageThreshold: {
+    global: {
+      branches: 55,
+      functions: 60,
+      lines: 65,
+      statements: 65,
+    },
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

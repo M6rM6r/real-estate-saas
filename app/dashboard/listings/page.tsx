@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { authFetch } from '@/lib/api';
 import type { Post, ListingStatus } from '@/lib/types';
 import { useLanguage } from '@/app/dashboard/LanguageContext';
@@ -106,7 +107,7 @@ function SortableImage({ url, index, onRemove }: { url: string; index: number; o
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style} className="relative group w-16 h-16">
-      <img src={url} alt={`Image ${index + 1}`} className="w-full h-full rounded object-cover border border-gray-700" />
+      <Image src={url} alt={`Image ${index + 1}`} fill className="rounded object-cover border border-gray-700" />
       <button
         {...attributes}
         {...listeners}
@@ -500,10 +501,11 @@ export default function ListingsPage() {
             >
               <div className="relative h-52 bg-gray-900">
                 {listing.images?.[0] ? (
-                  <img
+                  <Image
                     src={listing.images[0]}
                     alt={listing.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -791,17 +793,6 @@ export default function ListingsPage() {
                 value={form.body}
                 onChange={(e) => setForm({ ...form, body: e.target.value })}
                 rows={4}
-                className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
-              />
-            </div>
-            {/* Notes field */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">{t.notesLabel}</Label>
-              <Textarea
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder={t.notesPlaceholder}
-                rows={3}
                 className="bg-[#1a1a2e] border-gray-700 text-white resize-none"
               />
             </div>

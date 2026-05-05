@@ -37,7 +37,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [offerFilter, setOfferFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [scrolled, setScrolled] = useState(false)
 
   const whatsapp = profile?.social_links?.whatsapp
@@ -59,13 +60,15 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const filtered = published
+  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
-    .filter(l => statusFilter === 'all' || l.listing_status === statusFilter)
-
-  const forSaleCount = published.filter(l => l.offer_type === 'sale').length
-  const forRentCount = published.filter(l => l.offer_type === 'rent').length
-  const availableCount = published.filter(l => l.listing_status === 'available').length
+    .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
+  const filtered = sortPrice === 'none' ? baseFiltered : [...baseFiltered].sort((a, b) =>
+    sortPrice === 'newest'
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
+  )
 
   const cardStyle = {
     backgroundColor: pageTheme.cardBg,
@@ -137,44 +140,34 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
           </section>
         )}
 
-        {/* Feature strip */}
-        {published.length > 0 && (
-          <section className="ocn-reveal py-8 px-4" style={{ backgroundColor: pageTheme.bg }}>
-            <div className="max-w-5xl mx-auto">
-              <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
-                {[
-                  { icon: '🏠', label: 'إجمالي العروض', value: published.length },
-                  { icon: '🔑', label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount },
-                  { icon: '📋', label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount },
-                  { icon: '✅', label: 'متاح الآن', value: availableCount },
-                ].map(s => (
-                  <div key={s.label} className="flex items-center gap-3 shrink-0 snap-start px-5 py-4 border"
-                    style={{ borderColor: `${primary}30`, borderRadius: pageTheme.radius, backgroundColor: `${primary}08` }}>
-                    <span className="text-2xl">{s.icon}</span>
-                    <div>
-                      <div className="text-xl font-bold ocn-text">{s.value}</div>
-                      <div className="text-xs text-gray-400">{s.label}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
-              {(['all', 'available', 'sold', 'rented'] as const).map(f => (
-                <button key={f} type="button" onClick={() => setStatusFilter(f)}
-                  className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${statusFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
-                  style={{ borderRadius: '999px' }}>
-                  {f === 'all' ? (pageConfig.filter_label_all_status ?? 'كل الحالات') : STATUS_LABELS[f]}
-                </button>
-              ))}
-            </div>
+            {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+                {(['all', ...propertyTypes]).map(f => (
+                  <button key={f} type="button" onClick={() => setTypeFilter(f)}
+                    className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${typeFilter === f ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
+                    style={{ borderRadius: '999px' }}>
+                    {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
+                  </button>
+                ))}
+              </div>
+            )}
+            {pageConfig.show_listing_sort !== false && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+                {(['newest', 'desc', 'asc'] as const).map(opt => (
+                  <button key={opt} type="button"
+                    onClick={() => setSortPrice(prev => prev === opt ? 'none' : opt)}
+                    className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${sortPrice === opt ? 'ocn-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-cyan-700'}`}
+                    style={{ borderRadius: '999px' }}>
+                    {opt === 'newest' ? 'الأحدث' : opt === 'desc' ? 'الأعلى سعراً' : 'الأقل سعراً'}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {filtered.length === 0 ? (
               <p className="text-center py-12 text-gray-400">لا توجد عروض لهذا التصنيف</p>
             ) : (

@@ -1,10 +1,20 @@
 import { GET } from '@/app/api/health/route'
 
+// Mock observability
+jest.mock('@/lib/observability', () => ({
+  getRequestId: jest.fn().mockReturnValue('test-id'),
+  logRouteStart: jest.fn(),
+  logRouteInfo: jest.fn(),
+  logRouteError: jest.fn(),
+  getLatencyBucket: jest.fn().mockReturnValue('100ms'),
+}))
+
 // Mock Next.js Response
 jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn().mockImplementation((data, options) => ({
       status: options?.status || 200,
+      headers: { set: jest.fn() },
       json: () => Promise.resolve(data),
     })),
   },

@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
+import { getLatencyBucket, getRequestId, logRouteError, logRouteInfo, logRouteStart } from '@/lib/observability'
+import { FirestoreListingRepository } from '@/lib/repositories/listing-repository'
 import { z } from 'zod'
 
 const UpdateListingSchema = z.object({
@@ -23,12 +25,20 @@ const UpdateListingSchema = z.object({
   images: z.array(z.string().url()).max(20).optional(),
 })
 
+const listingsRepo = new FirestoreListingRepository(adminDb)
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const startedAt = Date.now()
+  logRouteStart(request, 'PATCH /api/dashboard/listings/:id', { listingId: params.id })
   const session = await getFirebaseSession(request)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) {
+    const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
 
   let body: z.infer<typeof UpdateListingSchema>
   try {
@@ -38,10 +48,16 @@ export async function PATCH(
   }
 
   // Verify the listing belongs to this tenant
-  const doc = await adminDb.collection('posts').doc(params.id).get()
-  if (!doc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (doc.data()?.tenantId !== session.tenantId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const doc = await listingsRepo.findById(params.id)
+  if (!doc) {
+    const response = NextResponse.json({ error: 'Not found' }, { status: 404 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
+  if (doc.tenantId !== session.tenantId) {
+    const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
   }
 
   const { title, body: description, images, published, ...rest } = body
@@ -54,31 +70,63 @@ export async function PATCH(
     updateData.publishedAt = published ? new Date() : null
   }
 
-  await adminDb.collection('posts').doc(params.id).update(updateData)
+  await listingsRepo.update(params.id, updateData)
   await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'listing', resourceId: params.id, userId: session.uid })
   const tenantDoc = await adminDb.collection('tenants').doc(session.tenantId).get()
   const slug = tenantDoc.data()?.slug as string | undefined
   if (slug) revalidatePath(`/${slug}`)
-  return NextResponse.json({ id: params.id, ...updateData })
+  const response = NextResponse.json({ id: params.id, ...updateData })
+  response.headers.set('x-request-id', getRequestId(request))
+  logRouteInfo(request, 'PATCH /api/dashboard/listings/:id', {
+    message: 'Listing updated',
+    status: 200,
+    durationMs: Date.now() - startedAt,
+    latencyBucket: getLatencyBucket(Date.now() - startedAt),
+    tenantId: session.tenantId,
+    listingId: params.id,
+  })
+  return response
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const startedAt = Date.now()
+  logRouteStart(request, 'DELETE /api/dashboard/listings/:id', { listingId: params.id })
   const session = await getFirebaseSession(request)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) {
+    const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
 
-  const doc = await adminDb.collection('posts').doc(params.id).get()
-  if (!doc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (doc.data()?.tenantId !== session.tenantId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const doc = await listingsRepo.findById(params.id)
+  if (!doc) {
+    const response = NextResponse.json({ error: 'Not found' }, { status: 404 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
+  if (doc.tenantId !== session.tenantId) {
+    const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
   }
 
   await logMutation({ tenantId: session.tenantId, action: 'delete', resource: 'listing', resourceId: params.id, userId: session.uid })
-  await adminDb.collection('posts').doc(params.id).delete()
+  await listingsRepo.delete(params.id)
   const tenantDoc2 = await adminDb.collection('tenants').doc(session.tenantId).get()
   const slug2 = tenantDoc2.data()?.slug as string | undefined
   if (slug2) revalidatePath(`/${slug2}`)
-  return NextResponse.json({ success: true })
+  const response = NextResponse.json({ success: true })
+  response.headers.set('x-request-id', getRequestId(request))
+  logRouteInfo(request, 'DELETE /api/dashboard/listings/:id', {
+    message: 'Listing deleted',
+    status: 200,
+    durationMs: Date.now() - startedAt,
+    latencyBucket: getLatencyBucket(Date.now() - startedAt),
+    tenantId: session.tenantId,
+    listingId: params.id,
+  })
+  return response
 }

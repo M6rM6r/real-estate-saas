@@ -1,8 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { Upload, X, Loader as Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface ImageFile {
   file: File;
@@ -115,11 +115,13 @@ export function ImageUploadPreview({
           <p className="text-white font-semibold mb-3 text-sm">الصور المختارة</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {images.map((img) => (
-              <div key={img.id} className="relative group">
-                <img
+              <div key={img.id} className="relative group h-24">
+                <Image
                   src={img.preview}
                   alt="preview"
-                  className="w-full h-24 object-cover rounded-lg border border-gray-700"
+                  fill
+                  className="object-cover rounded-lg border border-gray-700"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                 />
 
                 {/* Progress Bar */}

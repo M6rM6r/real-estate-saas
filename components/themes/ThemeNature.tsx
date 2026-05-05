@@ -38,6 +38,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [offerFilter, setOfferFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [scrolled, setScrolled] = useState(false)
 
   const whatsapp = profile?.social_links?.whatsapp
@@ -60,13 +61,14 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
   const published = listings.filter(l => l.published !== false)
   const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
-  const filtered = published
+  const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
-
-  const availableCount = published.filter(l => l.listing_status === 'available').length
-  const forSaleCount = published.filter(l => l.offer_type === 'sale').length
-  const forRentCount = published.filter(l => l.offer_type === 'rent').length
+  const filtered = sortPrice === 'none' ? baseFiltered : [...baseFiltered].sort((a, b) =>
+    sortPrice === 'newest'
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
+  )
 
   const cardStyle = {
     backgroundColor: pageTheme.cardBg,
@@ -133,37 +135,30 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
           </section>
         )}
 
-        {/* Stats row */}
-        {published.length > 0 && (
-          <section className="nat-reveal py-10 px-4" style={{ backgroundColor: pageTheme.sectionAlt }}>
-            <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
-              {[
-                { label: 'إجمالي العروض', value: published.length, icon: '🏠' },
-                { label: pageConfig.offer_label_1 ?? 'للبيع', value: forSaleCount, icon: '🔑' },
-                { label: pageConfig.offer_label_2 ?? 'للإيجار', value: forRentCount, icon: '📋' },
-              ].map(stat => (
-                <div key={stat.label} className="text-center py-6 px-4 border" style={{ borderColor: pageTheme.cardBorder, borderRadius: '24px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
-                  <div className="text-3xl mb-2">{stat.icon}</div>
-                  <div className="text-3xl sm:text-4xl font-bold nat-text">{stat.value}</div>
-                  <div className="text-xs sm:text-sm text-gray-400 mt-1 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Listings */}
         {sections.listings && published.length > 0 && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
 
             {/* Filters */}
             {propertyTypes.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
                   <button key={f} type="button" onClick={() => setTypeFilter(f)}
                     className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${typeFilter === f ? 'nat-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-green-700'}`}
                     style={{ borderRadius: '999px' }}>
                     {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
+                  </button>
+                ))}
+              </div>
+            )}
+            {pageConfig.show_listing_sort !== false && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+                {(['newest', 'desc', 'asc'] as const).map(opt => (
+                  <button key={opt} type="button"
+                    onClick={() => setSortPrice(prev => prev === opt ? 'none' : opt)}
+                    className={`shrink-0 px-3 py-1.5 text-xs font-medium border transition-all active:scale-95 ${sortPrice === opt ? 'nat-chip-active' : 'bg-transparent text-gray-400 border-gray-700 hover:border-green-700'}`}
+                    style={{ borderRadius: '999px' }}>
+                    {opt === 'newest' ? 'الأحدث' : opt === 'desc' ? 'الأعلى سعراً' : 'الأقل سعراً'}
                   </button>
                 ))}
               </div>

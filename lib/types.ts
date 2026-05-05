@@ -115,6 +115,7 @@ export type Profile = {
     listings_columns?: 2 | 3 | 4;
     show_listing_filters?: boolean;
     show_listing_search?: boolean;
+    show_listing_sort?: boolean;
     filter_label_all?: string;
     filter_label_all_types?: string;
     filter_label_all_status?: string;
@@ -142,6 +143,7 @@ export type Post = {
   body: string;
   images: string[];
   price?: number;
+  currency?: string;
   location?: string;
   location_url?: string;
   bedrooms?: number;

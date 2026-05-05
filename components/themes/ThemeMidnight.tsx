@@ -24,10 +24,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
-  const [statusFilter, setStatusFilter] = useState('all')
   const [offerFilter, setOfferFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
-  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [listingSearch, setListingSearch] = useState('')
   const [scrolled, setScrolled] = useState(false)
 
@@ -56,11 +55,12 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const published = listings.filter(l => l.published !== false)
   const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
   const filtered = published
-    .filter(l => statusFilter === 'all' || l.listing_status === statusFilter)
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
   const sorted = sortPrice === 'none' ? filtered : [...filtered].sort((a, b) =>
-    sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
+    sortPrice === 'newest'
+      ? new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+      : sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
   )
   const displayed = listingSearch.trim()
     ? sorted.filter(l => `${l.title} ${l.location ?? ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
@@ -181,7 +181,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               </div>
             )}
             {pageConfig.show_listing_filters && (
-              <div className="space-y-2.5 mb-6">
+              <div className="space-y-2.5 mb-3">
                 {propertyTypes.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                     {(['all', ...propertyTypes]).map(f => (
@@ -193,22 +193,18 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
                     ))}
                   </div>
                 )}
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-                  {(['all', 'available', 'sold', 'rented'] as const).map(f => (
-                    <button key={f} type="button" onClick={() => setStatusFilter(f)}
-                      className="shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95"
-                      style={statusFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff' } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                      {f === 'all' ? (pageConfig.filter_label_all_status ?? 'كل الحالات') : STATUS_LABELS[f]}
-                    </button>
-                  ))}
-                  <select value={sortPrice} onChange={e => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}
-                    className="shrink-0 mr-auto text-xs px-3 py-2 border rounded-full focus:outline-none cursor-pointer"
-                    style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
-                    <option value="none">ترتيب السعر</option>
-                    <option value="desc">الأعلى سعراً</option>
-                    <option value="asc">الأقل سعراً</option>
-                  </select>
-                </div>
+              </div>
+            )}
+            {pageConfig.show_listing_sort !== false && (
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {(['newest', 'desc', 'asc'] as const).map(opt => (
+                  <button key={opt} type="button"
+                    onClick={() => setSortPrice(prev => prev === opt ? 'none' : opt)}
+                    className={`shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95 ${sortPrice === opt ? 'text-white border-transparent' : 'hover:opacity-80'}`}
+                    style={sortPrice === opt ? { backgroundColor: primary, borderColor: primary } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#e2d9f3' }}>
+                    {opt === 'newest' ? 'الأحدث' : opt === 'desc' ? 'الأعلى سعراً' : 'الأقل سعراً'}
+                  </button>
+                ))}
               </div>
             )}
             {displayed.length === 0 ? (

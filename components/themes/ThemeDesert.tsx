@@ -37,6 +37,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [offerFilter, setOfferFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [scrolled, setScrolled] = useState(false)
 
   const whatsapp = profile?.social_links?.whatsapp
@@ -58,7 +60,15 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const filtered = offerFilter === 'all' ? published : published.filter(l => l.offer_type === offerFilter)
+  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const baseFiltered = published
+    .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
+    .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
+  const filtered = sortPrice === 'none' ? baseFiltered : [...baseFiltered].sort((a, b) =>
+    sortPrice === 'newest'
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : sortPrice === 'asc' ? (a.price ?? 0) - (b.price ?? 0) : (b.price ?? 0) - (a.price ?? 0)
+  )
   const featured = filtered[0] ?? null
   const compact = filtered.slice(1)
   const colsClass = pageConfig.listings_columns === 2
@@ -146,14 +156,36 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Featured listing — wide horizontal */}
-        {sections.listings && featured && (
+        {sections.listings && published.length > 0 && (
           <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-baseline justify-between mb-8">
+            {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+                {(['all', ...propertyTypes]).map(f => (
+                  <button key={f} type="button" onClick={() => setTypeFilter(f)}
+                    className="shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95"
+                    style={typeFilter === f ? { backgroundColor: primary, borderColor: primary, color: '#fff' } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#d1c7b8' }}>
+                    {f === 'all' ? (pageConfig.filter_label_all_types ?? 'كل الأنواع') : f}
+                  </button>
+                ))}
+              </div>
+            )}
+            {pageConfig.show_listing_sort !== false && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
+                {(['newest', 'desc', 'asc'] as const).map(opt => (
+                  <button key={opt} type="button"
+                    onClick={() => setSortPrice(prev => prev === opt ? 'none' : opt)}
+                    className="shrink-0 px-3 py-1.5 min-h-[36px] rounded-full text-xs font-medium transition-all border active:scale-95"
+                    style={sortPrice === opt ? { backgroundColor: primary, borderColor: primary, color: '#fff' } : { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, color: '#d1c7b8' }}>
+                    {opt === 'newest' ? 'الأحدث' : opt === 'desc' ? 'الأعلى سعراً' : 'الأقل سعراً'}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            </div>
+            {filtered.length === 0 && <p className="text-center py-12 text-gray-400">لا توجد عروض لهذا التصنيف</p>}
 
             {/* Featured */}
-            <button className="w-full text-right border overflow-hidden mb-8 group block hover:shadow-xl transition-all"
+            {featured && <button className="w-full text-right border overflow-hidden mb-8 group block hover:shadow-xl transition-all"
               style={{ borderColor: `${primary}50`, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}
               onClick={() => setActiveListing(featured)}>
               <div className="flex flex-col md:flex-row">
@@ -187,7 +219,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   </span>
                 </div>
               </div>
-            </button>
+            </button>}
 
             {/* Remaining listings */}
             {compact.length > 0 && (

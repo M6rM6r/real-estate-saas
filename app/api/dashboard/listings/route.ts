@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
+import { getLatencyBucket, getRequestId, logRouteError, logRouteInfo, logRouteStart } from '@/lib/observability'
+import { FirestoreListingRepository } from '@/lib/repositories/listing-repository'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -25,22 +27,58 @@ const ListingSchema = z.object({
   images: z.array(z.string().url()).max(20).optional(),
 })
 
+const listingsRepo = new FirestoreListingRepository(adminDb)
+
 export async function GET(request: NextRequest) {
-  const session = await getFirebaseSession(request)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const snap = await adminDb.collection('posts')
-    .where('tenantId', '==', session.tenantId).where('type', '==', 'listing')
-    .get()
-  const docs = [...snap.docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))
-  return NextResponse.json({ data: docs.map(d => {
-    const { createdAt, ...rest } = d.data()
-    return { id: d.id, ...rest, created_at: createdAt?.toDate?.()?.toISOString() ?? null }
-  }) })
+  const startedAt = Date.now()
+  logRouteStart(request, 'GET /api/dashboard/listings')
+  try {
+    const session = await getFirebaseSession(request)
+    if (!session) {
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      response.headers.set('x-request-id', getRequestId(request))
+      return response
+    }
+
+    const listings = await listingsRepo.findByTenant(session.tenantId)
+    const response = NextResponse.json({
+      data: listings.map(({ createdAt, ...rest }) => ({
+        ...rest,
+        created_at: createdAt?.toISOString() ?? null,
+      })),
+    })
+    response.headers.set('x-request-id', getRequestId(request))
+    logRouteInfo(request, 'GET /api/dashboard/listings', {
+      message: 'Listings fetched',
+      status: 200,
+      durationMs: Date.now() - startedAt,
+      latencyBucket: getLatencyBucket(Date.now() - startedAt),
+      resultCount: listings.length,
+      tenantId: session.tenantId,
+    })
+    return response
+  } catch (error) {
+    logRouteError(request, 'GET /api/dashboard/listings', error, {
+      status: 500,
+      durationMs: Date.now() - startedAt,
+      latencyBucket: getLatencyBucket(Date.now() - startedAt),
+    })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
 }
 
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now()
+  logRouteStart(request, 'POST /api/dashboard/listings')
+
   const session = await getFirebaseSession(request)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) {
+    const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
 
   let body: z.infer<typeof ListingSchema>
   try {
@@ -63,14 +101,31 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       ...rest,
     }
-    await adminDb.collection('posts').doc(id).set(doc)
+    await listingsRepo.create(id, doc as Parameters<FirestoreListingRepository['create']>[1])
     await logMutation({ tenantId: session.tenantId, action: 'create', resource: 'listing', resourceId: id, userId: session.uid, after: doc as Record<string, unknown> })
     const tenantDoc = await adminDb.collection('tenants').doc(session.tenantId).get()
     const slug = tenantDoc.data()?.slug as string | undefined
     if (slug) revalidatePath(`/${slug}`)
-    return NextResponse.json({ id, ...doc }, { status: 201 })
+    const response = NextResponse.json({ id, ...doc }, { status: 201 })
+    response.headers.set('x-request-id', getRequestId(request))
+    logRouteInfo(request, 'POST /api/dashboard/listings', {
+      message: 'Listing created',
+      status: 201,
+      durationMs: Date.now() - startedAt,
+      latencyBucket: getLatencyBucket(Date.now() - startedAt),
+      tenantId: session.tenantId,
+      listingId: id,
+    })
+    return response
   } catch (err) {
-    console.error('[POST /api/dashboard/listings]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    logRouteError(request, 'POST /api/dashboard/listings', err, {
+      status: 500,
+      durationMs: Date.now() - startedAt,
+      latencyBucket: getLatencyBucket(Date.now() - startedAt),
+      tenantId: session.tenantId,
+    })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
   }
 }

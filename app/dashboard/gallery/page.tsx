@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { authFetch } from '@/lib/api';
 import type { Media } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -195,10 +196,11 @@ export default function GalleryPage() {
               key={item.id}
               className="relative group aspect-square rounded-lg overflow-hidden bg-gray-900 border border-gray-800 hover:border-gray-600 transition-all duration-200"
             >
-              <img
+              <Image
                 src={item.url}
                 alt={item.label || 'Gallery image'}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <Button

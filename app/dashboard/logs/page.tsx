@@ -61,7 +61,7 @@ export default function LogsPage() {
       })
       .catch(() => setError(t.loadFailed))
       .finally(() => setLoading(false))
-  }, [])
+  }, [t.loadFailed])
 
   return (
     <div className="space-y-6">

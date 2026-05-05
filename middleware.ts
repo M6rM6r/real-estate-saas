@@ -8,6 +8,9 @@ const ADMIN_JWT_SECRET = new TextEncoder().encode(
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const requestHeaders = new Headers(request.headers)
+  const requestId = requestHeaders.get('x-request-id') ?? crypto.randomUUID()
+  requestHeaders.set('x-request-id', requestId)
 
   // ── Super admin routes ──────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
@@ -34,7 +37,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
+  response.headers.set('x-request-id', requestId)
+  return response
 }
 
 export const config = {

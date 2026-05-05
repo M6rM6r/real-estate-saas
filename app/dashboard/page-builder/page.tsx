@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { QRCodeSVG } from 'qrcode.react';
 import { authFetch } from '@/lib/api';
 import PublicAgencyPage from '@/components/PublicAgencyPage';
@@ -19,7 +20,7 @@ import {
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal,
 } from 'lucide-react';
-import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop, type PixelCrop } from 'react-image-crop';
+import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -30,6 +31,7 @@ import { useLanguage } from '@/app/dashboard/LanguageContext';
 const PB_T = {
   ar: {
     cropTitle: 'اقتصاص الصورة', cancel: 'إلغاء', confirmCrop: 'تأكيد الاقتصاص',
+    zoomLabel: 'التكبير', resetCrop: 'إعادة الضبط',
     changeImg: 'تغيير', clickUpload: 'اضغط لاختيار صورة', clickOrDrag: 'اضغط أو اسحب صورة هنا',
     changeImage: 'تغيير الصورة', uploadFailed: 'فشل الرفع', uploadHint: 'JPG · PNG · WebP · حتى 5 MB',
     reorderSection: 'إعادة ترتيب القسم',
@@ -48,6 +50,7 @@ const PB_T = {
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
     pageSettingsTitle: '🎛️ إعدادات الصفحة', heroHeadlineLabel: 'العنوان الرئيسي للصفحة',
     heroHeadlinePlaceholder: 'اكتشف أفضل العروض لديك', pageLangLabel: 'لغة الصفحة',
+    showListingSortLabel: 'عرض أزرار الترتيب في العروض', showListingSortHint: 'يسمح للزوار بترتيب العروض حسب السعر أو الأحدث',
     chooseDesign: 'اختر تصميم صفحتك', chooseDesignSub: 'سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ',
     brandColor: '🎨 لون العلامة التجارية', brandColorHint: 'يُستخدم كلون رئيسي في صفحتك',
     logoLabel: '🖼️ الشعار (Logo)', logoUploadLabel: 'شعار المكتب — اضغط لرفع صورة',
@@ -96,10 +99,11 @@ const PB_T = {
   },
   en: {
     cropTitle: 'Crop Image', cancel: 'Cancel', confirmCrop: 'Confirm Crop',
+    zoomLabel: 'Zoom', resetCrop: 'Reset',
     changeImg: 'Change', clickUpload: 'Click to upload', clickOrDrag: 'Click or drag image here',
     changeImage: 'Change Image', uploadFailed: 'Upload failed', uploadHint: 'JPG · PNG · WebP · up to 5 MB',
     reorderSection: 'Reorder section',
-    sectionHero: 'Hero', sectionListings: 'Listings', sectionAbout: 'About Us',
+    sectionHero: 'Header', sectionListings: 'Listings', sectionAbout: 'About Us',
     sectionContact: 'Contact', sectionWorkingHours: 'Working Hours', sectionFooter: 'Footer',
     sun: 'Sunday', mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday',
     loadingPage: 'Loading your page settings...',
@@ -114,6 +118,7 @@ const PB_T = {
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
     pageSettingsTitle: '🎛️ Page Settings', heroHeadlineLabel: 'Main Page Headline',
     heroHeadlinePlaceholder: 'Discover the best listings', pageLangLabel: 'Page Language',
+    showListingSortLabel: 'Show Sort Buttons on Listings', showListingSortHint: 'Lets visitors sort listings by price or newest',
     chooseDesign: 'Choose Your Page Design', chooseDesignSub: 'The design will be applied instantly to the preview and saved to your page',
     brandColor: '🎨 Brand Color', brandColorHint: 'Used as the primary color in your page',
     logoLabel: '🖼️ Logo', logoUploadLabel: 'Agency logo — click to upload',
@@ -180,17 +185,31 @@ type ProfileResponse = {
 
 /* ── helpers for crop ── */
 function centerAspectCrop(imgW: number, imgH: number, aspect: number): CropType {
-  return centerCrop(makeAspectCrop({ unit: '%', width: 90 }, aspect, imgW, imgH), imgW, imgH);
+  const preferredWidth = imgW >= imgH ? 90 : 78;
+  return centerCrop(makeAspectCrop({ unit: '%', width: preferredWidth }, aspect, imgW, imgH), imgW, imgH);
 }
 
 async function getCroppedBlob(imgEl: HTMLImageElement, pixelCrop: PixelCrop, mimeType = 'image/jpeg'): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const scaleX = imgEl.naturalWidth / imgEl.width;
   const scaleY = imgEl.naturalHeight / imgEl.height;
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(imgEl, pixelCrop.x * scaleX, pixelCrop.y * scaleY, pixelCrop.width * scaleX, pixelCrop.height * scaleY, 0, 0, pixelCrop.width, pixelCrop.height);
+  canvas.width = Math.max(1, Math.round(pixelCrop.width));
+  canvas.height = Math.max(1, Math.round(pixelCrop.height));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas is empty');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(
+    imgEl,
+    pixelCrop.x * scaleX,
+    pixelCrop.y * scaleY,
+    pixelCrop.width * scaleX,
+    pixelCrop.height * scaleY,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas is empty')), mimeType, 0.92);
   });
@@ -210,60 +229,95 @@ function CropModal({
 }) {
   const [crop, setCrop] = useState<CropType>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const { lang } = useLanguage();
   const t = PB_T[lang];
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    setCrop(centerAspectCrop(width, height, aspectRatio));
-  };
+  const resetCrop = useCallback(() => {
+    const img = imgRef.current;
+    if (!img) return;
+    setCrop(centerAspectCrop(img.naturalWidth, img.naturalHeight, aspectRatio));
+  }, [aspectRatio]);
+
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    const nextCrop = centerAspectCrop(naturalWidth, naturalHeight, aspectRatio);
+    setCrop(nextCrop);
+  }, [aspectRatio]);
 
   const handleConfirm = async () => {
-    if (!completedCrop || !imgRef.current) return;
+    if (!completedCrop || !imgRef.current || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const blob = await getCroppedBlob(imgRef.current, completedCrop);
       onConfirm(blob);
     } catch {
       onCancel();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="bg-[#12121a] border border-slate-700 rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4">
+      <div className="bg-[#12121a] border border-slate-700 rounded-2xl shadow-2xl max-w-5xl w-full p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2 text-white font-semibold">
           <Crop className="h-4 w-4 text-blue-400" />
           <span>{t.cropTitle}</span>
         </div>
-        <div className="overflow-auto max-h-[60vh] flex justify-center">
+        <div className="max-h-[72vh] overflow-auto rounded-xl border border-slate-800 bg-black/40 p-3 sm:p-4 flex items-center justify-center">
           <ReactCrop
             crop={crop}
-            onChange={(c) => setCrop(c)}
-            onComplete={(c) => setCompletedCrop(c)}
+            onChange={(nextCrop) => setCrop(nextCrop)}
+            onComplete={(nextCrop) => setCompletedCrop(nextCrop)}
             aspect={aspectRatio}
-            minWidth={50}
-            minHeight={50}
+            keepSelection
+            ruleOfThirds
+            minWidth={80}
+            minHeight={80}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img ref={imgRef} src={src} alt="crop preview" onLoad={onImageLoad} style={{ maxHeight: '56vh', maxWidth: '100%' }} />
+            <img
+              ref={imgRef}
+              src={src}
+              alt="crop preview"
+              onLoad={onImageLoad}
+              className="block max-w-full w-auto h-auto max-h-[64vh] object-contain select-none"
+            />
           </ReactCrop>
         </div>
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors"
-          >
-            {t.cancel}
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
-          >
-            {t.confirmCrop}
-          </button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-xs text-slate-500">
+            {aspectRatio === 1 ? '1:1' : '16:9'}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={resetCrop}
+              className="text-xs text-slate-400 hover:text-white transition-colors"
+            >
+              {t.resetCrop}
+            </button>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirm}
+                disabled={!completedCrop || isSubmitting}
+                className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium transition-colors inline-flex items-center justify-center min-w-[120px]"
+              >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t.confirmCrop}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -342,7 +396,7 @@ function ImageUploader({
     } finally {
       setUploading(false);
     }
-  }, [isDemo, onChange]);
+  }, [isDemo, onChange, t.uploadFailed]);
 
   const handleCropConfirm = useCallback(async (blob: Blob) => {
     setCropSrc(null);
@@ -384,7 +438,7 @@ function ImageUploader({
               {uploading ? (
                 <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
               ) : value ? (
-                <img src={value} alt="preview" className="w-full h-full object-cover" />
+                <Image src={value} alt="preview" fill className="object-cover" />
               ) : (
                 <ImageIcon className="h-6 w-6 text-slate-600" />
               )}
@@ -409,7 +463,7 @@ function ImageUploader({
         >
           {value ? (
             <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
-              <img src={value} alt="cover preview" className="w-full h-full object-cover" />
+              <Image src={value} alt="cover preview" fill className="object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> {t.changeImage}</>}
               </div>
@@ -524,6 +578,7 @@ const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   listings_columns: 3,
   show_listing_filters: true,
   show_listing_search: true,
+  show_listing_sort: true,
   filter_label_all: 'الكل',
   filter_label_all_types: 'كل الأنواع',
   filter_label_all_status: 'كل الحالات',
@@ -587,32 +642,32 @@ const CURRENCY_OPTIONS = [
 ] as const;
 
 const demoListings = [
-  { id: 'l1', title: 'بنتهاوس مارينا', body: 'إطلالات بانورامية على المرسى من كل غرفة. تراس خاص على السطح مع مسبح لا نهاية له.', price: 12500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 4, area_sqm: 390, listing_status: 'available' as const, offer_type: 'sale', property_type: 'penthouse', images: ['https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
-  { id: 'l2', title: 'فيلا نخلة جميرا', body: 'فيلا على الشاطئ في جزيرة النخلة الشهيرة مع شاطئ خاص ومسبح ووصول مباشر للبحر.', price: 28000000, location: 'Palm Jumeirah', bedrooms: 6, bathrooms: 7, area_sqm: 790, listing_status: 'available' as const, offer_type: 'sale', property_type: 'villa', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
-  { id: 'l3', title: 'جناح وسط المدينة', body: 'إطلالات بانورامية على برج خليفة والنافورة. تشطيبات فاخرة ونظام منزل ذكي.', price: 5800000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 167, listing_status: 'available' as const, offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
-  { id: 'l4', title: 'شقة بزنس باي', body: 'معيشة عصرية في قلب الحي التجاري. إطلالات على القناة، صالة رياضية وخدمة كونسيرج.', price: 3200000, location: 'Business Bay', bedrooms: 3, bathrooms: 3, area_sqm: 195, listing_status: 'sold' as const, offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
-  { id: 'l5', title: 'دوبلكس جي بي آر', body: 'على بُعد خطوات من الشاطئ، يجمع هذا الدوبلكس بين الفخامة الداخلية والمعيشة في الهواء الطلق.', price: 9100000, location: 'Jumeirah Beach Residence', bedrooms: 3, bathrooms: 3, area_sqm: 279, listing_status: 'available' as const, offer_type: 'rent', property_type: 'duplex', images: ['https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
-  { id: 'l6', title: 'قصر إمارات هيلز', body: 'قصر فاخر في أرقى عنوان في دبي. إطلالات على ملعب الغولف، غرفة سينما ومرافق للموظفين.', price: 45000000, location: 'Emirates Hills', bedrooms: 8, bathrooms: 9, area_sqm: 1300, listing_status: 'available' as const, offer_type: 'sale', property_type: 'mansion', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l1', title: 'قصر ملكي في حي الملقا', body: 'قصر فاخر بتشطيبات كلاسيكية راقية، مجالس فسيحة وحدائق خاصة في أرقى أحياء الرياض.', price: 18500000, location: 'حي الملقا، الرياض', bedrooms: 7, bathrooms: 8, area_sqm: 1100, listing_status: 'available' as const, offer_type: 'sale', property_type: 'قصر', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l2', title: 'فيلا فاخرة في حي النرجس', body: 'فيلا حديثة بتصميم عربي أصيل، مسبح خاص ومجلس رجال مستقل في موقع متميز.', price: 6800000, location: 'حي النرجس، الرياض', bedrooms: 5, bathrooms: 6, area_sqm: 580, listing_status: 'available' as const, offer_type: 'sale', property_type: 'فيلا', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l3', title: 'شقة فندقية في برج المملكة', body: 'شقة راقية في أيقونة الرياض المعمارية مع إطلالات خلابة على مدينة الرياض وخدمة فندقية على مدار الساعة.', price: 3400000, location: 'برج المملكة، الرياض', bedrooms: 3, bathrooms: 3, area_sqm: 210, listing_status: 'available' as const, offer_type: 'sale', property_type: 'شقة', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l4', title: 'دوبلكس في حي السفارات', body: 'دوبلكس واسع في الحي الدبلوماسي بتشطيبات أوروبية فاخرة وموقع استراتيجي قرب الخدمات.', price: 4200000, location: 'حي السفارات، الرياض', bedrooms: 4, bathrooms: 4, area_sqm: 320, listing_status: 'available' as const, offer_type: 'rent', property_type: 'دوبلكس', images: ['https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l5', title: 'فيلا بحرية في كورنيش جدة', body: 'فيلا على الكورنيش مباشرة مع إطلالة بحرية ساحرة، تراس خاص وتشطيبات مودرن فاخرة.', price: 9200000, location: 'كورنيش جدة، جدة', bedrooms: 5, bathrooms: 5, area_sqm: 620, listing_status: 'available' as const, offer_type: 'sale', property_type: 'فيلا', images: ['https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
+  { id: 'l6', title: 'عمارة سكنية في حي العليا', body: 'عمارة سكنية كاملة في قلب حي العليا التجاري، فرصة استثمارية ذهبية بعائد إيجاري مرتفع.', price: 22000000, location: 'حي العليا، الرياض', bedrooms: 0, bathrooms: 0, area_sqm: 2400, listing_status: 'available' as const, offer_type: 'sale', property_type: 'عمارة', images: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
 ];
 
 const demoNews = [
-  { id: 'n1', title: 'سوق العقارات في دبي يسجل أرقاماً قياسية في الربع الأول 2026', body: 'ارتفعت أحجام المعاملات بنسبة 34% على أساس سنوي مع تدفق استثمارات المستثمرين الدوليين إلى مناطق دبي مارينا وداون تاون والنخلة.', image_url: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
-  { id: 'n2', title: 'قواعد التأشيرة الذهبية الجديدة تعزز الطلب على العقارات الفاخرة', body: 'يُحفز برنامج التأشيرة لمدة 10 سنوات لملاك العقارات بقيمة 2 مليون درهم+ موجةً من الاستثمارات الأجنبية طويلة الأجل في الإمارات.', image_url: 'https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
-  { id: 'n3', title: 'Luxury Homes Dubai تفوز بجائزة أفضل وكالة 2025', body: 'نفخر بحصولنا على لقب أفضل وكالة عقارات سكنية فاخرة في دبي للعام الثاني على التوالي في حفل جوائز الخليج للعقارات.', image_url: 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+  { id: 'n1', title: 'سوق العقارات السعودي يشهد نمواً قياسياً في 2026', body: 'ارتفعت صفقات العقارات في الرياض وجدة بنسبة 28% مقارنة بالعام الماضي، مدفوعةً برؤية 2030 ومشاريع التطوير الكبرى في مختلف مناطق المملكة.', image_url: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+  { id: 'n2', title: 'مشاريع نيوم تُعيد رسم خريطة الاستثمار العقاري في المملكة', body: 'أعلنت هيئة تطوير منطقة تبوك عن طرح وحدات سكنية فاخرة في مشروع ذا لاين، مما أشعل شهية المستثمرين المحليين والدوليين.', image_url: 'https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+  { id: 'n3', title: 'الدرعية تتصدر قائمة أكثر المناطق طلباً للسكن الفاخر', body: 'كشف تقرير وزارة الإسكان أن حي الدرعية التراثي يستقطب أعلى نسبة من طلبات الشراء للعقارات الفاخرة خلال الربع الأول من 2026.', image_url: 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: new Date().toISOString(), price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
 ];
 
 const demoGallery = [
-  { id: 'g1', url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Marina Penthouse Living Room', sort_order: 0 },
-  { id: 'g2', url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Palm Jumeirah Aerial View', sort_order: 1 },
-  { id: 'g3', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Beachfront Villa Exterior', sort_order: 2 },
-  { id: 'g4', url: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Downtown Skyline at Night', sort_order: 3 },
-  { id: 'g5', url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'JBR Beachfront Terrace', sort_order: 4 },
-  { id: 'g6', url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Emirates Hills Mansion Pool', sort_order: 5 },
+  { id: 'g1', url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'قصر الملقا من الخارج', sort_order: 0 },
+  { id: 'g2', url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'صالة استقبال فاخرة', sort_order: 1 },
+  { id: 'g3', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'فيلا النرجس - المسبح', sort_order: 2 },
+  { id: 'g4', url: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'إطلالة الرياض الليلية', sort_order: 3 },
+  { id: 'g5', url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'كورنيش جدة', sort_order: 4 },
+  { id: 'g6', url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'شقة برج المملكة', sort_order: 5 },
 ];
 
 const demoTeam = [
-  { id: 't1', email: 'sarah@luxuryhomesdubai.ae', role: 'agent', display_name: 'Sarah Al-Mansouri', photo_url: '', phone: '+971500000001' },
-  { id: 't2', email: 'james@luxuryhomesdubai.ae', role: 'agent', display_name: 'James Porter', photo_url: '', phone: '+971500000002' },
+  { id: 't1', email: 'khalid@alazizia-properties.sa', role: 'agent', display_name: 'خالد العتيبي', photo_url: '', phone: '+966500000001' },
+  { id: 't2', email: 'noura@alazizia-properties.sa', role: 'agent', display_name: 'نورة الشمري', photo_url: '', phone: '+966500000002' },
 ];
 
 const DAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -671,6 +726,7 @@ export default function PageBuilderPage() {
   const autoSaveTrigger = useRef(false);
   const [autoSavePending, setAutoSavePending] = useState(0);
   const pendingImageAutoSave = useRef(false);
+  const handleSaveRef = useRef<(() => Promise<void>) | null>(null);
   const [listings, setListings] = useState<any[]>([]);
   const [newsItems, setNewsItems] = useState<any[]>([]);
   const [galleryItems, setGalleryItems] = useState<any[]>([]);
@@ -707,20 +763,20 @@ export default function PageBuilderPage() {
         profile: {
           tenant_id: 'demo',
           logo_url: '',
-          cover_url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1600',
-          bio: 'Luxury Homes Dubai is an award-winning agency specialising in premium residential and commercial properties across Dubai.',
-          tagline: 'اعثر على منزل أحلامك في دبي',
-          contact_email: 'hello@luxuryhomesdubai.ae',
-          contact_phone: '+971500000000',
+          cover_url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1600',
+          bio: 'العزيزية للعقارات وكالة متخصصة في العقارات السكنية والتجارية الفاخرة في الرياض وجدة، نقدم خدمات احترافية بخبرة تمتد لأكثر من 15 عاماً.',
+          tagline: 'اعثر على منزل أحلامك',
+          contact_email: 'info@alazizia-properties.sa',
+          contact_phone: '+966500000000',
           extra_phones: ['+966559707955'],
-          contact_address: 'Dubai Marina, Dubai, UAE',
-          licence_no: 'RE-12345',
-          licence_numbers: [{ label: 'رقم الرخصة', number: 'RE-12345' }],
+          contact_address: 'حي العليا، الرياض، المملكة العربية السعودية',
+          licence_no: 'فال-٢٠٢٣-١٢٣٤',
+          licence_numbers: [{ label: 'رقم الفال', number: 'فال-٢٠٢٣-١٢٣٤' }],
           social_links: {
-            instagram: 'luxuryhomesdubai',
+            instagram: 'alazizia_properties',
             x: '',
             linkedin: '',
-            whatsapp: '971500000000',
+            whatsapp: '966500000000',
             snapchat: '',
             tiktok: '',
           },
@@ -743,19 +799,19 @@ export default function PageBuilderPage() {
             footer: true,
           },
           page_config: {
-            hero_headline: 'اعثر على منزل أحلامك في دبي',
+            hero_headline: 'اعثر على منزل أحلامك',
             hero_style: 'centered' as 'centered' | 'split' | 'minimal',
             hero_cta_text: 'تصفح العروض',
             show_listing_filters: true,
             show_listing_search: true,
             listings_columns: 3 as 2 | 3 | 4,
-            currency: 'AED',
+            currency: 'SAR',
           },
         },
         tenant: {
           id: 'demo',
           slug: 'demo',
-          name: 'Luxury Homes Dubai',
+          name: 'العزيزية للعقارات',
           status: 'active' as const,
           created_at: '2025-10-15T10:00:00Z',
           primary_color: '#8b5cf6',
@@ -1038,17 +1094,21 @@ export default function PageBuilderPage() {
   };
 
   useEffect(() => {
+    handleSaveRef.current = handleSave;
+  }); // no dep array — syncs ref every render, intentional
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
-        if (saveStatus !== 'saving' && dirty) {
-          void handleSave();
+        if (saveStatus !== 'saving' && dirty && handleSaveRef.current) {
+          void handleSaveRef.current();
         }
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [dirty, saveStatus, handleSave]);
+  }, [dirty, saveStatus]);
 
   // Fire the debounced auto-save when the timer triggers
   useEffect(() => {
@@ -1221,7 +1281,7 @@ export default function PageBuilderPage() {
 
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-1.5">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
               {([
                 { value: 'control', icon: SlidersHorizontal, label: t.tabControl },
@@ -1273,18 +1333,6 @@ export default function PageBuilderPage() {
                 </p>
 
                 <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.heroHeadlineLabel}</Label>
-                  <Input
-                    value={pageConfig.hero_headline || ''}
-                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
-                    placeholder={t.heroHeadlinePlaceholder}
-                    maxLength={200}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                  <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
-                </div>
-
-                <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.pageLangLabel}</Label>
                   <div className="flex gap-2">
                     {(['ar', 'en'] as const).map(l => (
@@ -1300,6 +1348,21 @@ export default function PageBuilderPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 py-1">
+                  <div>
+                    <p className="text-sm text-white">{t.showListingSortLabel}</p>
+                    <p className="text-xs text-slate-500">{t.showListingSortHint}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updatePageConfig({ show_listing_sort: !(pageConfig.show_listing_sort ?? true) })}
+                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ (pageConfig.show_listing_sort ?? true) ? 'bg-blue-600' : 'bg-slate-700' }`}
+                    aria-pressed={pageConfig.show_listing_sort ?? true}
+                  >
+                    <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${ (pageConfig.show_listing_sort ?? true) ? 'translate-x-4' : 'translate-x-1' }`} />
+                  </button>
                 </div>
               </div>
             </TabsContent>
@@ -1510,6 +1573,18 @@ export default function PageBuilderPage() {
                 </p>
 
                 <div className="space-y-1.5">
+                  <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.heroHeadlineLabel}</Label>
+                  <Input
+                    value={pageConfig.hero_headline || ''}
+                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                    placeholder={t.heroHeadlinePlaceholder}
+                    maxLength={200}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.taglineLabel}</Label>
                   <Input
                     value={profile.tagline || ''}
@@ -1627,7 +1702,9 @@ export default function PageBuilderPage() {
                   <p className="text-xs text-slate-400 font-medium">{t.ogPreviewLabel}</p>
                   <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
                     {profile.cover_url && (
-                      <img src={profile.cover_url} alt="OG preview" className="w-full h-24 object-cover" />
+                      <div className="relative w-full h-24">
+                        <Image src={profile.cover_url} alt="OG preview" fill className="object-cover" />
+                      </div>
                     )}
                     <div className="p-3">
                       <p className="text-sm font-semibold text-white truncate">
@@ -1758,17 +1835,6 @@ export default function PageBuilderPage() {
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">{t.notesLabel}</label>
-                      <textarea
-                        value={listingForm.notes}
-                        onChange={(e) => setListingForm({ ...listingForm, notes: e.target.value })}
-                        placeholder={t.notesPlaceholder}
-                        rows={2}
-                        className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                      />
-                    </div>
-
                     <div className="flex items-center justify-between py-1">
                       <div>
                         <p className="text-sm text-white">{t.publishLabel}</p>
@@ -1809,7 +1875,9 @@ export default function PageBuilderPage() {
                     {listings.map((listing) => (
                       <div key={listing.id} className="bg-slate-800 rounded-lg p-3 border border-slate-700 flex gap-3 items-center">
                         {listing.images?.[0] && (
-                          <img src={listing.images[0]} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                          <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image src={listing.images[0]} alt="" fill className="object-cover" />
+                          </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-white text-sm truncate">{listing.title}</p>
@@ -1979,7 +2047,7 @@ export default function PageBuilderPage() {
                 {([
                   { key: 'instagram', icon: Instagram,     label: 'Instagram',   placeholder: 'username',              color: 'text-pink-400'  },
                   { key: 'x',         icon: Twitter,       label: 'X (Twitter)', placeholder: 'username',              color: 'text-sky-400'   },
-                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'username or company/..', color: 'text-blue-400'  },
+                  { key: 'linkedin',  icon: Linkedin,      label: 'LinkedIn',    placeholder: 'username', color: 'text-blue-400'  },
                   { key: 'whatsapp',  icon: MessageCircle, label: 'WhatsApp',    placeholder: '966500000000',         color: 'text-green-400' },
                 ] as const).map(({ key, icon: Icon, label, placeholder, color }) => (
                   <div key={key} className="space-y-1.5">
@@ -2069,7 +2137,7 @@ export default function PageBuilderPage() {
                     <Input
                       value={profile.social_links?.discord || ''}
                       onChange={(e) => updateSocial('discord', e.target.value)}
-                      placeholder="username or server invite"
+                      placeholder="username"
                       className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>

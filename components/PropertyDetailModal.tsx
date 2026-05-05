@@ -1,8 +1,9 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle, Share2, Tag } from 'lucide-react';
 import type { Post } from '@/lib/types';
 
 const MODAL_LABELS = {
@@ -24,6 +25,11 @@ const MODAL_LABELS = {
     shareWhatsApp: 'واتساب',
     shareCopy: 'نسخ',
     shareCopied: 'تم النسخ',
+    shareNative: 'مشاركة',
+    details: 'تفاصيل العقار',
+    offerType: 'نوع العرض',
+    propertyType: 'نوع العقار',
+    listingStatus: 'الحالة',
   },
   en: {
     statusAvailable: 'Available',
@@ -43,6 +49,11 @@ const MODAL_LABELS = {
     shareWhatsApp: 'WhatsApp',
     shareCopy: 'Copy',
     shareCopied: 'Copied!',
+    shareNative: 'Share',
+    details: 'Property Details',
+    offerType: 'Offer Type',
+    propertyType: 'Property Type',
+    listingStatus: 'Status',
   },
 } as const
 
@@ -67,6 +78,7 @@ export function PropertyDetailModal({
 }: PropertyDetailModalProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [copied, setCopied] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const L = MODAL_LABELS[lang];
 
@@ -98,6 +110,11 @@ export function PropertyDetailModal({
     return `${window.location.origin}/${slug}#listing-${property.id}`;
   };
 
+  const shareText = useMemo(() => {
+    const priceSegment = property.price ? ` — ${property.currency ?? 'SAR'} ${property.price.toLocaleString('en-US')}` : '';
+    return `${property.title}${priceSegment}`;
+  }, [property.currency, property.price, property.title]);
+
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(getShareUrl());
@@ -116,8 +133,21 @@ export function PropertyDetailModal({
   };
 
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(`${property.title} - ${getShareUrl()}`);
+    const text = encodeURIComponent(`${shareText}\n${getShareUrl()}`);
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleNativeShare = async () => {
+    const url = getShareUrl();
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: property.title, text: shareText, url });
+        return;
+      } catch {
+        // no-op; fallback below
+      }
+    }
+    await handleCopyLink();
   };
 
   const statusColor: Record<string, string> = {
@@ -132,9 +162,49 @@ export function PropertyDetailModal({
     rented: L.statusRented,
   };
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'ArrowLeft') nextImage();
+      if (event.key === 'ArrowRight') prevImage();
+    };
+
+    const firstFocusable = modalRef.current?.querySelector<HTMLElement>('button, a, [tabindex]:not([tabindex="-1"])');
+    firstFocusable?.focus();
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  });
+
+  const metaBadges = [
+    property.offer_type ? { label: L.offerType, value: property.offer_type } : null,
+    property.property_type ? { label: L.propertyType, value: property.property_type } : null,
+    property.listing_status ? { label: L.listingStatus, value: statusLabel[property.listing_status] || property.listing_status } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+
+  const mapEmbedUrl = property.location_url && property.location_url.includes('google.com/maps')
+    ? property.location_url.replace('/maps/', '/maps/embed?')
+    : null;
+
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" dir={lang === 'en' ? 'ltr' : 'rtl'}>
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      dir={lang === 'en' ? 'ltr' : 'rtl'}
+      role="dialog"
+      aria-modal="true"
+      aria-label={property.title}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div
+        ref={modalRef}
         className="bg-gray-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-800"
         style={{ backgroundColor: bgColor }}
       >
@@ -143,6 +213,7 @@ export function PropertyDetailModal({
           <h2 className="text-2xl font-bold text-white">{property.title}</h2>
           <button
             onClick={onClose}
+            aria-label={lang === 'en' ? 'Close dialog' : 'إغلاق النافذة'}
             className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
           >
             <X className="h-6 w-6 text-gray-400" />
@@ -155,21 +226,28 @@ export function PropertyDetailModal({
             <div className="relative">
               {hasImages ? (
                 <>
-                  <img
-                    src={images[currentImageIdx]}
-                    alt={property.title}
-                    className="w-full h-96 object-cover rounded-xl"
-                  />
+                  <div className="relative w-full h-96 overflow-hidden rounded-xl">
+                    <Image
+                      src={images[currentImageIdx]}
+                      alt={property.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      priority={currentImageIdx === 0}
+                    />
+                  </div>
                   {images.length > 1 && (
                     <>
                       <button
                         onClick={prevImage}
+                        aria-label={lang === 'en' ? 'Previous image' : 'الصورة السابقة'}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
                       <button
                         onClick={nextImage}
+                        aria-label={lang === 'en' ? 'Next image' : 'الصورة التالية'}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
                       >
                         <ChevronLeft className="h-6 w-6" />
@@ -206,11 +284,17 @@ export function PropertyDetailModal({
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIdx(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                       idx === currentImageIdx ? 'border-blue-500' : 'border-gray-700 hover:border-gray-600'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <Image
+                      src={img}
+                      alt={`${property.title} ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
                   </button>
                 ))}
               </div>
@@ -253,6 +337,19 @@ export function PropertyDetailModal({
               <h3 className="text-lg font-bold text-white mb-3">{L.description}</h3>
               <p className="text-gray-300 leading-relaxed">{property.body}</p>
             </div>
+            )}
+
+            {mapEmbedUrl && (
+              <div className="mt-6 rounded-xl border border-gray-700 overflow-hidden">
+                <iframe
+                  title={L.viewMap}
+                  src={mapEmbedUrl}
+                  className="w-full h-64"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
             )}
 
             {/* Location */}
@@ -298,29 +395,54 @@ export function PropertyDetailModal({
             {/* Price */}
             <div className="bg-gradient-to-br rounded-xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}11)`, borderColor: accentColor, borderWidth: '1px' }}>
               <p className="text-gray-300 text-sm mb-2">{L.price}</p>
-              <p className="text-4xl font-bold">{property.price ? property.price.toLocaleString('en-US') : L.priceUnset}</p>
-              <p className="text-gray-300 text-sm mt-2">⃁</p>
+              <p className="text-5xl font-bold flex items-baseline gap-2">
+                <span className="text-2xl font-semibold opacity-80">{property.currency ?? 'SAR'}</span>
+                {property.price ? property.price.toLocaleString('en-US') : L.priceUnset}
+              </p>
             </div>
 
             {/* Features */}
             {(property.features && property.features.length > 0) && (
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 space-y-2">
               <p className="font-semibold text-white text-sm mb-3">{L.features}</p>
-              <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
                 {property.features.map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 shrink-0" style={{ color: accentColor }} />
-                    <span className="text-gray-300 text-sm">{feat}</span>
+                  <div key={i} className="inline-flex items-center gap-1.5 rounded-full border border-gray-600 bg-gray-800 px-3 py-1.5">
+                    <CheckCircle className="h-3.5 w-3.5 shrink-0" style={{ color: accentColor }} />
+                    <span className="text-gray-200 text-xs">{feat}</span>
                   </div>
                 ))}
               </div>
             </div>
             )}
 
+            {metaBadges.length > 0 && (
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 space-y-2">
+                <p className="font-semibold text-white text-sm mb-3">{L.details}</p>
+                <div className="space-y-2">
+                  {metaBadges.map((item) => (
+                    <div key={`${item.label}-${item.value}`} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 inline-flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{item.label}</span>
+                      <span className="text-white font-medium">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Share */}
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
               <p className="font-semibold text-white text-sm mb-3">{L.share}</p>
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNativeShare}
+                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white"
+                >
+                  <Share2 className="h-4 w-4 mr-1.5" />
+                  {L.shareNative}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

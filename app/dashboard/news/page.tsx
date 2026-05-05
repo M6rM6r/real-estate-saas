@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { authFetch } from '@/lib/api';
 import type { Post } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -284,9 +285,11 @@ export default function NewsPage() {
             <Card key={item.id} className="bg-[#12121a] border-gray-800 hover:border-gray-700 transition-colors">
               <CardContent className="p-4 flex items-start gap-4">
                 {item.images?.[0] && (
-                  <img
+                  <Image
                     src={item.images[0]}
                     alt=""
+                    width={80}
+                    height={80}
                     className="w-20 h-20 rounded object-cover flex-shrink-0"
                   />
                 )}
@@ -401,9 +404,11 @@ export default function NewsPage() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   {form.images.map((url, i) => (
                     <div key={i} className="relative group">
-                      <img
+                      <Image
                         src={url}
                         alt=""
+                        width={64}
+                        height={64}
                         className="w-16 h-16 rounded object-cover border border-gray-700"
                       />
                       <button

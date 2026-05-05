@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
 import { requireAdmin } from '@/lib/admin-auth'
+import { getRequestId, logRouteError, logRouteInfo } from '@/lib/observability'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -14,50 +15,83 @@ const DEMO_TENANTS = [
 ]
 
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now()
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  // Return demo data if in demo mode
-  if (process.env.DEMO_MODE === 'true') {
-    return NextResponse.json(DEMO_TENANTS)
-  }
+  try {
+    if (process.env.DEMO_MODE === 'true') {
+      const response = NextResponse.json(DEMO_TENANTS)
+      response.headers.set('x-request-id', getRequestId(request))
+      return response
+    }
 
-  const tenantsSnap = await adminDb.collection('tenants').orderBy('createdAt', 'desc').get()
+    const [tenantsSnap, usersSnap, postsSnap] = await Promise.all([
+      adminDb.collection('tenants').orderBy('createdAt', 'desc').get(),
+      adminDb.collection('users').select('tenantId').get(),
+      adminDb.collection('posts').select('tenantId').get(),
+    ])
 
-  const tenants = await Promise.all(
-    tenantsSnap.docs.map(async (doc) => {
-      const [usersSnap, postsSnap] = await Promise.all([
-        adminDb.collection('users').where('tenantId', '==', doc.id).count().get(),
-        adminDb.collection('posts').where('tenantId', '==', doc.id).count().get(),
-      ])
-      return {
-        id: doc.id,
-        ...doc.data(),
-        created_at: (doc.data().createdAt?.toDate?.()?.toISOString() ?? doc.data().createdAt ?? null),
-        createdAt: undefined,
-        agentCount: usersSnap.data().count,
-        postCount: postsSnap.data().count,
-      }
+    const userCountByTenant = new Map<string, number>()
+    usersSnap.docs.forEach((doc) => {
+      const tenantId = doc.data().tenantId as string | undefined
+      if (!tenantId) return
+      userCountByTenant.set(tenantId, (userCountByTenant.get(tenantId) ?? 0) + 1)
     })
-  )
 
-  return NextResponse.json(tenants)
+    const postCountByTenant = new Map<string, number>()
+    postsSnap.docs.forEach((doc) => {
+      const tenantId = doc.data().tenantId as string | undefined
+      if (!tenantId) return
+      postCountByTenant.set(tenantId, (postCountByTenant.get(tenantId) ?? 0) + 1)
+    })
+
+    const tenants = tenantsSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      created_at: (doc.data().createdAt?.toDate?.()?.toISOString() ?? doc.data().createdAt ?? null),
+      createdAt: undefined,
+      agentCount: userCountByTenant.get(doc.id) ?? 0,
+      postCount: postCountByTenant.get(doc.id) ?? 0,
+    }))
+
+    const response = NextResponse.json(tenants)
+    response.headers.set('x-request-id', getRequestId(request))
+    logRouteInfo(request, 'GET /api/admin/tenants', {
+      message: 'Admin tenants fetched',
+      durationMs: Date.now() - startedAt,
+      status: 200,
+      tenantCount: tenants.length,
+    })
+    return response
+  } catch (error) {
+    logRouteError(request, 'GET /api/admin/tenants', error, {
+      durationMs: Date.now() - startedAt,
+      status: 500,
+    })
+    const response = NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
+  }
 }
 
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now()
   const denied = await requireAdmin(request)
   if (denied) return denied
 
   // In demo mode, just return success without creating
   if (process.env.DEMO_MODE === 'true') {
     const body = await request.json()
-    return NextResponse.json({
+    const response = NextResponse.json({
       id: 'demo-' + Date.now(),
       name: body.name,
       slug: body.slug,
       status: 'active',
       message: 'Demo mode: Tenant not actually created'
     })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
   }
 
   const CreateTenantSchema = z.object({
@@ -129,10 +163,25 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     })
 
-    return NextResponse.json({ id: tenantId, name, slug, status: 'active', primary_color }, { status: 201 })
+    const response = NextResponse.json({ id: tenantId, name, slug, status: 'active', primary_color }, { status: 201 })
+    response.headers.set('x-request-id', getRequestId(request))
+    logRouteInfo(request, 'POST /api/admin/tenants', {
+      message: 'Admin tenant created',
+      durationMs: Date.now() - startedAt,
+      status: 201,
+      tenantId,
+      slug,
+    })
+    return response
   } catch (err: unknown) {
-    console.error('[POST /api/admin/tenants]', err)
+    logRouteError(request, 'POST /api/admin/tenants', err, {
+      durationMs: Date.now() - startedAt,
+      status: 500,
+      slug,
+    })
     const msg = (err as { message?: string }).message ?? 'Internal server error'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    const response = NextResponse.json({ error: msg }, { status: 500 })
+    response.headers.set('x-request-id', getRequestId(request))
+    return response
   }
 }

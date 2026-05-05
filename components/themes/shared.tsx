@@ -56,6 +56,7 @@ export type Profile = {
     listings_columns?: 2 | 3 | 4
     show_listing_filters?: boolean
     show_listing_search?: boolean
+    show_listing_sort?: boolean
     filter_label_all?: string
     filter_label_all_types?: string
     filter_label_all_status?: string
@@ -796,9 +797,9 @@ export function PropertyCard({
         {/* Price overlay — bottom of image */}
         {listing.price != null && (
           <div className="absolute bottom-0 inset-x-0 px-3 pb-3 flex items-end justify-between">
-            <p className="text-white font-bold text-base sm:text-lg leading-none drop-shadow-sm">
+            <p className="text-white font-bold text-base sm:text-lg leading-none drop-shadow-sm flex items-baseline gap-1">
+              <span className="text-xs font-medium opacity-80">{CURRENCY_SYMBOLS[currency] ?? currency}</span>
               {listing.price.toLocaleString('en-US')}
-              <span className="text-xs font-medium opacity-80 mr-1">{CURRENCY_SYMBOLS[currency] ?? currency}</span>
             </p>
             {listing.property_type && (
               <span className="text-white/80 text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>

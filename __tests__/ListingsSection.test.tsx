@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import ListingsSection from '@/components/ListingsSection'
 
 const mockListings = [
@@ -9,8 +9,8 @@ const mockListings = [
 
 describe('ListingsSection', () => {
   it('renders listings', () => {
-    render(<ListingsSection listings={mockListings} />)
-    expect(screen.getByText('Properties')).toBeInTheDocument()
-    expect(screen.getByText('House 1')).toBeInTheDocument()
+    const { getByText } = render(<ListingsSection listings={mockListings} />)
+    expect(getByText('Properties')).toBeInTheDocument()
+    expect(getByText('House 1')).toBeInTheDocument()
   })
 })

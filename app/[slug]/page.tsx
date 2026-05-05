@@ -27,7 +27,7 @@ const getSchemaOrgType = (businessType?: string | null) => {
 
 export const revalidate = 60
 
-async function withRetry<T>(fn: () => Promise<T>, attempts = 2, delayMs = 600): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 800): Promise<T> {
   for (let i = 0; i < attempts; i++) {
     try {
       return await fn()
@@ -77,16 +77,35 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       ? null
       : fallbackProfilesSnap?.docs[0].data()
 
-  const seoTitle = (profile?.page_config as any)?.seo_title || `${tenant.name} — الصفحة الرسمية`
-  const seoDesc = ((profile?.page_config as any)?.seo_description || (profile?.bio as string)) ?? 'خدمات احترافية متميزة'
+  const pageLang = ((profile?.page_config as any)?.page_lang as 'ar' | 'en' | undefined) ?? 'ar'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'
+  const seoTitle = ((profile?.page_config as any)?.seo_title as string | undefined) || tenant.name || `${slug}`
+  const rawDescription = ((profile?.page_config as any)?.seo_description as string | undefined)
+    || (profile?.bio as string | undefined)
+    || (pageLang === 'ar' ? 'خدمات احترافية متميزة' : 'Professional business services')
+  const seoDesc = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
+  const coverUrl = (profile?.cover_url as string | undefined) || `${appUrl}/${slug}/opengraph-image`
+  const canonicalUrl = `${appUrl}/${slug}`
 
   return {
     title: seoTitle,
     description: seoDesc,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: seoTitle,
       description: seoDesc,
-      images: profile?.cover_url ? [profile.cover_url as string] : [],
+      type: 'website',
+      locale: pageLang === 'ar' ? 'ar_SA' : 'en_US',
+      url: canonicalUrl,
+      images: [coverUrl],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDesc,
+      images: [coverUrl],
     },
   }
 }
@@ -181,7 +200,9 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
     redirect('/demo')
   }
 
-  const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+  const tenantsSnap = await withRetry(() =>
+    adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+  , 3, 800)
   if (tenantsSnap.empty) {
     // Fallback static demo page only when there is no matching tenant.
     if (slug === DEMO_SLUG) {
@@ -226,7 +247,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': getSchemaOrgType((tenant as any)?.business_type as string | null | undefined),
+    '@type': ((tenant as any)?.business_type === 'real_estate') ? 'RealEstateAgent' : 'LocalBusiness',
     name: tenant.name,
     description: profileData?.bio ?? 'Professional business services',
     url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'}/${slug}`,
