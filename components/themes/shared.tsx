@@ -825,8 +825,18 @@ export function PropertyCard({
             <span className="line-clamp-1">{listing.location}</span>
           </div>
         )}
-        {showRealEstateFields && listing.area_sqm != null && (
+        {showRealEstateFields && (listing.bedrooms != null || listing.bathrooms != null || listing.area_sqm != null) && (
           <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
+            {listing.bedrooms != null && (
+              <span className="flex items-center gap-1 opacity-80">
+                <span>🛏</span> {listing.bedrooms}
+              </span>
+            )}
+            {listing.bathrooms != null && (
+              <span className="flex items-center gap-1 opacity-80">
+                <span>🚿</span> {listing.bathrooms}
+              </span>
+            )}
             {listing.area_sqm != null && (
               <span className="flex items-center gap-1 opacity-80">
                 <span>📐</span> {listing.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}
