@@ -10,18 +10,25 @@ export default function SlugError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const [attempted, setAttempted] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(true);
 
   useEffect(() => {
-    // Auto-retry once after 500ms
-    if (!attempted) {
-      const timer = setTimeout(() => {
-        setAttempted(true);
-        reset();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [attempted, reset]);
+    // Retry immediately on mount
+    reset();
+    // Show spinner for 300ms then show error UI only if retry failed
+    const timer = setTimeout(() => {
+      setIsRetrying(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [reset]);
+
+  if (isRetrying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
+        <div className="h-10 w-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div
