@@ -250,11 +250,22 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   const toDoc = (d: any) => serialize({ id: d.id, ...d.data() })
 
   const listingsData = sortByDate(listingsSnap.docs).slice(0, 9).map(toDoc)
-  const profileData = profileDoc.exists
+  const rawProfileData = profileDoc.exists
     ? serialize(profileDoc.data())
     : fallbackProfilesSnap.empty
       ? null
       : serialize(fallbackProfilesSnap.docs[0].data())
+
+  // Decode percent-encoded Firebase Storage URLs (e.g. %2F in path segments).
+  // Next.js <Image priority> adds a <link rel="preload"> then does querySelector on the href —
+  // %2F is invalid in CSS selectors, causing a SyntaxError that triggers the error boundary.
+  const decodeStorageUrl = (url: unknown) =>
+    typeof url === 'string' && url.includes('%') ? decodeURIComponent(url) : url
+  const profileData = rawProfileData ? {
+    ...rawProfileData,
+    cover_url: decodeStorageUrl(rawProfileData.cover_url),
+    logo_url: decodeStorageUrl(rawProfileData.logo_url),
+  } : null
 
   const jsonLd = {
     '@context': 'https://schema.org',
