@@ -683,12 +683,7 @@ export function ListingBadges({
   const sLabels = statusLabels ?? STATUS_LABELS
   return (
     <>
-      {listing.listing_status && listing.listing_status !== 'available' && (
-        <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-          style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? primary }}>
-          {sLabels[listing.listing_status] ?? listing.listing_status}
-        </span>
-      )}
+
       {listing.images.length > 1 && (
         <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
           📷 {listing.images.length}
@@ -764,15 +759,7 @@ export function PropertyCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
         
-        {/* Status badge — top left (if not available) */}
-        {listing.listing_status && listing.listing_status !== 'available' && (
-          <span
-            className="absolute top-3 left-3 text-white text-[11px] font-bold px-2.5 py-1 rounded-full"
-            style={{ backgroundColor: STATUS_COLORS[listing.listing_status] ?? '#6b7280' }}
-          >
-            {sLabels2[listing.listing_status] ?? listing.listing_status}
-          </span>
-        )}
+
 
         {/* Price overlay — bottom of image */}
         {listing.price != null && (
