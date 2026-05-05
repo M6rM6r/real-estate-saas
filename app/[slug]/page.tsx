@@ -6,6 +6,7 @@ import PublicAgencyPage from '@/components/PublicAgencyPage'
 import PageViewTracker from '@/components/PageViewTracker'
 
 const DEMO_SLUG = 'demo'
+const SAUDI_CAR_DEMO_SLUG = 'saudi-cars-demo'
 const LEGACY_DEMO_SLUG = 'luxury-homes-dubai'
 
 const getSchemaOrgType = (businessType?: string | null) => {
@@ -18,6 +19,8 @@ const getSchemaOrgType = (businessType?: string | null) => {
       return 'Store'
     case 'services':
       return 'ProfessionalService'
+    case 'car_dealer':
+      return 'AutoDealer'
     case 'real_estate':
       return 'RealEstateAgent'
     default:
@@ -57,8 +60,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
   , 3, 600)
   if (tenantsSnap.empty) {
-    if (slug === DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
-      return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
+    if (slug === DEMO_SLUG || slug === SAUDI_CAR_DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
+      return { title: 'مجموعة صالح للسيارات — ديمو', description: 'ديمو صفحة معرض سيارات محلي في السعودية باستخدام أدوات بناء الصفحات.' }
     }
     return { title: 'Not Found' }
   }
@@ -118,24 +121,25 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 const DEMO_DATA = {
   tenant: {
     id: 'demo',
-    name: 'Luxury Homes Dubai',
+    name: 'مجموعة صالح للسيارات',
     slug: DEMO_SLUG,
-    primary_color: '#8b5cf6',
+    primary_color: '#0f766e',
     status: 'active',
-    theme: 'midnight',
+    theme: 'modern',
+    business_type: 'retail',
   },
   profile: {
-    bio: 'Luxury Homes Dubai is an award-winning agency specialising in premium residential and commercial properties across Dubai.',
-    tagline: 'اعثر على منزل أحلامك في دبي',
+    bio: 'معرض سيارات محلي في المنطقة الشرقية، نوفر سيارات جديدة ومستعملة مفحوصة مع تمويل مرن وخدمة ما بعد البيع.',
+    tagline: 'سيارتك القادمة تبدأ من هنا',
     logo_url: '',
-    cover_url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1600',
-    contact_email: 'hello@luxuryhomesdubai.ae',
-    contact_phone: '+971500000000',
+    cover_url: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    contact_email: 'sales@salih-cars.sa',
+    contact_phone: '+966138888001',
     extra_phones: ['+966559707955'],
-    contact_address: 'Dubai Marina, Dubai, UAE',
+    contact_address: 'الدمام - طريق الملك فهد - المنطقة الشرقية',
     social_links: {
-      instagram: 'luxuryhomesdubai',
-      whatsapp: '971500000000',
+      instagram: 'salihcars',
+      whatsapp: '966559707955',
       linkedin: '',
       x: '',
       snapchat: '',
@@ -160,39 +164,43 @@ const DEMO_DATA = {
       footer: true,
     },
     page_config: {
-      hero_headline: 'اعثر على منزل أحلامك في دبي',
+      hero_headline: 'عروض يومية على السيارات الجديدة والمستعملة مع إمكانية الحجز الفوري.',
       hero_style: 'centered',
-      hero_cta_text: 'تصفح العروض',
-      show_listing_filters: true,
+      hero_cta_text: 'احجز تجربة قيادة',
+      show_listing_filters: false,
       show_listing_search: true,
+      show_listing_sort: false,
       listings_columns: 3,
-      currency: 'AED',
+      currency: 'SAR',
+      page_lang: 'ar',
+      announcement_text: '🚗 عرض الأسبوع: ضمان سنة كاملة + فحص شامل مجاني',
+      announcement_color: 'teal',
     },
   },
   listings: [
-    { id: 'l1', title: 'بنتهاوس مارينا', body: 'إطلالات بانورامية على المرسى من كل غرفة. تراس خاص على السطح مع مسبح لا نهاية له.', price: 12500000, location: 'Dubai Marina', bedrooms: 4, bathrooms: 4, area_sqm: 390, listing_status: 'available', offer_type: 'sale', property_type: 'penthouse', images: ['https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
-    { id: 'l2', title: 'فيلا نخلة جميرا', body: 'فيلا على الشاطئ في جزيرة النخلة الشهيرة مع شاطئ خاص ومسبح ووصول مباشر للبحر.', price: 28000000, location: 'Palm Jumeirah', bedrooms: 6, bathrooms: 7, area_sqm: 790, listing_status: 'available', offer_type: 'sale', property_type: 'villa', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
-    { id: 'l3', title: 'جناح وسط المدينة', body: 'إطلالات بانورامية على برج خليفة والنافورة. تشطيبات فاخرة ونظام منزل ذكي.', price: 5800000, location: 'Downtown Dubai', bedrooms: 2, bathrooms: 2, area_sqm: 167, listing_status: 'available', offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
-    { id: 'l4', title: 'شقة بزنس باي', body: 'معيشة عصرية في قلب الحي التجاري. إطلالات على القناة، صالة رياضية وخدمة كونسيرج.', price: 3200000, location: 'Business Bay', bedrooms: 3, bathrooms: 3, area_sqm: 195, listing_status: 'sold', offer_type: 'sale', property_type: 'apartment', images: ['https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
-    { id: 'l5', title: 'دوبلكس جي بي آر', body: 'على بُعد خطوات من الشاطئ، يجمع هذا الدوبلكس بين الفخامة الداخلية والمعيشة في الهواء الطلق.', price: 9100000, location: 'Jumeirah Beach Residence', bedrooms: 3, bathrooms: 3, area_sqm: 279, listing_status: 'available', offer_type: 'rent', property_type: 'duplex', images: ['https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
-    { id: 'l6', title: 'قصر إمارات هيلز', body: 'قصر فاخر في أرقى عنوان في دبي. إطلالات على ملعب الغولف، غرفة سينما ومرافق للموظفين.', price: 45000000, location: 'Emirates Hills', bedrooms: 8, bathrooms: 9, area_sqm: 1300, listing_status: 'available', offer_type: 'sale', property_type: 'mansion', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-01-15T10:00:00Z' },
+    { id: 'l1', title: 'تويوتا كامري 2024 GLX', body: 'وكالة - عداد 0 كم - ضمان الوكيل - متوفر بعدة ألوان.', price: 118900, location: 'الدمام', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'available', offer_type: 'sale', property_type: 'سيدان', images: ['https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-15T10:00:00Z' },
+    { id: 'l2', title: 'هيونداي سوناتا 2023 سمارت', body: 'مستعملة نظيفة - فحص شامل - إمكانية التمويل حتى 60 شهر.', price: 89500, location: 'الخبر', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'available', offer_type: 'sale', property_type: 'سيدان', images: ['https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-12T10:00:00Z' },
+    { id: 'l3', title: 'فورد إكسبلورر 2022 XLT', body: 'عائلية 7 مقاعد - تاريخ صيانة واضح - بحالة ممتازة.', price: 132000, location: 'الدمام', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'available', offer_type: 'sale', property_type: 'SUV', images: ['https://images.pexels.com/photos/193991/pexels-photo-193991.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-10T10:00:00Z' },
+    { id: 'l4', title: 'كيا K5 2024 نص فل', body: 'جديدة بالكامل - شاشة ملاحة - كاميرا 360 - حساسات أمامية وخلفية.', price: 102300, location: 'القطيف', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'available', offer_type: 'sale', property_type: 'سيدان', images: ['https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-09T10:00:00Z' },
+    { id: 'l5', title: 'تويوتا لاندكروزر 2021 GXR', body: 'مفحوصة - بدون حوادث جسيمة - جاهزة للنقل الفوري.', price: 215000, location: 'الأحساء', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'sold', offer_type: 'sale', property_type: 'SUV', images: ['https://images.pexels.com/photos/3729464/pexels-photo-3729464.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-07T10:00:00Z' },
+    { id: 'l6', title: 'شفروليه تاهو 2020 LT', body: 'صيانة دورية منتظمة - مناسبة للرحلات والعائلة - تمويل متاح.', price: 164000, location: 'الجبيل', bedrooms: null, bathrooms: null, area_sqm: null, listing_status: 'available', offer_type: 'sale', property_type: 'SUV', images: ['https://images.pexels.com/photos/248687/pexels-photo-248687.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: '2026-04-05T10:00:00Z' },
   ],
   news: [
-    { id: 'n1', title: 'سوق العقارات في دبي يسجل أرقاماً قياسية في الربع الأول 2026', body: 'ارتفعت أحجام المعاملات بنسبة 34% على أساس سنوي مع تدفق استثمارات المستثمرين الدوليين إلى مناطق دبي مارينا وداون تاون والنخلة.', image_url: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-01-15T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
-    { id: 'n2', title: 'قواعد التأشيرة الذهبية الجديدة تعزز الطلب على العقارات الفاخرة', body: 'يُحفز برنامج التأشيرة لمدة 10 سنوات لملاك العقارات بقيمة 2 مليون درهم+ موجةً من الاستثمارات الأجنبية طويلة الأجل في الإمارات.', image_url: 'https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-01-15T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
-    { id: 'n3', title: 'Luxury Homes Dubai تفوز بجائزة أفضل وكالة 2025', body: 'نفخر بحصولنا على لقب أفضل وكالة عقارات سكنية فاخرة في دبي للعام الثاني على التوالي في حفل جوائز الخليج للعقارات.', image_url: 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-01-15T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+    { id: 'n1', title: 'عروض تمويل خاصة حتى نهاية الشهر', body: 'احصل على موافقة مبدئية خلال دقائق بالتعاون مع بنوك محلية مختارة.', image_url: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-04-01T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+    { id: 'n2', title: 'استلام فوري لسيارات مختارة', body: 'عدد محدود من موديلات 2024 متوفر للتسليم الفوري داخل المنطقة الشرقية.', image_url: 'https://images.pexels.com/photos/112460/pexels-photo-112460.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-03-20T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
+    { id: 'n3', title: 'خدمة فحص مجانية قبل الشراء', body: 'فحص شامل للسيارة مع تقرير واضح لبناء الثقة قبل إتمام الصفقة.', image_url: 'https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&cs=tinysrgb&w=600', images: [], published: true, created_at: '2026-03-10T10:00:00Z', price: null, location: null, bedrooms: null, bathrooms: null, area_sqm: null, listing_status: null },
   ],
   gallery: [
-    { id: 'g1', url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Marina Penthouse Living Room', sort_order: 0 },
-    { id: 'g2', url: 'https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Palm Jumeirah Aerial View', sort_order: 1 },
-    { id: 'g3', url: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Beachfront Villa Exterior', sort_order: 2 },
-    { id: 'g4', url: 'https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Downtown Skyline at Night', sort_order: 3 },
-    { id: 'g5', url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'JBR Beachfront Terrace', sort_order: 4 },
-    { id: 'g6', url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'Emirates Hills Mansion Pool', sort_order: 5 },
+    { id: 'g1', url: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'صالة العرض', sort_order: 0 },
+    { id: 'g2', url: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'سيارات سيدان', sort_order: 1 },
+    { id: 'g3', url: 'https://images.pexels.com/photos/193991/pexels-photo-193991.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'قسم SUV', sort_order: 2 },
+    { id: 'g4', url: 'https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'موديلات جديدة', sort_order: 3 },
+    { id: 'g5', url: 'https://images.pexels.com/photos/248687/pexels-photo-248687.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'قسم الفحص', sort_order: 4 },
+    { id: 'g6', url: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=800', label: 'واجهة المعرض', sort_order: 5 },
   ],
   team: [
-    { id: 't1', email: 'sarah@luxuryhomesdubai.ae', role: 'agent', display_name: 'Sarah Al-Mansouri', photo_url: '', phone: '+971500000001' },
-    { id: 't2', email: 'james@luxuryhomesdubai.ae', role: 'agent', display_name: 'James Porter', photo_url: '', phone: '+971500000002' },
+    { id: 't1', email: 'faisal@salih-cars.sa', role: 'agent', display_name: 'فيصل العتيبي', photo_url: '', phone: '+966555111101' },
+    { id: 't2', email: 'noura@salih-cars.sa', role: 'agent', display_name: 'نورة القحطاني', photo_url: '', phone: '+966555111102' },
   ],
 }
 
@@ -200,7 +208,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   const { slug } = params
 
   if (slug === LEGACY_DEMO_SLUG) {
-    redirect('/demo')
+    redirect(`/${SAUDI_CAR_DEMO_SLUG}`)
   }
 
   let tenantsSnap: any
@@ -213,10 +221,10 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   }
   if (tenantsSnap.empty) {
     // Fallback static demo page only when there is no matching tenant.
-    if (slug === DEMO_SLUG) {
+    if (slug === DEMO_SLUG || slug === SAUDI_CAR_DEMO_SLUG) {
       return (
         <PublicAgencyPage
-          tenant={DEMO_DATA.tenant as any}
+          tenant={{ ...DEMO_DATA.tenant, slug } as any}
           profile={DEMO_DATA.profile as any}
           listings={DEMO_DATA.listings as any}
           news={DEMO_DATA.news as any}
@@ -247,7 +255,24 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   const sortByDate = (docs: any[]) =>
     [...docs].sort((a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0))
 
-  const toDoc = (d: any) => serialize({ id: d.id, ...d.data() })
+  const safeDecodeUrl = (value: unknown) => {
+    if (typeof value !== 'string' || !value.includes('%')) return value
+    try {
+      return decodeURIComponent(value)
+    } catch {
+      return value
+    }
+  }
+
+  const deepDecodeUrls = (value: any): any => {
+    if (Array.isArray(value)) return value.map(deepDecodeUrls)
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, deepDecodeUrls(v)]))
+    }
+    return safeDecodeUrl(value)
+  }
+
+  const toDoc = (d: any) => deepDecodeUrls(serialize({ id: d.id, ...d.data() }))
 
   const listingsData = sortByDate(listingsSnap.docs).slice(0, 9).map(toDoc)
   const rawProfileData = profileDoc.exists
@@ -256,16 +281,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
       ? null
       : serialize(fallbackProfilesSnap.docs[0].data())
 
-  // Decode percent-encoded Firebase Storage URLs (e.g. %2F in path segments).
-  // Next.js <Image priority> adds a <link rel="preload"> then does querySelector on the href —
-  // %2F is invalid in CSS selectors, causing a SyntaxError that triggers the error boundary.
-  const decodeStorageUrl = (url: unknown) =>
-    typeof url === 'string' && url.includes('%') ? decodeURIComponent(url) : url
-  const profileData = rawProfileData ? {
-    ...rawProfileData,
-    cover_url: decodeStorageUrl(rawProfileData.cover_url),
-    logo_url: decodeStorageUrl(rawProfileData.logo_url),
-  } : null
+  const profileData = rawProfileData ? deepDecodeUrls(rawProfileData) : null
 
   const jsonLd = {
     '@context': 'https://schema.org',

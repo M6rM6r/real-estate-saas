@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle, Share2, Tag } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Bed, Bath, Maximize, MapPin, CircleCheck as CheckCircle, Copy, Check, MessageCircle, Share2, Tag, CalendarDays, Gauge } from 'lucide-react';
 import type { Post } from '@/lib/types';
 
 const MODAL_LABELS = {
@@ -30,6 +30,9 @@ const MODAL_LABELS = {
     offerType: 'نوع العرض',
     propertyType: 'نوع العقار',
     listingStatus: 'الحالة',
+    carMake: 'الماركة',
+    carYear: 'سنة الصنع',
+    carMileage: 'الكم',
   },
   en: {
     statusAvailable: 'Available',
@@ -54,6 +57,9 @@ const MODAL_LABELS = {
     offerType: 'Offer Type',
     propertyType: 'Property Type',
     listingStatus: 'Status',
+    carMake: 'Make',
+    carYear: 'Year',
+    carMileage: 'Mileage',
   },
 } as const
 
@@ -65,6 +71,7 @@ interface PropertyDetailModalProps {
   accentColor?: string;
   bgColor?: string;
   lang?: 'ar' | 'en';
+  businessType?: string | null;
 }
 
 export function PropertyDetailModal({
@@ -75,12 +82,14 @@ export function PropertyDetailModal({
   accentColor = '#2563eb',
   bgColor = '#0f0f0f',
   lang = 'ar',
+  businessType,
 }: PropertyDetailModalProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [copied, setCopied] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const L = MODAL_LABELS[lang];
+  const isCarDealer = businessType === 'car_dealer';
 
   // Track listing view
   useEffect(() => {
@@ -184,7 +193,7 @@ export function PropertyDetailModal({
 
   const metaBadges = [
     property.offer_type ? { label: L.offerType, value: property.offer_type } : null,
-    property.property_type ? { label: L.propertyType, value: property.property_type } : null,
+    property.property_type ? { label: isCarDealer ? L.carMake : L.propertyType, value: property.property_type } : null,
     property.listing_status ? { label: L.listingStatus, value: statusLabel[property.listing_status] || property.listing_status } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
@@ -302,7 +311,34 @@ export function PropertyDetailModal({
 
             {/* Details Grid */}
             <div className="mt-6 grid grid-cols-3 gap-4">
-              {property.bedrooms !== undefined && property.bedrooms > 0 && (
+              {isCarDealer && property.property_type && (
+                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tag className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-400 text-sm">{L.carMake}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{property.property_type}</p>
+                </div>
+              )}
+              {isCarDealer && property.bedrooms !== undefined && property.bedrooms > 0 && (
+                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CalendarDays className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-400 text-sm">{L.carYear}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{property.bedrooms}</p>
+                </div>
+              )}
+              {isCarDealer && property.bathrooms !== undefined && property.bathrooms > 0 && (
+                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Gauge className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-400 text-sm">{L.carMileage}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{property.bathrooms} km</p>
+                </div>
+              )}
+              {!isCarDealer && property.bedrooms !== undefined && property.bedrooms > 0 && (
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Bed className="h-5 w-5 text-gray-400" />
@@ -311,7 +347,7 @@ export function PropertyDetailModal({
                   <p className="text-2xl font-bold text-white">{property.bedrooms}</p>
                 </div>
               )}
-              {property.bathrooms !== undefined && property.bathrooms > 0 && (
+              {!isCarDealer && property.bathrooms !== undefined && property.bathrooms > 0 && (
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Bath className="h-5 w-5 text-gray-400" />
@@ -320,7 +356,7 @@ export function PropertyDetailModal({
                   <p className="text-2xl font-bold text-white">{property.bathrooms}</p>
                 </div>
               )}
-              {property.area_sqm !== undefined && property.area_sqm > 0 && (
+              {!isCarDealer && property.area_sqm !== undefined && property.area_sqm > 0 && (
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <Maximize className="h-5 w-5 text-gray-400" />

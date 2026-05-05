@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -296,14 +295,6 @@ export default function NewsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-white truncate">{item.title}</h3>
-                    {!item.published && (
-                      <Badge className="bg-gray-500/20 text-gray-400">Draft</Badge>
-                    )}
-                    {!item.published && item.publish_at && (
-                      <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">
-                        مجدول · {new Date(item.publish_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </Badge>
-                    )}
                   </div>
                   <p className="text-gray-400 text-sm line-clamp-2">{item.body || 'No content'}</p>
                   <p className="text-gray-600 text-xs mt-1">

@@ -37,7 +37,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, MapPin, Bed, Bath, Maximize, Loader as Loader2, X, Sparkles, ChevronLeft, ChevronRight, Search, Copy, Eye, GripVertical } from 'lucide-react';
 import {
   DndContext,
@@ -409,13 +408,6 @@ export default function ListingsPage() {
     setFormErrors((prev) => ({ ...prev, images: undefined }));
   };
 
-  const statusColor = (s?: string) => {
-    if (s === 'available') return 'bg-green-500/20 text-green-400';
-    if (s === 'sold') return 'bg-red-500/20 text-red-400';
-    if (s === 'rented') return 'bg-yellow-500/20 text-yellow-400';
-    return 'bg-gray-500/20 text-gray-400';
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -513,18 +505,6 @@ export default function ListingsPage() {
                   </div>
                 )}
                 <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                {listing.listing_status && (
-                  <Badge
-                    className={`absolute top-2 left-2 ${statusColor(listing.listing_status)}`}
-                  >
-                  {listing.listing_status === 'available' ? t.statusAvailable : listing.listing_status === 'sold' ? t.statusSold : t.statusRented}
-                  </Badge>
-                )}
-                {!listing.published && (
-                  <Badge className="absolute top-2 right-2 bg-gray-500/20 text-gray-400">
-                    {t.draft}
-                  </Badge>
-                )}
                 {viewCounts[listing.id] != null && viewCounts[listing.id] > 0 && (
                   <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
                     <Eye className="h-3 w-3" />

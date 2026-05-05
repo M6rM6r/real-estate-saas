@@ -710,6 +710,7 @@ export function PropertyCard({
   sectionAlt,
   currency = 'SAR',
   showRealEstateFields = true,
+  businessType,
   imageHeight = 'h-52',
   statusLabels,
   lang = 'ar',
@@ -723,12 +724,14 @@ export function PropertyCard({
   sectionAlt: string
   currency?: string
   showRealEstateFields?: boolean
+  businessType?: string | null
   imageHeight?: string
   statusLabels?: Record<string, string>
   lang?: 'ar' | 'en'
 }) {
   const sLabels2 = statusLabels ?? STATUS_LABELS
   const offerColor = listing.offer_type === 'rent' ? 'rgba(5,150,105,0.88)' : 'rgba(37,99,235,0.88)'
+  const isCarDealer = businessType === 'car_dealer'
 
   return (
     <button
@@ -802,7 +805,26 @@ export function PropertyCard({
             <span className="line-clamp-1">{listing.location}</span>
           </div>
         )}
-        {showRealEstateFields && (listing.bedrooms != null || listing.bathrooms != null || listing.area_sqm != null) && (
+        {isCarDealer && (listing.bedrooms != null || listing.bathrooms != null || listing.property_type) && (
+          <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
+            {listing.bedrooms != null && (
+              <span className="flex items-center gap-1 opacity-80">
+                <span>📅</span> {listing.bedrooms}
+              </span>
+            )}
+            {listing.bathrooms != null && (
+              <span className="flex items-center gap-1 opacity-80">
+                <span>🛣️</span> {listing.bathrooms} km
+              </span>
+            )}
+            {listing.property_type && (
+              <span className="flex items-center gap-1 opacity-80">
+                <span>🏷️</span> {listing.property_type}
+              </span>
+            )}
+          </div>
+        )}
+        {showRealEstateFields && !isCarDealer && (listing.bedrooms != null || listing.bathrooms != null || listing.area_sqm != null) && (
           <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
             {listing.bedrooms != null && (
               <span className="flex items-center gap-1 opacity-80">

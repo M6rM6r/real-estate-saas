@@ -209,9 +209,19 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                   )}
                   {featured.location && <p className="text-sm text-gray-400 mb-4">📍 {featured.location}</p>}
                   <div className="flex gap-4 text-sm text-gray-400 mb-5">
-                    {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
-                    {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
-                    {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
+                    {tenant.business_type === 'car_dealer' ? (
+                      <>
+                        {featured.bedrooms != null && <span>📅 {featured.bedrooms}</span>}
+                        {featured.bathrooms != null && <span>🛣️ {featured.bathrooms} km</span>}
+                        {featured.property_type && <span>🏷️ {featured.property_type}</span>}
+                      </>
+                    ) : (
+                      <>
+                        {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
+                        {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
+                        {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
+                      </>
+                    )}
                   </div>
                   <span className="dsr-btn text-white px-6 py-2.5 text-sm font-bold inline-block w-fit"
                     style={{ borderRadius: btnRadius }}>
@@ -375,6 +385,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
             tenantId={tenant.id}
             accentColor={primary}
             lang={lang}
+            businessType={tenant.business_type}
           />
         )}
       </div>

@@ -18,7 +18,7 @@ import {
   Instagram, Twitter, Linkedin, MessageCircle, Palette,
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
-  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal,
+  QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal, LogOut,
 } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -45,6 +45,7 @@ const PB_T = {
     missingBaseUrl: 'لم يتم ضبط NEXT_PUBLIC_APP_URL — يفضّل إضافتها في بيئة التشغيل.',
     autoSavingSoon: 'حفظ تلقائي خلال ثوانٍ...', saving: 'جاري الحفظ...', saved: 'تم الحفظ',
     copyLink: 'نسخ الرابط', copied: 'تم النسخ!', openPage: 'فتح الصفحة',
+    signOut: 'تسجيل الخروج',
     qrTitle: 'رمز QR لصفحتك', downloadPng: 'تحميل PNG', whatsapp: 'واتساب',
     tabControl: '🎛️ تحكم', tabDesign: '🎨 التصميم', tabIdentity: '✍️ الهوية', tabListings: '🏠 العروض', tabConnect: '🔗 تواصل',
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
@@ -58,7 +59,7 @@ const PB_T = {
     businessNameLabel: '🏢 اسم المنشأة', businessNamePlaceholder: 'مثال: مطعم الواحة، مكتب الأفق، صالون نور...',
     businessTypeLabel: '💼 نوع النشاط التجاري', businessTypeSub: 'يحدد الحقول المتاحة في نماذج العروض',
     btRealEstate: '🏠 عقارات', btRestaurant: '🍽️ مطعم / كافيه', btSalon: '✂️ صالون / سبا',
-    btRetail: '🛍️ متجر / بيع بالتجزئة', btServices: '⚙️ خدمات', btOther: '📋 أخرى',
+    btRetail: '🛍️ متجر / بيع بالتجزئة', btServices: '⚙️ خدمات', btCarDealer: '🚗 معرض سيارات', btOther: '📋 أخرى',
     pageContentLabel: '✍️ محتوى الصفحة', taglineLabel: 'الشعار النصي',
     taglinePlaceholder: 'مثال: شريكك الموثوق، جودة لا تُضاهى...',
     bioLabel: 'نبذة عنا', bioPlaceholder: 'أخبر الزوار عن منشأتك — خبرتك، قيمك، وما يميزك...',
@@ -72,7 +73,7 @@ const PB_T = {
     manageListings: 'إدارة العروض', manageListingsSub: 'أضف وعدّل عروضك أو منتجاتك أو خدماتك التي تظهر في صفحتك العامة',
     addListing: 'إضافة عرض', editListingTitle: 'تعديل العرض', newListingTitle: 'إضافة عرض جديد',
     fieldCategory: 'الفئة', fieldName: 'الاسم', fieldPrice: 'السعر', fieldLocation: 'الموقع',
-    fieldBedrooms: 'الغرف', fieldBathrooms: 'الحمامات', fieldArea: 'المساحة (م²)',
+    fieldBedrooms: 'الغرف', fieldBathrooms: 'الحمامات', fieldArea: 'المساحة (م²)', fieldMake: 'الماركة / الفئة', fieldYear: 'سنة الصنع', fieldMileage: 'الكم (كم)',
     descriptionLabel: 'الوصف (اختياري)', descriptionPlaceholder: 'اكتب وصفاً تفصيلياً لهذا العرض...',
     mainImage: 'الصورة الرئيسية للعرض', extraPhotos: 'صور إضافية (اختياري)', addPhoto: 'إضافة صورة',
     notesLabel: 'ملاحظات (اختياري)', notesPlaceholder: 'أضف ملاحظات خاصة بهذا العرض (للاستخدام الداخلي فقط)...',
@@ -80,7 +81,7 @@ const PB_T = {
     update: 'تحديث', noListings: 'لا توجد عروض مضافة بعد',
     statusAvailable: 'متاح', statusSold: 'مباع', statusRented: 'مؤجر', statusDraft: 'مسودة',
     editListing: 'تعديل', listingError: 'حدث خطأ، حاول مجدداً', areaSqm: 'م²',
-    categoryPlaceholder: 'مثال: شقة، منتج، خدمة...',
+    categoryPlaceholder: 'مثال: شقة، منتج، خدمة...', categoryPlaceholderCar: 'مثال: تويوتا، هيونداي، فورد...',
     contactTitle: '📞 بيانات التواصل', contactEmail: 'البريد الإلكتروني',
     contactPhone: 'رقم الهاتف الرئيسي', contactAddress: 'العنوان',
     extraNumbers: 'أرقام إضافية', addNumber: 'إضافة رقم',
@@ -113,6 +114,7 @@ const PB_T = {
     missingBaseUrl: 'NEXT_PUBLIC_APP_URL is not set — recommended to add it in production.',
     autoSavingSoon: 'Auto-saving in a few seconds...', saving: 'Saving...', saved: 'Saved',
     copyLink: 'Copy Link', copied: 'Copied!', openPage: 'Open Page',
+    signOut: 'Sign out',
     qrTitle: 'QR Code for Your Page', downloadPng: 'Download PNG', whatsapp: 'WhatsApp',
     tabControl: '🎛️ Control', tabDesign: '🎨 Design', tabIdentity: '✍️ Identity', tabListings: '🏠 Listings', tabConnect: '🔗 Connect',
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
@@ -126,7 +128,7 @@ const PB_T = {
     businessNameLabel: '🏢 Business Name', businessNamePlaceholder: 'e.g. Oasis Restaurant, Horizon Office, Noor Salon...',
     businessTypeLabel: '💼 Business Type', businessTypeSub: 'Determines available fields in listing forms',
     btRealEstate: '🏠 Real Estate', btRestaurant: '🍽️ Restaurant / Café', btSalon: '✂️ Salon / Spa',
-    btRetail: '🛍️ Store / Retail', btServices: '⚙️ Services', btOther: '📋 Other',
+    btRetail: '🛍️ Store / Retail', btServices: '⚙️ Services', btCarDealer: '🚗 Car Dealer', btOther: '📋 Other',
     pageContentLabel: '✍️ Page Content', taglineLabel: 'Tagline',
     taglinePlaceholder: 'e.g. Your trusted partner, unmatched quality...',
     bioLabel: 'About Us', bioPlaceholder: 'Tell visitors about your business — your experience, values, and what sets you apart...',
@@ -140,7 +142,7 @@ const PB_T = {
     manageListings: 'Manage Listings', manageListingsSub: 'Add and edit your listings, products, or services shown on your public page',
     addListing: 'Add Listing', editListingTitle: 'Edit Listing', newListingTitle: 'Add New Listing',
     fieldCategory: 'Category', fieldName: 'Name', fieldPrice: 'Price', fieldLocation: 'Location',
-    fieldBedrooms: 'Bedrooms', fieldBathrooms: 'Bathrooms', fieldArea: 'Area (sqm)',
+    fieldBedrooms: 'Bedrooms', fieldBathrooms: 'Bathrooms', fieldArea: 'Area (sqm)', fieldMake: 'Make / Brand', fieldYear: 'Year', fieldMileage: 'Mileage (km)',
     descriptionLabel: 'Description (optional)', descriptionPlaceholder: 'Write a detailed description for this listing...',
     mainImage: 'Main Listing Image', extraPhotos: 'Additional Photos (optional)', addPhoto: 'Add Photo',
     notesLabel: 'Notes (optional)', notesPlaceholder: 'Add private notes about this listing (internal use only)...',
@@ -148,7 +150,7 @@ const PB_T = {
     update: 'Update', noListings: 'No listings added yet',
     statusAvailable: 'Available', statusSold: 'Sold', statusRented: 'Rented', statusDraft: 'Draft',
     editListing: 'Edit', listingError: 'An error occurred, please try again', areaSqm: 'sqm',
-    categoryPlaceholder: 'e.g. Apartment, Product, Service...',
+    categoryPlaceholder: 'e.g. Apartment, Product, Service...', categoryPlaceholderCar: 'e.g. Toyota, Hyundai, Ford...',
     contactTitle: '📞 Contact Details', contactEmail: 'Email Address',
     contactPhone: 'Primary Phone', contactAddress: 'Address',
     extraNumbers: 'Additional Numbers', addNumber: 'Add Number',
@@ -744,6 +746,8 @@ export default function PageBuilderPage() {
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const isCarDealer = businessType === 'car_dealer';
+  const usesRealEstateFields = !businessType || businessType === 'real_estate';
 
   const profileCompletionItems = [
     { key: 'name',      label: t.businessNameLabel,    done: Boolean(agencyName),                tab: 'identity' },
@@ -1132,6 +1136,13 @@ export default function PageBuilderPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSignOut = async () => {
+    const logout = (window as any).__dashboardLogout;
+    if (typeof logout === 'function') {
+      await logout();
+    }
+  };
+
   const downloadQr = () => {
     const svg = document.getElementById('qr-svg');
     if (!svg) return;
@@ -1271,6 +1282,9 @@ export default function PageBuilderPage() {
           </Button>
           <Button size="sm" variant="ghost" onClick={() => window.open(publicPath, '_blank', 'noopener,noreferrer')} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
             <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="text-slate-300 hover:text-red-300 hover:bg-red-500/10 gap-1.5">
+            <LogOut className="h-3.5 w-3.5" /> {t.signOut}
           </Button>
         </div>
       </div>
@@ -1552,6 +1566,8 @@ export default function PageBuilderPage() {
                     updatePageConfig({ offer_label_1: 'للبيع', offer_label_2: 'نفذ' });
                   } else if (bt === 'salon' || bt === 'services') {
                     updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'محجوز' });
+                  } else if (bt === 'car_dealer') {
+                    updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'مباع' });
                   } else {
                     updatePageConfig({ offer_label_1: 'متاح', offer_label_2: 'غير متاح' });
                   }
@@ -1563,6 +1579,7 @@ export default function PageBuilderPage() {
                   <option value="salon">{t.btSalon}</option>
                   <option value="retail">{t.btRetail}</option>
                   <option value="services">{t.btServices}</option>
+                  <option value="car_dealer">{t.btCarDealer}</option>
                   <option value="other">{t.btOther}</option>
                 </select>
               </div>
@@ -1742,8 +1759,8 @@ export default function PageBuilderPage() {
                     <p className="text-sm font-medium text-white">{editingListing ? t.editListingTitle : t.newListingTitle}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-slate-400 text-xs">{t.fieldCategory}</Label>
-                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder={t.categoryPlaceholder} />
+                        <Label className="text-slate-400 text-xs">{isCarDealer ? t.fieldMake : t.fieldCategory}</Label>
+                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder={isCarDealer ? t.categoryPlaceholderCar : t.categoryPlaceholder} />
                       </div>
                     <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldName}</Label>
@@ -1762,7 +1779,7 @@ export default function PageBuilderPage() {
                         <Label className="text-slate-400 text-xs">{t.fieldLocation}</Label>
                         <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="Dubai Marina" />
                       </div>
-                      {(!businessType || businessType === 'real_estate') && (<>
+                      {usesRealEstateFields && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldBedrooms}</Label>
                         <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="4" />
@@ -1774,6 +1791,16 @@ export default function PageBuilderPage() {
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldArea}</Label>
                         <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
+                      </div>
+                      </>)}
+                      {isCarDealer && (<>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">{t.fieldYear}</Label>
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="2024" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-slate-400 text-xs">{t.fieldMileage}</Label>
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="85000" />
                       </div>
                       </>)}
                     </div>
@@ -1884,18 +1911,22 @@ export default function PageBuilderPage() {
                           <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString('en-US')} {displayCurrency}</p>
                           <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
                             {listing.location && <span>{listing.location}</span>}
-                            {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
-                            {listing.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="h-3 w-3" />{listing.bathrooms}</span>}
-                            {listing.area_sqm > 0 && <span className="flex items-center gap-0.5"><Maximize className="h-3 w-3" />{listing.area_sqm}{t.areaSqm}</span>}
+                            {isCarDealer ? (
+                              <>
+                                {listing.bedrooms > 0 && <span className="flex items-center gap-0.5">📅 {listing.bedrooms}</span>}
+                                {listing.bathrooms > 0 && <span className="flex items-center gap-0.5">🛣️ {listing.bathrooms} km</span>}
+                                {listing.property_type && <span className="flex items-center gap-0.5">🏷️ {listing.property_type}</span>}
+                              </>
+                            ) : (
+                              <>
+                                {listing.bedrooms > 0 && <span className="flex items-center gap-0.5"><Bed className="h-3 w-3" />{listing.bedrooms}</span>}
+                                {listing.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="h-3 w-3" />{listing.bathrooms}</span>}
+                                {listing.area_sqm > 0 && <span className="flex items-center gap-0.5"><Maximize className="h-3 w-3" />{listing.area_sqm}{t.areaSqm}</span>}
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${ listing.listing_status === 'available' ? 'bg-green-500/20 text-green-400' : listing.listing_status === 'sold' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400' }`}>
-                            {listing.listing_status === 'available' ? t.statusAvailable : listing.listing_status === 'sold' ? t.statusSold : t.statusRented}
-                          </span>
-                          {listing.published === false && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-600/40 text-slate-300">{t.statusDraft}</span>
-                          )}
                           <Button onClick={() => { setEditingListing(listing); setListingForm({ title: listing.title, price: String(listing.price), location: listing.location || '', bedrooms: String(listing.bedrooms || ''), bathrooms: String(listing.bathrooms || ''), area_sqm: String(listing.area_sqm || ''), image: listing.images?.[0] || '', extra_images: listing.images?.slice(1) ?? [], card_style: listing.card_style || 'standard', status: listing.listing_status || 'available', offer_type: listing.offer_type || 'sale', property_type: listing.property_type || '', body: listing.body || '', notes: listing.notes || '' }); setListingPublished(listing.published !== false); setShowListingForm(true); }} variant="ghost" size="sm" className="text-slate-400 hover:text-white h-7 px-2 text-xs">{t.editListing}</Button>
                           <Button onClick={() => deleteListing(listing.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-7 w-7 p-0" aria-label={`Delete listing ${listing.title}`}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>

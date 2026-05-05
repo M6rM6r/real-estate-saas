@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
@@ -349,14 +348,6 @@ export default function AnnouncementsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-white truncate">{item.title}</h3>
-                    <Badge className={item.published ? 'bg-emerald-500/20 text-emerald-400 border-0' : 'bg-gray-500/20 text-gray-400 border-0'}>
-                      {item.published ? t.published : t.draft}
-                    </Badge>
-                    {!item.published && item.publish_at && (
-                      <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">
-                        {t.scheduled} · {new Date(item.publish_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </Badge>
-                    )}
                   </div>
                   <p className="text-gray-400 text-sm line-clamp-2">{item.body || t.noContent}</p>
                   <p className="text-gray-600 text-xs mt-1.5">

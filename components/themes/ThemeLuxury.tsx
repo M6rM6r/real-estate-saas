@@ -216,9 +216,19 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       )}
                       {featured.location && <p className="text-sm text-gray-500 mb-4">📍 {featured.location}</p>}
                       <div className="flex gap-4 text-sm text-gray-500">
-                        {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
-                        {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
-                        {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
+                        {tenant.business_type === 'car_dealer' ? (
+                          <>
+                            {featured.bedrooms != null && <span>📅 {featured.bedrooms}</span>}
+                            {featured.bathrooms != null && <span>🛣️ {featured.bathrooms} km</span>}
+                            {featured.property_type && <span>🏷️ {featured.property_type}</span>}
+                          </>
+                        ) : (
+                          <>
+                            {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
+                            {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
+                            {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
+                          </>
+                        )}
                       </div>
                       <div className="mt-6">
                         <span className="inline-block px-5 py-2 text-xs tracking-widest uppercase border transition-all"
@@ -252,9 +262,19 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                         {l.price != null && <p className="font-bold text-lg mb-1" style={{ color: primary }}>{l.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}</p>}
                         {l.location && <p className="text-xs text-gray-600 mb-3">📍 {l.location}</p>}
                         <div className="flex gap-3 text-xs text-gray-600">
-                          {l.bedrooms != null && <span>🛏 {l.bedrooms}</span>}
-                          {l.bathrooms != null && <span>🚿 {l.bathrooms}</span>}
-                          {l.area_sqm != null && <span>📐 {l.area_sqm} م²</span>}
+                          {tenant.business_type === 'car_dealer' ? (
+                            <>
+                              {l.bedrooms != null && <span>📅 {l.bedrooms}</span>}
+                              {l.bathrooms != null && <span>🛣️ {l.bathrooms} km</span>}
+                              {l.property_type && <span>🏷️ {l.property_type}</span>}
+                            </>
+                          ) : (
+                            <>
+                              {l.bedrooms != null && <span>🛏 {l.bedrooms}</span>}
+                              {l.bathrooms != null && <span>🚿 {l.bathrooms}</span>}
+                              {l.area_sqm != null && <span>📐 {l.area_sqm} م²</span>}
+                            </>
+                          )}
                         </div>
                       </div>
                     </button>
@@ -372,6 +392,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             tenantId={tenant.id}
             accentColor={primary}
             lang={lang}
+            businessType={tenant.business_type}
           />
         )}
       </div>
