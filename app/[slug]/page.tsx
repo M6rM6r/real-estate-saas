@@ -83,9 +83,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     || (pageLang === 'ar' ? 'خدمات احترافية متميزة' : 'Professional business services')
   const seoDesc = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
   const rawCoverUrl = (profile?.cover_url as string | undefined) || `${appUrl}/${slug}/opengraph-image`
+  // Sanitize URL: remove newlines, carriage returns, and whitespace that can break CSS selectors
+  const sanitizedUrl = rawCoverUrl.replace(/[\r\n\s]+/g, '')
   // Decode percent-encoded chars (e.g. %2F from Firebase Storage paths) so Next.js can use the
   // URL as a CSS selector when inserting preload hints without throwing a SyntaxError.
-  const coverUrl = rawCoverUrl.includes('%') ? decodeURIComponent(rawCoverUrl) : rawCoverUrl
+  const coverUrl = sanitizedUrl.includes('%') ? decodeURIComponent(sanitizedUrl) : sanitizedUrl
   const canonicalUrl = `${appUrl}/${slug}`
 
   return {
