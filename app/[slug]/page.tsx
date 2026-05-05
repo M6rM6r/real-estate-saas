@@ -280,7 +280,7 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
         profile={profileData}
         listings={listingsData}
         news={sortByDate(newsSnap.docs).slice(0, 6).map(toDoc)}
-        gallery={gallerySnap.docs.sort((a, b) => (a.data().sort_order ?? 0) - (b.data().sort_order ?? 0)).map(toDoc)}
+        gallery={gallerySnap.docs.sort((a: any, b: any) => (a.data().sort_order ?? 0) - (b.data().sort_order ?? 0)).map(toDoc)}
         team={usersSnap.docs.map(toDoc)}
       />
     </>
