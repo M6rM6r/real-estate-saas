@@ -775,20 +775,7 @@ export default function ListingsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-gray-300">{t.descriptionLabel}</Label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs border-gray-700 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 gap-1"
-                  disabled={!form.title || aiGenerating}
-                  onClick={generateWithAI}
-                >
-                  {aiGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                  Generate with AI
-                </Button>
-              </div>
+              <Label className="text-gray-300">{t.descriptionLabel}</Label>
               <Textarea
                 value={form.body}
                 onChange={(e) => setForm({ ...form, body: e.target.value })}
