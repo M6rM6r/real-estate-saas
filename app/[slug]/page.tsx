@@ -52,9 +52,10 @@ const serialize = (obj: any): any => {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
+  try {
   const tenantsSnap = await withRetry(() =>
     adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
-  )
+  , 3, 600)
   if (tenantsSnap.empty) {
     if (slug === DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
       return { title: 'Luxury Homes Dubai — الصفحة الرسمية', description: 'Premium luxury offerings in Dubai' }
@@ -62,20 +63,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     return { title: 'Not Found' }
   }
   const tenant = { id: tenantsSnap.docs[0].id, ...tenantsSnap.docs[0].data() } as { id: string; name: string; slug: string }
-  const profileDoc = await adminDb
-    .collection('tenants')
-    .doc(tenant.id)
-    .collection('profiles')
-    .doc(tenant.id)
-    .get()
-  const fallbackProfilesSnap = profileDoc.exists
-    ? null
-    : await adminDb.collection('profiles').where('tenantId', '==', tenant.id).limit(1).get()
-  const profile = profileDoc.exists
-    ? profileDoc.data()
-    : fallbackProfilesSnap?.empty
-      ? null
-      : fallbackProfilesSnap?.docs[0].data()
+  let profileData: any = null
+  try {
+    const profileDoc = await adminDb.collection('tenants').doc(tenant.id).collection('profiles').doc(tenant.id).get()
+    if (profileDoc.exists) {
+      profileData = profileDoc.data()
+    } else {
+      const fallback = await adminDb.collection('profiles').where('tenantId', '==', tenant.id).limit(1).get()
+      if (!fallback.empty) profileData = fallback.docs[0].data()
+    }
+  } catch { /* metadata is best-effort */ }
+  const profile = profileData
 
   const pageLang = ((profile?.page_config as any)?.page_lang as 'ar' | 'en' | undefined) ?? 'ar'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'
@@ -107,6 +105,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: seoDesc,
       images: [coverUrl],
     },
+  }
+  } catch {
+    return { title: slug }
   }
 }
 
