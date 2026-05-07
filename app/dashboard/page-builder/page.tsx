@@ -1192,11 +1192,34 @@ export default function PageBuilderPage() {
   const displayCurrency = pageConfig.currency === 'SAR' || pageConfig.currency === 'ر.س' ? '⃁' : (pageConfig.currency || 'SAR');
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] space-y-6 pb-10" dir="rtl">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6 pb-10 relative" dir="rtl">
+      <style>{`
+        @keyframes wa9l-orb-a { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(50px,-40px) scale(1.08)} 66%{transform:translate(-30px,25px) scale(0.95)} }
+        @keyframes wa9l-orb-b { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-60px,30px) scale(1.06)} 66%{transform:translate(35px,-25px) scale(0.97)} }
+        @keyframes wa9l-orb-c { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(25px,40px) scale(1.04)} }
+        .wa9l-glass {
+          background: rgba(6,6,20,0.52);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(255,255,255,0.07);
+        }
+        .wa9l-gradient-text {
+          background: linear-gradient(135deg,#818cf8 0%,#a78bfa 50%,#c4b5fd 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      `}</style>
+      {/* ambient orbs */}
+      <div aria-hidden="true" style={{position:'fixed',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:0}}>
+        <div style={{position:'absolute',top:'-8%',right:'12%',width:'600px',height:'600px',borderRadius:'50%',background:'radial-gradient(circle,rgba(99,102,241,0.18) 0%,transparent 70%)',filter:'blur(70px)',animation:'wa9l-orb-a 18s ease-in-out infinite'}} />
+        <div style={{position:'absolute',top:'35%',left:'3%',width:'450px',height:'450px',borderRadius:'50%',background:'radial-gradient(circle,rgba(139,92,246,0.14) 0%,transparent 70%)',filter:'blur(60px)',animation:'wa9l-orb-b 22s ease-in-out infinite'}} />
+        <div style={{position:'absolute',bottom:'8%',right:'28%',width:'380px',height:'380px',borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.11) 0%,transparent 70%)',filter:'blur(55px)',animation:'wa9l-orb-c 26s ease-in-out infinite'}} />
+      </div>
 
       {/* QR Code Dialog */}
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm" dir="rtl">
+        <DialogContent className="wa9l-glass text-white max-w-sm" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
               <QrCode className="h-5 w-5 text-blue-400" /> {t.qrTitle}
@@ -1231,13 +1254,13 @@ export default function PageBuilderPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="mb-1">
-        <h1 className="text-2xl font-bold text-white">{t.pageBuilderTitle}</h1>
+      <div className="mb-1 relative z-10">
+        <h1 className="text-2xl font-bold wa9l-gradient-text">{t.pageBuilderTitle}</h1>
         <p className="text-sm text-slate-400">{t.pageBuilderSub}</p>
       </div>
 
       {/* Top bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 wa9l-glass rounded-2xl p-4 md:p-5 relative z-10">
         <div className="min-w-0">
           <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">{t.publicPageUrl}</p>
           <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
@@ -1290,13 +1313,13 @@ export default function PageBuilderPage() {
       </div>
 
       {/* Main artistic square workspace */}
-      <div className="relative w-full rounded-3xl border border-slate-800 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.14),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.12),transparent_32%),#020617] p-3 md:p-4 lg:p-5 overflow-hidden xl:min-h-[820px]">
+      <div className="relative z-10 w-full rounded-3xl overflow-hidden xl:min-h-[820px] p-3 md:p-4 lg:p-5" style={{background:'rgba(4,4,16,0.60)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 0 80px rgba(99,102,241,0.08),0 0 120px rgba(139,92,246,0.06)' }}>
         <div className="grid h-full xl:grid-cols-[minmax(500px,1fr)_minmax(620px,1.2fr)] gap-4 lg:gap-5 items-stretch">
 
         {/* Editor panel */}
         <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-1.5">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-slate-900 border border-slate-800 rounded-xl p-1.5 h-auto gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 wa9l-glass rounded-xl p-1.5 h-auto gap-1">
               {([
                 { value: 'control', icon: SlidersHorizontal, label: t.tabControl },
                 { value: 'design',   icon: Layout,   label: t.tabDesign   },
@@ -1307,7 +1330,7 @@ export default function PageBuilderPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="flex items-center justify-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 hover:text-white rounded-lg py-2 transition-all"
+                  className="flex items-center justify-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 text-slate-400 hover:text-white rounded-lg py-2 transition-all"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{label}</span>
@@ -1317,8 +1340,8 @@ export default function PageBuilderPage() {
 
             {/* ── CONTROL: unified page control panel ── */}
             <TabsContent value="control" className="mt-4 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-                <div className="px-4 pt-4 pb-3 border-b border-slate-800 space-y-2">
+              <div className="wa9l-glass rounded-xl overflow-hidden">
+                <div className="px-4 pt-4 pb-3 border-b border-white/[0.06] space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-white">{t.pageControlTitle}</p>
                   </div>
@@ -1341,7 +1364,7 @@ export default function PageBuilderPage() {
                 </DndContext>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.pageSettingsTitle}
                 </p>
@@ -1383,7 +1406,7 @@ export default function PageBuilderPage() {
 
             {/* ── DESIGN: themes + visual brand ── */}
             <TabsContent value="design" className="mt-4 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 xl:p-5">
+              <div className="wa9l-glass rounded-xl p-4 xl:p-5">
                 <p className="text-sm font-bold text-white mb-1">{t.chooseDesign}</p>
                 <p className="text-slate-400 text-sm mb-4">{t.chooseDesignSub}</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -1467,7 +1490,7 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.brandColor}
                 </p>
@@ -1507,7 +1530,7 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.logoLabel}
                 </p>
@@ -1519,7 +1542,7 @@ export default function PageBuilderPage() {
                 />
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.coverLabel}
                 </p>
@@ -1535,7 +1558,7 @@ export default function PageBuilderPage() {
             {/* ── IDENTITY: name + biz type + tagline + bio + licences ── */}
             <TabsContent value="identity" className="mt-4 space-y-4">
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.businessNameLabel}
                 </p>
@@ -1547,7 +1570,7 @@ export default function PageBuilderPage() {
                 />
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.businessTypeLabel}
                 </p>
@@ -1584,7 +1607,7 @@ export default function PageBuilderPage() {
                 </select>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.pageContentLabel}
                 </p>
@@ -1683,7 +1706,7 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.seoLabel}
                 </p>
@@ -1739,7 +1762,7 @@ export default function PageBuilderPage() {
 
             {/* POSTS */}
             <TabsContent value="posts" className="mt-4 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold text-white">{t.manageListings}</p>
@@ -1939,7 +1962,7 @@ export default function PageBuilderPage() {
 
             {/* ── CONNECT: contact + social + SEO ── */}
             <TabsContent value="connect" className="mt-4 space-y-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.contactTitle}
                 </p>
@@ -2013,7 +2036,7 @@ export default function PageBuilderPage() {
               </div>
 
               {/* Working hours */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="wa9l-glass rounded-xl p-5 space-y-3">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.workingHoursTitle}
                 </p>
@@ -2069,7 +2092,7 @@ export default function PageBuilderPage() {
                   );
                 })}
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+              <div className="wa9l-glass rounded-xl p-5 space-y-4">
                 <p className="flex items-center gap-2 text-sm font-medium text-white">
                   {t.socialTitle}
                 </p>
@@ -2184,7 +2207,7 @@ export default function PageBuilderPage() {
               <Button
                 onClick={handleSave}
                 disabled={saveStatus === 'saving'}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 gap-2 disabled:opacity-60"
+                className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-6 gap-2 disabled:opacity-60 shadow-lg shadow-indigo-500/20"
               >
                 {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saveStatus === 'saving' ? t.saving : t.saveNow}
@@ -2210,9 +2233,9 @@ export default function PageBuilderPage() {
 
         {/* Live Preview */}
         <div className="min-w-0 relative z-0 xl:col-start-2 xl:row-start-1 xl:h-full">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden h-full flex flex-col">
+          <div className="wa9l-glass rounded-xl overflow-hidden h-full flex flex-col">
 
-            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t.livePreview}</span>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1.5 text-[10px] text-green-400">
@@ -2222,7 +2245,7 @@ export default function PageBuilderPage() {
               </div>
             </div>
 
-            <div className="px-3 py-2 flex items-center justify-end gap-2" style={{ backgroundColor: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-3 py-2 flex items-center justify-end gap-2" style={{ backgroundColor: 'rgba(6,6,20,0.55)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {/* Device toggle */}
               <div className="flex items-center gap-0.5 shrink-0">
                 <button
