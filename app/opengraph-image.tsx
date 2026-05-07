@@ -74,7 +74,7 @@ export default function OgImage() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://real-estate-saas--rewrew7.us-east4.hosted.app/web-app-manifest-192x192.png"
+            src="https://real-estate-saas--rewrew7.us-east4.hosted.app/logo.png"
             width="120"
             height="120"
             alt="Wa9l logo"
