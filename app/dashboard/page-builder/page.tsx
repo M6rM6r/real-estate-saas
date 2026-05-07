@@ -235,7 +235,7 @@ function CropModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const { lang } = useLanguage();
-  const t = PB_T[lang];
+  const t = PB_T[lang as keyof typeof PB_T];
 
   const resetCrop = useCallback(() => {
     const img = imgRef.current;
@@ -347,7 +347,7 @@ function ImageUploader({
   const demoObjUrl = useRef<string | null>(null);
   const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
   const { lang } = useLanguage();
-  const t = PB_T[lang];
+  const t = PB_T[lang as keyof typeof PB_T];
 
   const aspectRatio = aspect === 'square' ? 1 : 16 / 9;
 
@@ -455,12 +455,12 @@ function ImageUploader({
             <p className="text-[11px] text-slate-600">{t.uploadHint}</p>
             {err && <p className="text-[11px] text-red-400">{err}</p>}
           </div>
-          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
         </div>
       ) : (
         <div
           onDrop={onDrop}
-          onDragOver={(e) => e.preventDefault()}
+          onDragOver={(e: React.DragEvent) => e.preventDefault()}
           onClick={() => !uploading && inputRef.current?.click()}
           className="w-full cursor-pointer group"
         >
@@ -485,7 +485,7 @@ function ImageUploader({
             </div>
           )}
           {err && <p className="text-[11px] text-red-400 mt-1">{err}</p>}
-          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
         </div>
       )}
     </>
@@ -536,7 +536,7 @@ function SortableSectionRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
   const { lang } = useLanguage();
-  const t = PB_T[lang];
+  const t = PB_T[lang as keyof typeof PB_T];
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -715,7 +715,7 @@ const isValidUrl = (value: string) => {
 
 export default function PageBuilderPage() {
   const { lang } = useLanguage();
-  const t = PB_T[lang];
+  const t = PB_T[lang as keyof typeof PB_T];
   const DAY_LABELS = { sun: t.sun, mon: t.mon, tue: t.tue, wed: t.wed, thu: t.thu, fri: t.fri, sat: t.sat };
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -890,29 +890,29 @@ export default function PageBuilderPage() {
   };
 
   const updateProfile = (patch: Partial<Profile>) => {
-    setProfile((prev) => ({ ...prev, ...patch }));
+    setProfile((prev: Profile) => ({ ...prev, ...patch }));
     markDirty();
     if ('logo_url' in patch || 'cover_url' in patch) {
       pendingImageAutoSave.current = true;
     }
     const keys = Object.keys(patch);
-    if (keys.length) setFieldErrors((prev) => { const n = { ...prev }; keys.forEach(k => delete n[k]); return n; });
+    if (keys.length) setFieldErrors((prev: Record<string, string>) => { const n = { ...prev }; keys.forEach(k => delete n[k]); return n; });
   };
 
   const updateSocial = (key: string, value: string) => {
-    setProfile((prev) => ({
+    setProfile((prev: Profile) => ({
       ...prev,
       social_links: { ...prev.social_links, [key]: value },
     }));
     markDirty();
-    setFieldErrors((prev) => { const n = { ...prev }; delete n[key]; return n; });
+    setFieldErrors((prev: Record<string, string>) => { const n = { ...prev }; delete n[key]; return n; });
   };
 
   const normalizeWhatsappInput = () => {
     const current = profile.social_links?.whatsapp || '';
     const normalized = normalizeWhatsAppTarget(current) || '';
     if (normalized === current) return;
-    setProfile((prev) => ({
+    setProfile((prev: Profile) => ({
       ...prev,
       social_links: { ...prev.social_links, whatsapp: normalized },
     }));
@@ -920,7 +920,7 @@ export default function PageBuilderPage() {
   };
 
   const toggleSection = (key: SectionOrderKey) => {
-    setProfile((prev) => ({
+    setProfile((prev: Profile) => ({
       ...prev,
       page_sections: {
         ...DEFAULT_PAGE_SECTIONS,
@@ -1031,13 +1031,13 @@ export default function PageBuilderPage() {
 
   const deleteListing = async (id: string) => {
     const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
-    setListings((prev) => prev.filter((l) => l.id !== id));
+    setListings((prev: any[]) => prev.filter((l) => l.id !== id));
     if (!isDemo) {
       try {
         await authFetch(`/api/dashboard/listings/${id}`, { method: 'DELETE' });
       } catch {
         authFetch<{ data: any[] }>('/api/dashboard/listings')
-          .then((r) => setListings(r.data ?? []))
+          .then((r: any) => setListings(r.data ?? []))
           .catch(() => {});
       }
     }
@@ -1533,7 +1533,7 @@ export default function PageBuilderPage() {
                 <p className="text-sm font-bold text-white mb-1">{t.chooseDesign}</p>
                 <p className="text-slate-400 text-sm mb-4">{t.chooseDesignSub}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.values(PAGE_THEMES).filter((theme) => theme.dark).map((theme) => (
+                  {Object.values(PAGE_THEMES).filter((theme: any) => theme.dark).map((theme: any) => (
                     <button
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
@@ -1638,14 +1638,14 @@ export default function PageBuilderPage() {
                     <input
                       type="color"
                       value={primaryColor}
-                      onChange={(e) => { setPrimaryColor(e.target.value); markDirty(); }}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPrimaryColor(e.target.value); markDirty(); }}
                       className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                     />
                     <div className="h-9 w-14 rounded-lg border-2 border-slate-700 cursor-pointer" style={{ backgroundColor: primaryColor }} />
                   </div>
                   <Input
                     value={primaryColor}
-                    onChange={(e) => { setPrimaryColor(e.target.value); markDirty(); }}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPrimaryColor(e.target.value); markDirty(); }}
                     maxLength={7}
                     className="wa9l-field text-white w-28 font-mono text-sm"
                   />
@@ -1687,7 +1687,7 @@ export default function PageBuilderPage() {
                 </p>
                 <Input
                   value={agencyName}
-                  onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setAgencyName(e.target.value); markDirty(); }}
                   placeholder={t.businessNamePlaceholder}
                   className="wa9l-field text-white placeholder:text-slate-600"
                 />
@@ -1700,7 +1700,7 @@ export default function PageBuilderPage() {
                 <p className="text-xs text-slate-500">{t.businessTypeSub}</p>
                 <select
                   value={businessType}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                   const bt = e.target.value;
                   setBusinessType(bt);
                   markDirty();
@@ -1739,7 +1739,7 @@ export default function PageBuilderPage() {
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.heroHeadlineLabel}</Label>
                   <Input
                     value={pageConfig.hero_headline || ''}
-                    onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePageConfig({ hero_headline: e.target.value })}
                     placeholder={t.heroHeadlinePlaceholder}
                     maxLength={200}
                     className="wa9l-field text-white placeholder:text-slate-600"
@@ -1751,7 +1751,7 @@ export default function PageBuilderPage() {
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.taglineLabel}</Label>
                   <Input
                     value={profile.tagline || ''}
-                    onChange={(e) => updateProfile({ tagline: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateProfile({ tagline: e.target.value })}
                     placeholder={t.taglinePlaceholder}
                     maxLength={200}
                     className="wa9l-field text-white placeholder:text-slate-600"
@@ -1763,7 +1763,7 @@ export default function PageBuilderPage() {
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.bioLabel}</Label>
                   <Textarea
                     value={profile.bio || ''}
-                    onChange={(e) => updateProfile({ bio: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateProfile({ bio: e.target.value })}
                     placeholder={t.bioPlaceholder}
                     rows={6}
                     maxLength={2000}
@@ -1795,7 +1795,7 @@ export default function PageBuilderPage() {
                       <div className="flex flex-col gap-1 flex-1">
                         <Input
                           value={entry.label}
-                          onChange={(e) => {
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             const updated = [...(profile.licence_numbers ?? [])];
                             updated[idx] = { ...updated[idx], label: e.target.value };
                             updateProfile({ licence_numbers: updated });
@@ -1805,7 +1805,7 @@ export default function PageBuilderPage() {
                         />
                         <Input
                           value={entry.number}
-                          onChange={(e) => {
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             const updated = [...(profile.licence_numbers ?? [])];
                             updated[idx] = { ...updated[idx], number: e.target.value };
                             updateProfile({ licence_numbers: updated });
@@ -1817,7 +1817,7 @@ export default function PageBuilderPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = (profile.licence_numbers ?? []).filter((_, i) => i !== idx);
+                          const updated = (profile.licence_numbers ?? []).filter((_: any, i: number) => i !== idx);
                           updateProfile({ licence_numbers: updated });
                         }}
                         className="mt-1 text-slate-500 hover:text-red-400 transition-colors shrink-0"
@@ -1839,7 +1839,7 @@ export default function PageBuilderPage() {
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.seoTitleLabel}</Label>
                   <Input
                     value={pageConfig.seo_title || ''}
-                    onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updatePageConfig({ seo_title: e.target.value })}
                     className="wa9l-field text-white placeholder:text-slate-600"
                     placeholder={`${agencyName || t.businessNameFallback}`}
                     maxLength={120}
@@ -1851,7 +1851,7 @@ export default function PageBuilderPage() {
                   <Label className="text-slate-400 text-xs uppercase tracking-wider">{t.seoDescLabel}</Label>
                   <Textarea
                     value={pageConfig.seo_description || ''}
-                    onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updatePageConfig({ seo_description: e.target.value })}
                     className="wa9l-field text-white placeholder:text-slate-600 resize-none"
                     placeholder={t.seoDescPlaceholder}
                     rows={3}
@@ -1906,47 +1906,47 @@ export default function PageBuilderPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{isCarDealer ? t.fieldMake : t.fieldCategory}</Label>
-                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="wa9l-field text-white text-sm" placeholder={isCarDealer ? t.categoryPlaceholderCar : t.categoryPlaceholder} />
+                        <Input value={listingForm.property_type} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, property_type: e.target.value })} className="wa9l-field text-white text-sm" placeholder={isCarDealer ? t.categoryPlaceholderCar : t.categoryPlaceholder} />
                       </div>
                     <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldName}</Label>
                         <Input
                           value={listingForm.title}
-                          onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, title: e.target.value })}
                           className="wa9l-field text-white text-sm"
                           placeholder={t.fieldName}
                         />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldPrice}</Label>
-                        <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="wa9l-field text-white text-sm" placeholder="1000000" />
+                        <Input type="number" value={listingForm.price} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, price: e.target.value })} className="wa9l-field text-white text-sm" placeholder="1000000" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldLocation}</Label>
-                        <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="wa9l-field text-white text-sm" placeholder="Dubai Marina" />
+                        <Input value={listingForm.location} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, location: e.target.value })} className="wa9l-field text-white text-sm" placeholder="Dubai Marina" />
                       </div>
                       {usesRealEstateFields && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldBedrooms}</Label>
-                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="4" />
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="4" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldBathrooms}</Label>
-                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="3" />
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="3" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldArea}</Label>
-                        <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="wa9l-field text-white text-sm" placeholder="450" />
+                        <Input type="number" value={listingForm.area_sqm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="wa9l-field text-white text-sm" placeholder="450" />
                       </div>
                       </>)}
                       {isCarDealer && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldYear}</Label>
-                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="2024" />
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="2024" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldMileage}</Label>
-                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="85000" />
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="85000" />
                       </div>
                       </>)}
                     </div>
@@ -1954,7 +1954,7 @@ export default function PageBuilderPage() {
                       <label className="block text-xs font-medium text-slate-400 mb-1">{t.descriptionLabel}</label>
                       <textarea
                         value={listingForm.body}
-                        onChange={(e) => setListingForm({ ...listingForm, body: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setListingForm({ ...listingForm, body: e.target.value })}
                         placeholder={t.descriptionPlaceholder}
                         rows={3}
                         className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
@@ -2102,7 +2102,7 @@ export default function PageBuilderPage() {
                       <Input
                         type={type}
                         value={(profile as unknown as Record<string, string | undefined>)[key] || ''}
-                        onChange={(e) => updateProfile({ [key]: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateProfile({ [key]: e.target.value })}
                         placeholder={placeholder}
                         className={`bg-slate-800 text-white placeholder:text-slate-500 pl-9 focus:ring-1 transition-colors ${fieldErrors[key] ? 'border-amber-400 ring-1 ring-amber-400/30 focus:border-amber-400 focus:ring-amber-400/30' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500'}`}
                       />
@@ -2135,7 +2135,7 @@ export default function PageBuilderPage() {
                       <Input
                         type="tel"
                         value={num}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           const updated = [...(profile.extra_phones ?? [])];
                           updated[idx] = e.target.value;
                           updateProfile({ extra_phones: updated });
@@ -2146,7 +2146,7 @@ export default function PageBuilderPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = (profile.extra_phones ?? []).filter((_, i) => i !== idx);
+                          const updated = (profile.extra_phones ?? []).filter((_: any, i: number) => i !== idx);
                           updateProfile({ extra_phones: updated });
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-400 transition-colors"
@@ -2198,14 +2198,14 @@ export default function PageBuilderPage() {
                           <input
                             type="time"
                             value={h.open}
-                            onChange={(e) => setDay({ open: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDay({ open: e.target.value })}
                             className="flex-1 wa9l-field text-white rounded-md px-2 py-1 text-xs"
                           />
                           <span className="text-slate-500 text-xs">–</span>
                           <input
                             type="time"
                             value={h.close}
-                            onChange={(e) => setDay({ close: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDay({ close: e.target.value })}
                             className="flex-1 wa9l-field text-white rounded-md px-2 py-1 text-xs"
                           />
                         </div>
@@ -2234,7 +2234,7 @@ export default function PageBuilderPage() {
                       <Icon className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${color} pointer-events-none`} />
                       <Input
                         value={profile.social_links?.[key] || ''}
-                        onChange={(e) => updateSocial(key, e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSocial(key, e.target.value)}
                         onBlur={() => {
                           if (key === 'whatsapp') normalizeWhatsappInput();
                         }}
@@ -2260,7 +2260,7 @@ export default function PageBuilderPage() {
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400 pointer-events-none text-sm font-bold">👻</span>
                     <Input
                       value={profile.social_links?.snapchat || ''}
-                      onChange={(e) => updateSocial('snapchat', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSocial('snapchat', e.target.value)}
                       placeholder="username"
                       className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
@@ -2278,7 +2278,7 @@ export default function PageBuilderPage() {
                     </span>
                     <Input
                       value={profile.social_links?.tiktok || ''}
-                      onChange={(e) => updateSocial('tiktok', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSocial('tiktok', e.target.value)}
                       placeholder="username"
                       className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
@@ -2296,7 +2296,7 @@ export default function PageBuilderPage() {
                     </span>
                     <Input
                       value={profile.social_links?.telegram || ''}
-                      onChange={(e) => updateSocial('telegram', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSocial('telegram', e.target.value)}
                       placeholder="username"
                       className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
@@ -2314,7 +2314,7 @@ export default function PageBuilderPage() {
                     </span>
                     <Input
                       value={profile.social_links?.discord || ''}
-                      onChange={(e) => updateSocial('discord', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSocial('discord', e.target.value)}
                       placeholder="username"
                       className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
