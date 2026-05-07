@@ -12,12 +12,12 @@ const translations = {
   ar: {
     brandName: 'Wa9l',
     brandAr: 'واصل',
-    brandSubtitle: 'المنصة الإحترافية لإنشاء المواقع الإلكترونية.',
+    brandSubtitle: 'المنصة الإحترافية لإدارة المواقع الإلكترونية',
     noAccount: 'لا حاجة لحساب',
     demoTitle: 'جرّب النسخة التجريبية',
     demoDesc: 'استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.',
     enterDemo: 'ادخل التجربة',
-    agencyLogin: 'تسجيل دخول الوكالة',
+    agencyLogin: 'تسجيل الدخول',
     haveAccount: 'هل لديك حساب؟ سجّل دخولك أدناه.',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
@@ -32,7 +32,7 @@ const translations = {
   en: {
     brandName: 'Wa9l',
     brandAr: 'واصل',
-    brandSubtitle: 'The professional platform for building business websites.',
+    brandSubtitle: 'The professional platform for managing business websites',
     noAccount: 'No account needed',
     demoTitle: 'Try the Demo',
     demoDesc: 'Explore the full dashboard — listings, your business page — with ready demo data.',
@@ -161,27 +161,25 @@ export default function LoginPage() {
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
           <div className={`w-full max-w-[460px] space-y-4`}>
 
-            {/* Brand — compact */}
-            <div className="text-center flex items-center justify-center gap-3 mb-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden shadow-lg ring-1 ring-indigo-500/20 shrink-0">
+            {/* Brand */}
+            <div className="rounded-2xl px-6 py-5 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden shadow-2xl mb-3">
                 <img src="/web-app-manifest-192x192.png" alt="Wa9l" className="w-full h-full object-cover" />
               </div>
-              <div className="text-left">
-                <h1 className="text-3xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
-                  {t.brandName}
-                </h1>
-                <p className="text-slate-400/80 text-xs mt-0.5">{t.brandSubtitle}</p>
-              </div>
+              <h1 className="text-4xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight mb-1">
+                {t.brandName}
+              </h1>
+              <p className="text-slate-400 text-sm">{t.brandSubtitle}</p>
             </div>
 
             {/* Login form */}
-            <div className="rounded-2xl p-6 space-y-5 border border-slate-700/50" style={{background:'rgba(5,5,18,0.88)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)'}}>
-              <div>
-                <h2 className="text-base font-bold text-slate-100">{t.agencyLogin}</h2>
+            <div className="rounded-2xl p-6 space-y-5" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}}>
+              <div className="text-center">
+                <h2 className="text-base font-bold text-white drop-shadow">{t.agencyLogin}</h2>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="wa9l-email" className="text-slate-400 text-sm block">{t.email}</Label>
+                  <Label htmlFor="wa9l-email" className="text-white/90 text-sm drop-shadow block">{t.email}</Label>
                   <Input
                     id="wa9l-email"
                     type="email"
@@ -190,12 +188,12 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     dir="ltr"
                     autoComplete="email"
-                    className="h-11 text-sm bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors"
+                    className="h-11 text-sm bg-slate-900/70 border-slate-600/60 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors"
                     placeholder={t.emailPlaceholder}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="wa9l-password" className="text-slate-400 text-sm block">{t.password}</Label>
+                  <Label htmlFor="wa9l-password" className="text-white/90 text-sm drop-shadow block">{t.password}</Label>
                   <div className="relative">
                     <Input
                       id="wa9l-password"
@@ -205,7 +203,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       dir="ltr"
                       autoComplete="current-password"
-                      className="h-11 text-sm bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors pr-10"
+                      className="h-11 text-sm bg-slate-900/70 border-slate-600/60 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors pr-10"
                       placeholder={t.passwordPlaceholder}
                       aria-describedby={error ? 'wa9l-login-error' : undefined}
                     />
@@ -237,9 +235,8 @@ export default function LoginPage() {
             </div>
 
             {/* Demo CTA */}
-            <div className="relative rounded-2xl overflow-hidden border border-indigo-500/25">
-              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-900/95 via-violet-900/92 to-purple-950/95" style={{backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)'}} />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.07),transparent_55%)]" />
+            <div className="relative rounded-2xl overflow-hidden">
+              <div className="absolute inset-0" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}} />
               <div className="relative px-5 py-4 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-sm font-bold text-slate-100">{t.demoTitle}</h2>
@@ -261,7 +258,8 @@ export default function LoginPage() {
             <div className="flex items-center justify-between pt-1 px-0.5">
               <p className="text-slate-600/70 text-[11px]">{t.footer}</p>
               <button
-                onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLang(lang === 'ar' ? 'en' : 'ar'); }}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/50 hover:bg-slate-700/70 text-slate-400 hover:text-slate-200 text-xs transition-all border border-slate-600/25 backdrop-blur-sm"
               >
                 <Globe className="h-3 w-3 shrink-0" />
