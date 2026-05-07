@@ -462,9 +462,9 @@ export function PropertyDetailModal({
                   variant="outline"
                   size="sm"
                   onClick={handleWhatsApp}
-                  className="flex-1 border-gray-600 bg-transparent text-gray-300 hover:text-white hover:bg-green-500/10 hover:border-green-500/40"
+                  className="flex-[1.5] bg-green-600 hover:bg-green-500 text-white border-green-600"
                 >
-                  <MessageCircle className="h-4 w-4 mr-1.5 text-green-400" />
+                  <MessageCircle className="h-4 w-4 mr-1.5" />
                   {L.shareWhatsApp}
                 </Button>
                 <Button

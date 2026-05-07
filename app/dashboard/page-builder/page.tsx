@@ -2526,6 +2526,14 @@ export default function PageBuilderPage() {
         </div>
       </div>
       </div>
+      {dirty && (
+        <div className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-white/[0.08] bg-slate-900/95 backdrop-blur px-4 py-3 flex items-center justify-between">
+          <span className="text-xs text-amber-300">{lang === 'ar' ? 'تغييرات غير محفوظة' : 'Unsaved changes'}</span>
+          <Button onClick={handleSave} disabled={saveStatus === 'saving'} size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 rounded-xl">
+            {saveStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : (lang === 'ar' ? 'حفظ' : 'Save')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
