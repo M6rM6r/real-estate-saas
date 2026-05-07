@@ -27,7 +27,7 @@ const translations = {
     hidePassword: 'إخفاء كلمة المرور',
     showPassword: 'إظهار كلمة المرور',
     loginFailed: 'فشل تسجيل الدخول',
-    footer: '© 2025 Wa9l — واصل. جميع الحقوق محفوظة.',
+    footer: '© 2026 Wa9l — واصل. جميع الحقوق محفوظة.',
   },
   en: {
     brandName: 'Wa9l',
@@ -47,7 +47,7 @@ const translations = {
     hidePassword: 'Hide password',
     showPassword: 'Show password',
     loginFailed: 'Login failed',
-    footer: '© 2025 Wa9l — واصل. All rights reserved.',
+    footer: '© 2026 Wa9l — واصل. All rights reserved.',
   },
 };
 
