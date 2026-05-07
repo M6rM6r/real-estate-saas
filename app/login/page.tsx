@@ -149,7 +149,7 @@ export default function LoginPage() {
           style={{ backgroundImage: "url('/gemini-bg.png')" }}
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-transparent to-violet-950/25 pointer-events-none" aria-hidden="true" />
 
         {/* Ambient orbs */}
@@ -162,18 +162,16 @@ export default function LoginPage() {
           <div className={`w-full max-w-[460px] space-y-4`}>
 
             {/* Brand */}
-            <div className="rounded-2xl px-6 py-5 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden shadow-2xl mb-3">
-                <img src="/logo.png" alt="Wa9l" className="w-full h-full object-contain" />
-              </div>
-              <h1 className="text-4xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight mb-1">
+            <div className="flex flex-col items-center gap-2 pb-1">
+              <img src="/logo.png" alt="Wa9l" style={{width:'64px',height:'64px',objectFit:'contain'}} />
+              <h1 className="text-4xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                 {t.brandName}
               </h1>
-              <p className="text-slate-400 text-sm">{t.brandSubtitle}</p>
+              <p className="text-slate-300/80 text-sm">{t.brandSubtitle}</p>
             </div>
 
             {/* Login form */}
-            <div className="rounded-2xl p-6 space-y-5" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}}>
+            <div className="rounded-2xl p-6 space-y-5" style={{background:'rgba(6,6,20,0.60)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}}>
               <div className="text-center">
                 <h2 className="text-base font-bold text-white drop-shadow">{t.agencyLogin}</h2>
               </div>
@@ -226,7 +224,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-orange-950 to-orange-700 hover:from-orange-900 hover:to-orange-600 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-orange-950/70 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-indigo-900/45 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
                   {t.login}
@@ -236,7 +234,7 @@ export default function LoginPage() {
 
             {/* Demo CTA */}
             <div className="relative rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}} />
+              <div className="absolute inset-0 pointer-events-none" style={{background:'rgba(40,20,80,0.55)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}} />
               <div className="relative px-5 py-4 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-sm font-bold text-slate-100">{t.demoTitle}</h2>
