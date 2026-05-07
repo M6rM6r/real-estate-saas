@@ -11,7 +11,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 
 const cspDirectives = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-eval'${isDev ? " 'unsafe-inline'" : ''} https://apis.google.com https://www.gstatic.com https://browser.sentry-cdn.com`,
+  `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://browser.sentry-cdn.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://firebasestorage.googleapis.com https://storage.googleapis.com https://*.googleusercontent.com https://images.pexels.com https://bolt.new https://*.bolt.new",
