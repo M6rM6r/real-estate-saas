@@ -193,7 +193,6 @@ export function PropertyDetailModal({
   const metaBadges = [
     property.offer_type ? { label: L.offerType, value: property.offer_type } : null,
     property.property_type ? { label: isCarDealer ? L.carMake : L.propertyType, value: property.property_type } : null,
-    property.listing_status ? { label: L.listingStatus, value: statusLabel[property.listing_status] || property.listing_status } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   const mapEmbedUrl = property.location_url && property.location_url.includes('google.com/maps')
@@ -228,7 +227,7 @@ export function PropertyDetailModal({
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 p-6">
+        <div className="flex flex-col md:flex-row gap-6 p-6">
           {/* Image Gallery */}
           <div className="flex-1">
             <div className="relative">
@@ -265,15 +264,7 @@ export function PropertyDetailModal({
                       </div>
                     </>
                   )}
-                  {property.listing_status && (
-                    <span
-                      className={`absolute top-4 right-4 px-4 py-2 rounded-full text-white font-bold text-sm ${
-                        statusColor[property.listing_status] || 'bg-gray-600'
-                      }`}
-                    >
-                      {statusLabel[property.listing_status] || property.listing_status}
-                    </span>
-                  )}
+
                 </>
               ) : (
                 <div
@@ -309,7 +300,7 @@ export function PropertyDetailModal({
             )}
 
             {/* Details Grid */}
-            <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {isCarDealer && property.property_type && (
                 <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
