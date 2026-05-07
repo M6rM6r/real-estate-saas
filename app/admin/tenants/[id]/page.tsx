@@ -227,12 +227,12 @@ export default function AdminTenantDetailPage() {
           <p className="text-[#00ff41]/40 text-xs mt-0.5">/{data.slug} · {data.id}</p>
         </div>
         <div className="flex items-center flex-wrap gap-2">
-          <button onClick={() => copyToClipboard(`${origin}/${data.slug}`, 'puburl')}
+          <button onClick={() => copyToClipboard(`https://wa9l.website/${data.slug}`, 'puburl')}
             className="inline-flex items-center gap-1.5 h-8 px-3 text-xs rounded border border-[#00ff41]/20 text-[#00ff41]/50 hover:text-[#00ff41] hover:border-[#00ff41]/40 transition-colors">
             {copiedField === 'puburl' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
             Copy Public URL
           </button>
-          <a href={`/${data.slug}`} target="_blank" rel="noopener noreferrer">
+          <a href={`https://wa9l.website/${data.slug}`} target="_blank" rel="noopener noreferrer">
             <Button className="h-8 text-xs bg-[#00ff41]/15 hover:bg-[#00ff41]/30 border border-[#00ff41]/40 text-[#00ff41]">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Public Page
             </Button>

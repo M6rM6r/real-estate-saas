@@ -115,8 +115,7 @@ export function PropertyDetailModal({
   };
 
   const getShareUrl = () => {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/${slug}#listing-${property.id}`;
+    return `https://wa9l.website/${slug}#listing-${property.id}`;
   };
 
   const shareText = useMemo(() => {

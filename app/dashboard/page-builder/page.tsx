@@ -1187,7 +1187,7 @@ export default function PageBuilderPage() {
     }
   }
 
-  const baseUrl = isConfiguredBaseUrlValid ? configuredBaseUrl : runtimeOrigin;
+  const baseUrl = 'https://wa9l.website';
   const publicUrl = slug ? `${baseUrl}/${slug}` : baseUrl;
   const publicPath = slug ? `/${slug}` : '/';
   const shouldShowInvalidUrlWarning = Boolean(configuredBaseUrl) && !isConfiguredBaseUrlValid;

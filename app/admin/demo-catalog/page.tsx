@@ -87,14 +87,14 @@ export default function AdminDemoCatalogPage() {
   const presentationItems = selectedItems.length > 0 ? selectedItems : filtered
 
   const copyAllLinks = async () => {
-    const text = filtered.map((i) => `${window.location.origin}/${i.slug}`).join('\n')
+    const text = filtered.map((i) => `https://wa9l.website/${i.slug}`).join('\n')
     await navigator.clipboard.writeText(text)
     setCopiedAll(true)
     setTimeout(() => setCopiedAll(false), 1800)
   }
 
   const copyOne = async (slug: string) => {
-    await navigator.clipboard.writeText(`${window.location.origin}/${slug}`)
+    await navigator.clipboard.writeText(`https://wa9l.website/${slug}`)
     setCopiedSlug(slug)
     setTimeout(() => setCopiedSlug(null), 1600)
   }

@@ -100,7 +100,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    setOrigin(window.location.origin);
+    setOrigin('https://wa9l.website');
   }, []);
 
   // Warn before navigating away with unsaved changes

@@ -777,7 +777,7 @@ export default function AdminTenantsPage() {
             <div className="space-y-2 py-2 text-sm">
               {([
                 { label: 'Agency',      key: 'name',     value: credentials.name },
-                { label: 'Public Page', key: 'url',      value: `${typeof window !== 'undefined' ? window.location.origin : ''}/${credentials.slug}` },
+                { label: 'Public Page', key: 'url',      value: `https://wa9l.website/${credentials.slug}` },
                 { label: 'Login URL',   key: 'login',    value: `${typeof window !== 'undefined' ? window.location.origin : ''}/login` },
                 { label: 'Email',       key: 'email',    value: credentials.email },
                 { label: 'Password',    key: 'password', value: credentials.password },
