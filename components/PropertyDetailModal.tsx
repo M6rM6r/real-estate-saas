@@ -452,19 +452,7 @@ export function PropertyDetailModal({
             </div>
             )}
 
-            {metaBadges.length > 0 && (
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 space-y-2">
-                <p className="font-semibold text-white text-sm mb-3">{L.details}</p>
-                <div className="space-y-2">
-                  {metaBadges.map((item) => (
-                    <div key={`${item.label}-${item.value}`} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400 inline-flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{item.label}</span>
-                      <span className="text-white font-medium">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
 
             {/* Share */}
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
