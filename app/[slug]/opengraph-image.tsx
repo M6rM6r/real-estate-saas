@@ -1,29 +1,106 @@
 import { ImageResponse } from 'next/og'
 import { adminDb } from '@/lib/firebase-admin'
 
-export const revalidate = 60
+export const revalidate = 300
 export const alt = 'Agency Profile Image'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
+
+async function getTenantData(slug: string) {
+  const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).limit(1).get()
+  if (tenantsSnap.empty) return null
+  const tenantDoc = tenantsSnap.docs[0]
+  return { id: tenantDoc.id, ...tenantDoc.data() } as any
+}
+
+async function getProfileData(tenantId: string) {
+  try {
+    const profileDoc = await adminDb.collection('tenants').doc(tenantId).collection('profiles').doc(tenantId).get()
+    if (profileDoc.exists) return profileDoc.data() as any
+
+    const fallbackSnap = await adminDb.collection('profiles').where('tenantId', '==', tenantId).limit(1).get()
+    return fallbackSnap.empty ? null : fallbackSnap.docs[0].data() as any
+  } catch {
+    return null
+  }
+}
+
+function generateFallbackImage(name: string = 'REW') {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: '100%',
+          backgroundColor: '#0b1220',
+          backgroundImage: 'linear-gradient(135deg,#111827,#0b1220,#1e293b)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+            padding: '40px',
+            position: 'relative',
+          }}
+        >
+          <h1
+            style={{
+              fontSize: '74px',
+              fontWeight: 800,
+              color: 'white',
+              marginBottom: '12px',
+              textAlign: 'center',
+              letterSpacing: '-1.5px',
+            }}
+          >
+            {name}
+          </h1>
+
+          <div
+            style={{
+              fontSize: '30px',
+              fontWeight: 500,
+              color: '#dbeafe',
+              textAlign: 'center',
+            }}
+          >
+            Premium Real Estate Platform
+          </div>
+
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '10px',
+              backgroundColor: '#2563eb',
+            }}
+          />
+        </div>
+      </div>
+    ),
+    { ...size }
+  )
+}
 
 export default async function Image({ params }: { params: { slug: string } }) {
   const { slug } = params
 
   try {
-    const tenantsSnap = await adminDb.collection('tenants').where('slug', '==', slug).limit(1).get()
-    if (tenantsSnap.empty) {
-      return new Response('Not Found', { status: 404 })
-    }
-    const tenantDoc = tenantsSnap.docs[0]
-    const tenant = { id: tenantDoc.id, ...tenantDoc.data() } as any
+    const tenant = await getTenantData(slug)
+    if (!tenant) return generateFallbackImage()
 
-    const profileDoc = await adminDb.collection('tenants').doc(tenantDoc.id).collection('profiles').doc(tenantDoc.id).get()
-    const fallbackProfilesSnap = profileDoc.exists
-      ? null
-      : await adminDb.collection('profiles').where('tenantId', '==', tenantDoc.id).limit(1).get()
-    const profile = profileDoc.exists
-      ? (profileDoc.data() as any)
-      : (fallbackProfilesSnap?.empty ? null : (fallbackProfilesSnap?.docs[0].data() as any))
+    const profile = await getProfileData(tenant.id)
 
     const primaryColor = tenant.primary_color || '#2563eb'
     const coverUrl = profile?.coverUrl || profile?.cover_url
@@ -161,6 +238,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
       { ...size }
     )
   } catch (error) {
-    return new Response('Failed to generate image', { status: 500 })
+    console.error('OG image generation error:', error)
+    return generateFallbackImage()
   }
 }
