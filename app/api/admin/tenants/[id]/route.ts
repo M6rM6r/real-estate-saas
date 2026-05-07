@@ -9,6 +9,9 @@ const UpdateTenantSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens').optional(),
   status: z.enum(['active', 'suspended']).optional(),
+  business_type: z.string().optional(),
+  theme: z.string().optional(),
+  primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
 })
 
 export async function GET(
@@ -18,13 +21,16 @@ export async function GET(
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  const [tenantDoc, profileDoc, usersSnap, postsSnap, listingsSnap, leadsSnap] = await Promise.all([
+  const [tenantDoc, profileDoc, usersSnap, postsSnap, listingsSnap, leadsSnap, mediaSnap, recentLeadsSnap, recentListingsSnap] = await Promise.all([
     adminDb.collection('tenants').doc(params.id).get(),
     adminDb.collection('tenants').doc(params.id).collection('profiles').doc(params.id).get(),
     adminDb.collection('users').where('tenantId', '==', params.id).get(),
     adminDb.collection('posts').where('tenantId', '==', params.id).count().get(),
     adminDb.collection('posts').where('tenantId', '==', params.id).where('type', '==', 'listing').count().get(),
     adminDb.collection('leads').where('tenantId', '==', params.id).count().get(),
+    adminDb.collection('tenants').doc(params.id).collection('media').count().get(),
+    adminDb.collection('leads').where('tenantId', '==', params.id).orderBy('created_at', 'desc').limit(5).get(),
+    adminDb.collection('posts').where('tenantId', '==', params.id).where('type', '==', 'listing').orderBy('createdAt', 'desc').limit(5).get(),
   ])
 
   if (!tenantDoc.exists) {
@@ -34,12 +40,30 @@ export async function GET(
   return NextResponse.json({
     id: tenantDoc.id,
     ...tenantDoc.data(),
+    createdAt: tenantDoc.data()?.createdAt?.toDate?.()?.toISOString() ?? tenantDoc.data()?.createdAt ?? null,
+    updatedAt: tenantDoc.data()?.updatedAt?.toDate?.()?.toISOString() ?? tenantDoc.data()?.updatedAt ?? null,
     profile: profileDoc.exists ? { id: profileDoc.id, ...profileDoc.data() } : null,
     agentCount: usersSnap.size,
     postCount: postsSnap.data().count,
     listingCount: listingsSnap.data().count,
     leadCount: leadsSnap.data().count,
+    mediaCount: mediaSnap.data().count,
     users: usersSnap.docs.map(d => ({ id: d.id, email: d.data().email, role: d.data().role })),
+    recentLeads: recentLeadsSnap.docs.map(d => ({
+      id: d.id,
+      name: d.data().name ?? '—',
+      phone: d.data().phone ?? '—',
+      status: d.data().status ?? 'new',
+      created_at: d.data().created_at?.toDate?.()?.toISOString() ?? d.data().created_at ?? null,
+    })),
+    recentListings: recentListingsSnap.docs.map(d => ({
+      id: d.id,
+      title: d.data().title ?? '—',
+      price: d.data().price ?? null,
+      currency: d.data().currency ?? 'SAR',
+      listing_status: d.data().listing_status ?? null,
+      created_at: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt ?? null,
+    })),
   })
 }
 
@@ -61,6 +85,9 @@ export async function PATCH(
   if (body.name) updates.name = body.name
   if (body.slug) updates.slug = body.slug
   if (body.status) updates.status = body.status
+  if (body.business_type) updates.business_type = body.business_type
+  if (body.theme) updates.theme = body.theme
+  if (body.primary_color) updates.primary_color = body.primary_color
 
   await adminDb.collection('tenants').doc(id).update(updates)
   await writeAdminLog('tenant_updated', 'super_admin', { targetId: id, targetType: 'tenant', metadata: updates })

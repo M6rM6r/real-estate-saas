@@ -26,10 +26,11 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    const [tenantsSnap, usersSnap, postsSnap] = await Promise.all([
+    const [tenantsSnap, usersSnap, postsSnap, leadsSnap] = await Promise.all([
       adminDb.collection('tenants').orderBy('createdAt', 'desc').get(),
       adminDb.collection('users').select('tenantId').get(),
-      adminDb.collection('posts').select('tenantId').get(),
+      adminDb.collection('posts').select('tenantId', 'type').get(),
+      adminDb.collection('leads').select('tenantId').get(),
     ])
 
     const userCountByTenant = new Map<string, number>()
@@ -40,10 +41,21 @@ export async function GET(request: NextRequest) {
     })
 
     const postCountByTenant = new Map<string, number>()
+    const listingCountByTenant = new Map<string, number>()
     postsSnap.docs.forEach((doc) => {
       const tenantId = doc.data().tenantId as string | undefined
       if (!tenantId) return
       postCountByTenant.set(tenantId, (postCountByTenant.get(tenantId) ?? 0) + 1)
+      if (doc.data().type === 'listing') {
+        listingCountByTenant.set(tenantId, (listingCountByTenant.get(tenantId) ?? 0) + 1)
+      }
+    })
+
+    const leadCountByTenant = new Map<string, number>()
+    leadsSnap.docs.forEach((doc) => {
+      const tenantId = doc.data().tenantId as string | undefined
+      if (!tenantId) return
+      leadCountByTenant.set(tenantId, (leadCountByTenant.get(tenantId) ?? 0) + 1)
     })
 
     const tenants = tenantsSnap.docs.map((doc) => ({
@@ -53,6 +65,8 @@ export async function GET(request: NextRequest) {
       createdAt: undefined,
       agentCount: userCountByTenant.get(doc.id) ?? 0,
       postCount: postCountByTenant.get(doc.id) ?? 0,
+      listingCount: listingCountByTenant.get(doc.id) ?? 0,
+      leadCount: leadCountByTenant.get(doc.id) ?? 0,
     }))
 
     const response = NextResponse.json(tenants)
@@ -100,6 +114,8 @@ export async function POST(request: NextRequest) {
     email: z.string().email(),
     tempPassword: z.string().min(6),
     primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#3B82F6'),
+    business_type: z.string().optional().default('real_estate'),
+    theme: z.string().optional().default('modern'),
   })
 
   let body: z.infer<typeof CreateTenantSchema>
@@ -110,7 +126,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: issues }, { status: 400 })
   }
 
-  const { name, slug, email, tempPassword, primary_color } = body
+  const { name, slug, email, tempPassword, primary_color, business_type, theme } = body
 
   try {
     // Check slug uniqueness before creating auth user
@@ -142,6 +158,8 @@ export async function POST(request: NextRequest) {
       slug,
       status: 'active',
       primary_color,
+      business_type,
+      theme,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
