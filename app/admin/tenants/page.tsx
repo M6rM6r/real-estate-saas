@@ -14,8 +14,11 @@ import {
 import {
   Plus, Pencil, Trash2, Loader2, Users, Search, ExternalLink,
   AlertCircle, Copy, Check, Download, LayoutGrid, SlidersHorizontal,
-  ArrowUpDown, MoreHorizontal,
+  ArrowUpDown, MoreHorizontal, Star, MessageSquare, X,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+
+type TenantNote = { text: string; ts: string };
 
 type Tenant = {
   id: string;
@@ -50,7 +53,20 @@ const SORT_OPTIONS = [
   { value: 'name',     label: 'Name A–Z' },
   { value: 'listings', label: 'Most Listings' },
   { value: 'leads',    label: 'Most Leads' },
+  { value: 'starred',  label: 'Starred First' },
+  { value: 'health',   label: 'Best Health' },
 ];
+
+function tenantHealth(t: Tenant): number {
+  // Weighted score: listings contribute 10pts, leads 15pts, agents 5pts — capped at 100
+  return Math.min(100, (t.listingCount ?? 0) * 10 + (t.leadCount ?? 0) * 15 + (t.agentCount ?? 0) * 5);
+}
+
+function healthColor(score: number): string {
+  if (score >= 70) return '#00ff41';
+  if (score >= 35) return '#ffb441';
+  return '#ff4141';
+}
 
 const emptyForm = {
   name: '', slug: '', email: '', tempPassword: '',
@@ -107,6 +123,13 @@ export default function AdminTenantsPage() {
   const [credentials, setCredentials] = useState<{ name: string; slug: string; email: string; password: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Stars & Notes (persisted in localStorage)
+  const [starred, setStarred] = useState<Set<string>>(new Set());
+  const [tenantNotes, setTenantNotes] = useState<Record<string, TenantNote[]>>({});
+  const [starredFilter, setStarredFilter] = useState(false);
+  const [noteModal, setNoteModal] = useState<string | null>(null); // tenant id
+  const [noteInput, setNoteInput] = useState('');
+
   const fetchData = useCallback(() => {
     setError(null);
     setLoading(true);
@@ -125,6 +148,44 @@ export default function AdminTenantsPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Load stars & notes from localStorage on mount
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem('admin_tenant_stars');
+      if (s) setStarred(new Set(JSON.parse(s) as string[]));
+      const n = localStorage.getItem('admin_tenant_notes');
+      if (n) setTenantNotes(JSON.parse(n) as Record<string, TenantNote[]>);
+    } catch { /* ignore */ }
+  }, []);
+
+  const toggleStar = (id: string) => {
+    setStarred(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      localStorage.setItem('admin_tenant_stars', JSON.stringify(Array.from(next)));
+      return next;
+    });
+  };
+
+  const saveNote = () => {
+    if (!noteModal || !noteInput.trim()) return;
+    setTenantNotes(prev => {
+      const existing = prev[noteModal] ?? [];
+      const updated = { ...prev, [noteModal]: [{ text: noteInput.trim(), ts: new Date().toISOString() }, ...existing] };
+      localStorage.setItem('admin_tenant_notes', JSON.stringify(updated));
+      return updated;
+    });
+    setNoteInput('');
+  };
+
+  const deleteNote = (tenantId: string, idx: number) => {
+    setTenantNotes(prev => {
+      const updated = { ...prev, [tenantId]: (prev[tenantId] ?? []).filter((_, i) => i !== idx) };
+      localStorage.setItem('admin_tenant_notes', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const stats = useMemo(() => {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     return {
@@ -141,6 +202,7 @@ export default function AdminTenantsPage() {
       if (q && !t.name.toLowerCase().includes(q) && !t.slug.toLowerCase().includes(q)) return false;
       if (statusFilter !== 'all' && t.status !== statusFilter) return false;
       if (typeFilter !== 'all' && (t.business_type ?? 'real_estate') !== typeFilter) return false;
+      if (starredFilter && !starred.has(t.id)) return false;
       return true;
     });
     switch (sortBy) {
@@ -148,10 +210,12 @@ export default function AdminTenantsPage() {
       case 'name':     list = [...list].sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'listings': list = [...list].sort((a, b) => (b.listingCount ?? 0) - (a.listingCount ?? 0)); break;
       case 'leads':    list = [...list].sort((a, b) => (b.leadCount ?? 0) - (a.leadCount ?? 0)); break;
+      case 'starred':  list = [...list].sort((a, b) => (starred.has(b.id) ? 1 : 0) - (starred.has(a.id) ? 1 : 0)); break;
+      case 'health':   list = [...list].sort((a, b) => tenantHealth(b) - tenantHealth(a)); break;
       default:         list = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     return list;
-  }, [tenants, search, statusFilter, typeFilter, sortBy]);
+  }, [tenants, search, statusFilter, typeFilter, sortBy, starredFilter, starred]);
 
   const allSelected = filtered.length > 0 && filtered.every(t => selected.has(t.id));
 
@@ -349,6 +413,17 @@ export default function AdminTenantsPage() {
         </Select>
 
         <span className="text-[#00ff41]/30 text-xs ml-auto">{filtered.length} results</span>
+        <button
+          onClick={() => setStarredFilter(v => !v)}
+          title="Show starred only"
+          className={`h-8 px-3 text-xs rounded border font-mono flex items-center gap-1.5 transition-all ${
+            starredFilter
+              ? 'bg-[#ffd700]/15 border-[#ffd700]/50 text-[#ffd700]'
+              : 'bg-transparent border-[#00ff41]/20 text-[#00ff41]/40 hover:text-[#ffd700]/70 hover:border-[#ffd700]/30'
+          }`}>
+          <Star className={`h-3.5 w-3.5 ${starredFilter ? 'fill-[#ffd700]' : ''}`} />
+          Starred
+        </button>
       </div>
 
       {/* Bulk Action Bar */}
@@ -388,8 +463,9 @@ export default function AdminTenantsPage() {
                   <th className="px-3 py-3 w-8">
                     <input type="checkbox" checked={allSelected} onChange={toggleAll} className="accent-[#00ff41] cursor-pointer" />
                   </th>
+                  <th className="px-2 py-3 w-6"></th>
                   <th className="px-2 py-3 text-[#00ff41]/30 font-medium text-left w-8">#</th>
-                  {['Agency', 'Slug', 'Type', 'Theme', 'Color', 'Status', 'Listings', 'Leads', 'Agents', 'Joined', 'Actions'].map(h => (
+                  {['Agency', 'Slug', 'Type', 'Theme', 'Color', 'Status', 'Health', 'Listings', 'Leads', 'Agents', 'Notes', 'Joined', 'Actions'].map(h => (
                     <th key={h} className={`px-3 py-3 text-[10px] font-semibold text-[#00ff41]/40 uppercase tracking-wider whitespace-nowrap ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
@@ -401,9 +477,16 @@ export default function AdminTenantsPage() {
                   const btype = BUSINESS_TYPES[t.business_type ?? 'real_estate'];
                   return (
                     <tr key={t.id}
-                      className={`border-b border-[#00ff41]/[0.07] hover:bg-[#00ff41]/[0.04] transition-colors ${selected.has(t.id) ? 'bg-[#00ff41]/[0.06]' : ''}`}>
+                      className={`border-b border-[#00ff41]/[0.07] hover:bg-[#00ff41]/[0.04] transition-colors ${selected.has(t.id) ? 'bg-[#00ff41]/[0.06]' : ''} ${starred.has(t.id) ? 'border-l-2 border-l-[#ffd700]/60' : ''}`}>
                       <td className="px-3 py-3">
                         <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} className="accent-[#00ff41] cursor-pointer" />
+                      </td>
+                      {/* Star */}
+                      <td className="px-1 py-3">
+                        <button onClick={() => toggleStar(t.id)} title={starred.has(t.id) ? 'Unstar' : 'Star'}
+                          className="p-1 rounded transition-colors hover:bg-[#ffd700]/10">
+                          <Star className={`h-3.5 w-3.5 transition-colors ${starred.has(t.id) ? 'fill-[#ffd700] text-[#ffd700]' : 'text-[#00ff41]/15 hover:text-[#ffd700]/50'}`} />
+                        </button>
                       </td>
                       <td className="px-2 py-3 text-[#00ff41]/25">{idx + 1}</td>
 
@@ -461,9 +544,38 @@ export default function AdminTenantsPage() {
                         </button>
                       </td>
 
+                      {/* Health Score */}
+                      <td className="px-3 py-3">
+                        {(() => {
+                          const score = tenantHealth(t);
+                          const color = healthColor(score);
+                          return (
+                            <div className="flex items-center gap-1.5" title={`Health score: ${score}/100`}>
+                              <div className="w-12 h-1.5 bg-[#00ff41]/10 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, backgroundColor: color }} />
+                              </div>
+                              <span className="text-[10px] font-mono" style={{ color }}>{score}</span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.listingCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.leadCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.agentCount ?? 0}</td>
+                      {/* Notes */}
+                      <td className="px-3 py-3">
+                        <button onClick={() => { setNoteModal(t.id); setNoteInput(''); }}
+                          title="View/add notes"
+                          className="relative p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          {(tenantNotes[t.id]?.length ?? 0) > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#41b8ff] text-black text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
+                              {tenantNotes[t.id].length > 9 ? '9+' : tenantNotes[t.id].length}
+                            </span>
+                          )}
+                        </button>
+                      </td>
                       <td className="px-3 py-3 text-[#00ff41]/35 whitespace-nowrap">
                         {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US') : '—'}
                       </td>
@@ -687,6 +799,58 @@ export default function AdminTenantsPage() {
             <Button onClick={() => setCredentials(null)} className="bg-[#00ff41]/20 hover:bg-[#00ff41]/40 text-[#00ff41] border border-[#00ff41]/40">
               Done
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes Modal */}
+      <Dialog open={!!noteModal} onOpenChange={(o) => !o && setNoteModal(null)}>
+        <DialogContent className="bg-[#0d0d0d] border border-[#41b8ff]/30 text-[#00ff41] max-w-md font-mono">
+          <DialogHeader>
+            <DialogTitle className="text-[#41b8ff]">
+              {'>'} notes_{noteModal ? (tenants.find(t => t.id === noteModal)?.slug ?? noteModal) : ''}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            {/* Add note input */}
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Add a note… (e.g. 'Promised renewal May 15', 'High-value client – priority support')"
+                value={noteInput}
+                onChange={e => setNoteInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) saveNote(); }}
+                rows={3}
+                className="bg-[#0a0a0a] border-[#41b8ff]/20 text-[#00ff41] placeholder:text-[#00ff41]/20 focus:border-[#41b8ff]/50 text-xs font-mono resize-none"
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-[#00ff41]/25">Ctrl+Enter to save</span>
+                <Button onClick={saveNote} disabled={!noteInput.trim()}
+                  className="h-7 text-xs bg-[#41b8ff]/20 hover:bg-[#41b8ff]/40 text-[#41b8ff] border border-[#41b8ff]/40">
+                  + Add Note
+                </Button>
+              </div>
+            </div>
+            {/* Notes list */}
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {noteModal && (tenantNotes[noteModal]?.length ?? 0) === 0 && (
+                <p className="text-[#00ff41]/25 text-xs text-center py-4">No notes yet. Track anything relevant here.</p>
+              )}
+              {noteModal && (tenantNotes[noteModal] ?? []).map((note, i) => (
+                <div key={i} className="bg-[#0a0a0a] border border-[#41b8ff]/10 rounded-lg px-3 py-2.5 group relative">
+                  <p className="text-[#00ff41]/80 text-xs leading-relaxed pr-5">{note.text}</p>
+                  <p className="text-[10px] text-[#00ff41]/25 mt-1">
+                    {new Date(note.ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <button onClick={() => noteModal && deleteNote(noteModal, i)}
+                    className="absolute top-2 right-2 p-0.5 text-[#ff4141]/0 group-hover:text-[#ff4141]/50 hover:!text-[#ff4141] transition-colors rounded">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNoteModal(null)} className="text-[#00ff41]/40 hover:text-[#00ff41] text-sm">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -2,20 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader as Loader2, Building2, Sparkles, ArrowRight, Eye, EyeOff, Globe } from 'lucide-react';
+import { Loader as Loader2, Sparkles, ArrowRight, Eye, EyeOff, Globe, AlertTriangle } from 'lucide-react';
 
 type Lang = 'ar' | 'en';
 
 const translations = {
   ar: {
-    tagline: '"عروضك.\nعلامتك.\nعملاؤك."',
-    subtitle: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
-    demoBadge: 'معاينة مجانية',
+    brandName: 'Wa9l',
+    brandAr: 'واصل',
+    brandSubtitle: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
     noAccount: 'لا حاجة لحساب',
     demoTitle: 'جرّب النسخة التجريبية',
     demoDesc: 'استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.',
@@ -29,12 +26,13 @@ const translations = {
     login: 'تسجيل الدخول',
     hidePassword: 'إخفاء كلمة المرور',
     showPassword: 'إظهار كلمة المرور',
-    loginFailed: 'Login failed',
+    loginFailed: 'فشل تسجيل الدخول',
+    footer: '© 2025 Wa9l — واصل. جميع الحقوق محفوظة.',
   },
   en: {
-    tagline: '"Your Listings.\nYour Brand.\nYour Clients."',
-    subtitle: 'The professional platform for managing modern business pages.',
-    demoBadge: 'Free Preview',
+    brandName: 'Wa9l',
+    brandAr: 'واصل',
+    brandSubtitle: 'The professional platform for managing modern business pages.',
     noAccount: 'No account needed',
     demoTitle: 'Try the Demo',
     demoDesc: 'Explore the full dashboard — listings, your business page — with ready demo data.',
@@ -49,6 +47,7 @@ const translations = {
     hidePassword: 'Hide password',
     showPassword: 'Show password',
     loginFailed: 'Login failed',
+    footer: '© 2025 Wa9l — واصل. All rights reserved.',
   },
 };
 
@@ -60,13 +59,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Load saved language preference
   useEffect(() => {
+    setMounted(true);
     const savedLang = localStorage.getItem('app_lang') as Lang | null;
-    if (savedLang && (savedLang === 'ar' || savedLang === 'en')) {
-      setLangState(savedLang);
-    }
+    if (savedLang === 'ar' || savedLang === 'en') setLangState(savedLang);
   }, []);
 
   const setLang = (newLang: Lang) => {
@@ -93,9 +91,8 @@ export default function LoginPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? 'Session creation failed');
+        throw new Error((data as { error?: string }).error ?? 'Session creation failed');
       }
-      // Clear any leftover demo session so real profile loads correctly
       sessionStorage.removeItem('demo_auth');
       document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
       router.push('/dashboard');
@@ -108,138 +105,182 @@ export default function LoginPage() {
 
   const handleDemo = () => {
     sessionStorage.setItem('demo_auth', 'true');
-    // Set a short-lived cookie so the middleware lets demo users through
     document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
     router.push('/dashboard');
   };
 
   return (
-    /* Outer flex keeps LTR so decorative panel stays visually on the left */
-    <div className="min-h-screen flex" dir="ltr">
-      {/* Left decorative panel */}
-      <div aria-hidden="true" className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#1a2f5a] to-[#0a0a1f]">
+    <>
+      <style>{`
+        @keyframes wa9l-orb-a {
+          0%,100% { transform: translateY(0) scale(1); opacity:.18; }
+          50%      { transform: translateY(-28px) scale(1.06); opacity:.28; }
+        }
+        @keyframes wa9l-orb-b {
+          0%,100% { transform: translateY(0) scale(1); opacity:.14; }
+          50%      { transform: translateY(24px) scale(.94); opacity:.22; }
+        }
+        @keyframes wa9l-orb-c {
+          0%,100% { transform:translate(0,0) scale(1); opacity:.09; }
+          50%      { transform:translate(12px,-16px) scale(1.08); opacity:.15; }
+        }
+        @keyframes wa9l-fade-up {
+          from { opacity:0; transform:translateY(20px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        .wa9l-orb-a { animation: wa9l-orb-a 9s ease-in-out infinite; }
+        .wa9l-orb-b { animation: wa9l-orb-b 11s ease-in-out infinite; }
+        .wa9l-orb-c { animation: wa9l-orb-c 13s ease-in-out infinite 1.5s; }
+        .wa9l-f0 { animation: wa9l-fade-up .55s ease-out .05s both; }
+        .wa9l-f1 { animation: wa9l-fade-up .55s ease-out .15s both; }
+        .wa9l-f2 { animation: wa9l-fade-up .55s ease-out .25s both; }
+        .wa9l-f3 { animation: wa9l-fade-up .55s ease-out .35s both; }
+        .wa9l-f4 { animation: wa9l-fade-up .55s ease-out .45s both; }
+        .wa9l-glass {
+          background: rgba(8,8,22,.80);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+      `}</style>
+
+      <div className="relative min-h-screen overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+
+        {/* Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200')" }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/gemini-bg.png')" }}
+          aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1b3e]/80 via-transparent to-transparent" />
-        <div className="relative z-10 flex flex-col justify-between p-12 h-full text-white w-full">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">Rew</span>
-          </div>
-          <div>
-            <blockquote className="text-4xl font-bold leading-tight mb-4 whitespace-pre-line" dir={isRTL ? 'rtl' : 'ltr'}>
-              &ldquo;{t.tagline.replace(/"/g, '').replace(/\n/g, '.\n')}&rdquo;
-            </blockquote>
-            <p className="text-blue-300 text-sm" dir={isRTL ? 'rtl' : 'ltr'}>{t.subtitle}</p>
-          </div>
-        </div>
-      </div>
+        <div className="absolute inset-0 bg-black/70" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/55 via-transparent to-violet-950/45" aria-hidden="true" />
 
-      {/* Right form panel */}
-      <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center px-4 py-12" dir={isRTL ? 'rtl' : 'ltr'}>
-        <div className="w-full max-w-md space-y-6">
+        {/* Ambient orbs */}
+        <div aria-hidden="true" className="wa9l-orb-a absolute -top-28 -left-28 w-[500px] h-[500px] bg-indigo-600 rounded-full blur-[130px] pointer-events-none" />
+        <div aria-hidden="true" className="wa9l-orb-b absolute -bottom-28 -right-28 w-[540px] h-[540px] bg-violet-600 rounded-full blur-[140px] pointer-events-none" />
+        <div aria-hidden="true" className="wa9l-orb-c absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500 rounded-full blur-[90px] pointer-events-none" />
 
-          {/* ── Language Toggle ── */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors"
-            >
-              <Globe className="h-4 w-4" />
-              {lang === 'ar' ? 'English' : 'العربية'}
-            </button>
-          </div>
+        {/* Content */}
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-14">
+          <div className={`w-full max-w-[420px] space-y-5 transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 
-          {/* ── Demo CTA ── */}
-          <div className="relative rounded-2xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-bl from-blue-600 via-indigo-600 to-violet-700 opacity-90" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.15),transparent_60%)]" />
-            <div className="relative p-6 text-white">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-white/60 text-xs">{t.noAccount}</span>
+            {/* Brand */}
+            <div className="wa9l-f0 text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-[72px] h-[72px] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 mb-1 ring-1 ring-indigo-500/20">
+                <img src="/web-app-manifest-192x192.png" alt="Wa9l" className="w-full h-full object-cover" />
               </div>
-              <h2 className="text-xl font-bold mb-1">{t.demoTitle}</h2>
-              <p className="text-white/70 text-sm mb-5 leading-relaxed">
-                {t.demoDesc}
-              </p>
+              <div>
+                <h1 className="text-[2.6rem] font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+                  {t.brandName}
+                </h1>
+                <p className="text-indigo-300/75 text-sm font-medium mt-0.5">{t.brandAr}</p>
+                <p className="text-slate-400/80 text-sm mt-2 leading-relaxed max-w-[300px] mx-auto">{t.brandSubtitle}</p>
+              </div>
+            </div>
+
+            {/* Language toggle */}
+            <div className="wa9l-f1 flex justify-center">
               <button
-                type="button"
-                onClick={handleDemo}
-                className="group flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
+                onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/65 hover:bg-slate-700/80 text-slate-300 hover:text-slate-100 text-sm transition-all duration-200 border border-slate-600/35 backdrop-blur-sm"
               >
-                <ArrowRight className={`h-4 w-4 group-hover:-translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
-                {t.enterDemo}
-                <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+                <Globe className="h-3.5 w-3.5 shrink-0" />
+                {lang === 'ar' ? 'English' : 'العربية'}
               </button>
             </div>
-          </div>
 
-          {/* ── Sign-in form ── */}
-          <Card className="bg-[#12121a] border-gray-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg text-white">{t.agencyLogin}</CardTitle>
-              <CardDescription className="text-gray-500 text-sm">
-                {t.haveAccount}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+            {/* Demo CTA */}
+            <div className="wa9l-f2 relative rounded-2xl overflow-hidden border border-indigo-500/20">
+              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-600/88 via-violet-600/82 to-purple-700/88" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.10),transparent_55%)]" />
+              <div className="relative p-5">
+                <span className="inline-flex bg-indigo-300/15 text-indigo-200 text-xs px-2.5 py-0.5 rounded-full border border-indigo-300/25 font-medium mb-3">
+                  {t.noAccount}
+                </span>
+                <h2 className="text-base font-bold text-slate-100 mb-1">{t.demoTitle}</h2>
+                <p className="text-indigo-200/60 text-sm mb-4 leading-relaxed">{t.demoDesc}</p>
+                <button
+                  type="button"
+                  onClick={handleDemo}
+                  className="group flex items-center justify-center gap-2 w-full bg-slate-900/55 hover:bg-slate-900/75 text-slate-100 font-semibold py-2.5 rounded-xl border border-indigo-300/25 hover:border-indigo-300/55 transition-all duration-200 active:scale-[0.98] backdrop-blur-sm"
+                >
+                  <ArrowRight className={`h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 ${isRTL ? 'rotate-180' : ''}`} />
+                  {t.enterDemo}
+                  <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform duration-200" />
+                </button>
+              </div>
+            </div>
+
+            {/* Login form */}
+            <div className="wa9l-f3 wa9l-glass rounded-2xl p-6 space-y-5 border border-slate-700/35">
+              <div>
+                <h2 className="text-base font-bold text-slate-100">{t.agencyLogin}</h2>
+                <p className="text-slate-500 text-sm mt-0.5">{t.haveAccount}</p>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300 block">{t.email}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="wa9l-email" className="text-slate-300 text-sm block">{t.email}</Label>
                   <Input
-                    id="email"
+                    id="wa9l-email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     dir="ltr"
-                    className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left"
+                    autoComplete="email"
+                    className="bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors"
                     placeholder={t.emailPlaceholder}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-300 block">{t.password}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="wa9l-password" className="text-slate-300 text-sm block">{t.password}</Label>
                   <div className="relative">
                     <Input
-                      id="password"
+                      id="wa9l-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       dir="ltr"
-                      className="bg-[#1a1a2e] border-gray-700 text-white placeholder:text-gray-500 text-left pr-10"
+                      autoComplete="current-password"
+                      className="bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors pr-10"
                       placeholder={t.passwordPlaceholder}
-                      aria-describedby={error ? 'login-error' : undefined}
+                      aria-describedby={error ? 'wa9l-login-error' : undefined}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(v => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 transition-colors"
                       aria-label={showPassword ? t.hidePassword : t.showPassword}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
-                {error && <p id="login-error" role="alert" className="text-sm text-red-400">{error}</p>}
-                <Button
+                {error && (
+                  <div id="wa9l-login-error" role="alert" className="flex items-center gap-2 bg-red-950/55 border border-red-700/45 text-red-300 text-sm rounded-lg px-3 py-2.5">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-indigo-900/45 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
-                  {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                  {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
                   {t.login}
-                </Button>
+                </button>
               </form>
-            </CardContent>
-          </Card>
+            </div>
 
+            {/* Footer */}
+            <div className="wa9l-f4 text-center pb-2">
+              <p className="text-slate-600/80 text-xs">{t.footer}</p>
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

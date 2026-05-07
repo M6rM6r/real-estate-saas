@@ -1,6 +1,7 @@
 {
-  "name": "منصة Rew",
-  "short_name": "Rew",
+  "name": "Wa9l — واصل",
+  "short_name": "Wa9l",
+  "description": "المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +16,8 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#0a0a1f",
+  "background_color": "#0a0a1f",
+  "display": "standalone",
+  "start_url": "/"
 }
