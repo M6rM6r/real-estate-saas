@@ -5,6 +5,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeText } from '@/lib/sanitize'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
+import { scoreLead } from '@/lib/lead-scoring'
 
 const LeadSchema = z.object({
   tenantId: z.string().min(1),
@@ -44,6 +45,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
+    const now = new Date()
+    const scored = scoreLead({
+      name,
+      phone,
+      email,
+      message,
+      listingId: listingId ?? null,
+      createdAt: now,
+    })
+
     await adminDb.collection('leads').doc(uuidv4()).set({
       tenantId,
       name,
@@ -52,7 +63,11 @@ export async function POST(request: NextRequest) {
       message,
       listingId: listingId ?? null,
       status: 'new',
-      createdAt: new Date(),
+      createdAt: now,
+      score: scored.score,
+      scoreBand: scored.band,
+      scoreSignals: scored.signals,
+      scoreReasoning: scored.reasoning,
     })
 
     return NextResponse.json({ success: true }, { status: 201 })

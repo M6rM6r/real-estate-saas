@@ -735,8 +735,8 @@ export function PropertyCard({
   return (
     <button
       onClick={onClick}
-      className={`text-right group border overflow-hidden transition-all duration-300 w-full active:scale-[0.97] hover:-translate-y-1.5 hover:shadow-2xl ${surfaceClass}`}
-      style={cardStyle}
+      className={`text-right group border overflow-hidden transition-all duration-300 w-full active:scale-[0.97] hover:-translate-y-2 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 ${surfaceClass}`}
+      style={{ ...cardStyle, boxShadow: `${cardStyle.boxShadow ?? '0 1px 4px rgba(0,0,0,.35)'}, inset 0 1px 0 rgba(255,255,255,.06)` }}
       aria-label={lang === 'en' ? `View details: ${listing.title}` : `عرض التفاصيل: ${listing.title}`}
     >
       {/* Image area */}
@@ -762,12 +762,12 @@ export function PropertyCard({
         )}
 
         {/* Bottom gradient for price overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
         {/* Offer type badge — top left */}
         {listing.offer_type && (
           <span
-            className="absolute top-2 start-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10"
+            className="absolute top-3 start-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10 shadow-lg backdrop-blur"
             style={{ backgroundColor: offerColor }}
           >
             {listing.offer_type === 'rent'
@@ -785,7 +785,7 @@ export function PropertyCard({
               {listing.price.toLocaleString('en-US')}
             </p>
             {listing.property_type && (
-              <span className="text-white/80 text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+              <span className="text-white/85 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
                 {listing.property_type}
               </span>
             )}
@@ -794,11 +794,19 @@ export function PropertyCard({
 
         {/* Tap hint overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300 pointer-events-none" />
+        <div className="absolute inset-x-3 top-3 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `linear-gradient(90deg, transparent, ${primary}, transparent)` }} />
       </div>
 
       {/* Card body */}
-      <div className="p-3 sm:p-4">
-        <h3 className="font-semibold text-sm sm:text-base line-clamp-1 mb-1">{listing.title}</h3>
+      <div className="p-4 sm:p-5">
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <h3 className="font-bold text-sm sm:text-base line-clamp-2 leading-snug">{listing.title}</h3>
+          <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" style={{ backgroundColor: `${primary}22`, color: primary }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+              <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
+            </svg>
+          </span>
+        </div>
         {listing.location && (
           <div className={`flex items-center gap-1 text-xs mb-2 ${mutedClass}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -887,8 +895,8 @@ export function EmptyState({
   const defaultLabels = { listings: 'لا توجد عروض متاحة', news: 'لا توجد أخبار', gallery: 'لا توجد صور' }
 
   return (
-    <div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-center opacity-50">
-      <div style={{ color: accent ?? '#94a3b8' }}>{icons[icon]}</div>
+    <div className="col-span-full flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/10 bg-white/[0.03] py-16 text-center">
+      <div className="rounded-3xl p-5" style={{ color: accent ?? '#94a3b8', backgroundColor: `${accent ?? '#94a3b8'}14` }}>{icons[icon]}</div>
       <p className="text-sm font-medium" style={{ color: accent ?? '#94a3b8' }}>
         {label ?? defaultLabels[icon]}
       </p>

@@ -89,9 +89,17 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             radial-gradient(ellipse 60% 50% at 80% 70%, ${primary}22 0%, transparent 55%),
             ${pageTheme.bg};
         }
+        .theme-shell {
+          background-image:
+            radial-gradient(circle at 15% 5%, ${primary}1f 0%, transparent 30%),
+            radial-gradient(circle at 90% 28%, ${primary}14 0%, transparent 28%);
+        }
+        .theme-pill {
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.18);
+        }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
+      <div className="theme-shell min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
 
         {/* Header */}
         <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
@@ -150,13 +158,22 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
-            <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className={`border rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-md' : ''}`}
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}33, 0 25px 50px rgba(0,0,0,0.6)` }}>
+            <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto w-full">
+              <div className={`border rounded-[2rem] px-5 sm:px-10 py-8 sm:py-12 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-xl' : ''}`}
+                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}33, 0 30px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,.08)` }}>
+                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/75 theme-pill">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }} />
+                  {L.listingsHeadingAlt}
+                </div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg" priority />}
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary === '#2563eb' ? '#93c5fd' : primary }}>{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-lg text-white/75 mb-6">{pageConfig.hero_headline}</p>}
+                {whatsapp && (
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:opacity-95" style={{ backgroundColor: primary, boxShadow: `0 18px 38px ${primary}44` }}>
+                    {pageConfig.hero_cta_text || L.contactHeading}
+                  </a>
+                )}
               </div>
             </div>
             {/* Scroll indicator */}
@@ -172,8 +189,11 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
+            <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: primary }}>{published.length} {L.listingsHeadingAlt}</p>
+                <h2 className="text-3xl sm:text-4xl font-extrabold" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
+              </div>
               <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
             </div>
 
@@ -181,8 +201,8 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
                   placeholder="ابحث باسم العرض أو الموقع"
-                  className="w-full border px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                  style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius }} />
+                  className="w-full border px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-500"
+                  style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg, boxShadow: `0 0 0 0 ${primary}00` }} />
               </div>
             )}
             {pageConfig.show_listing_filters && (
@@ -263,7 +283,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
-            <div className="max-w-xl mx-auto text-center">
+            <div className="max-w-3xl mx-auto rounded-[2rem] border p-6 sm:p-9 text-center" style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, boxShadow: pageTheme.cardShadow }}>
               <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
               <p className={`text-sm mb-8 ${mutedClass}`}>{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">

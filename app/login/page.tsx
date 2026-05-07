@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader as Loader2, Sparkles, ArrowRight, Eye, EyeOff, Globe, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, Eye, EyeOff, Globe, AlertTriangle } from 'lucide-react';
 
 type Lang = 'ar' | 'en';
 
@@ -164,7 +164,7 @@ export default function LoginPage() {
             {/* Brand */}
             <div className="flex flex-col items-center gap-2 pb-1">
               <img src="/logo.png" alt="Wa9l" style={{width:'64px',height:'64px',objectFit:'contain'}} />
-              <h1 className="text-4xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+              <h1 className="text-4xl font-extrabold leading-none bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent tracking-tight">
                 {t.brandName}
               </h1>
               <p className="text-slate-300/80 text-sm">{t.brandSubtitle}</p>
@@ -224,7 +224,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-indigo-900/45 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-slate-800 to-cyan-700 hover:from-slate-700 hover:to-cyan-600 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-cyan-900/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
                   {t.login}

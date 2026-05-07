@@ -87,6 +87,16 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         }
         .mid-orb-1 { position:absolute; top:-15%; left:-10%; width:55vw; height:55vw; max-width:520px; max-height:520px; border-radius:50%; background:radial-gradient(circle, ${primary}1a 0%, transparent 70%); pointer-events:none; }
         .mid-orb-2 { position:absolute; bottom:-10%; right:-8%; width:45vw; height:45vw; max-width:420px; max-height:420px; border-radius:50%; background:radial-gradient(circle, ${primary}14 0%, transparent 70%); pointer-events:none; }
+        .mid-grid {
+          background-image:
+            linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+          background-size: 42px 42px;
+          mask-image: linear-gradient(to bottom, black, transparent 82%);
+        }
+        .mid-panel {
+          box-shadow: 0 30px 90px rgba(0,0,0,.55), 0 0 0 1px ${primary}33, inset 0 1px 0 rgba(255,255,255,.08);
+        }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
@@ -143,22 +153,32 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[48vh] sm:min-h-[52vh] lg:min-h-[58vh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24 overflow-hidden"
+          <section data-section="hero" className="relative min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24 overflow-hidden"
             style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="mid-orb-1" />
             <div className="mid-orb-2" />
+            <div className="mid-grid absolute inset-0 opacity-70" />
             {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className="border rounded-2xl px-4 sm:px-6 py-6 sm:py-8 shadow-2xl mx-auto backdrop-blur-md mid-glow"
+              <div className="mid-panel border rounded-[2rem] px-5 sm:px-8 py-7 sm:py-10 mx-auto backdrop-blur-xl"
                 style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder }}>
+                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold text-white/70">
+                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+                  {L.listingsHeadingAlt}
+                </div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-lg" priority />}
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight text-white">{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary }}>{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-lg text-white/70 mb-6">{pageConfig.hero_headline}</p>}
+                {whatsapp && (
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:opacity-95" style={{ backgroundColor: primary, boxShadow: `0 18px 42px ${primary}44` }}>
+                    {pageConfig.hero_cta_text || L.contactHeading}
+                  </a>
+                )}
               </div>
             </div>
             <div className="relative z-10 mt-6 flex flex-col items-center gap-1 opacity-50">
@@ -173,9 +193,15 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">{THEME_LABELS[lang].listingsHeading}</h2>
+            <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-10 rounded-full" style={{ backgroundColor: primary, boxShadow: `0 0 26px ${primary}` }} />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.25em]" style={{ color: primary }}>{published.length} {L.listingsHeadingAlt}</p>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white">{THEME_LABELS[lang].listingsHeading}</h2>
+                </div>
+              </div>
+              <div className="h-px flex-1" style={{ background: `linear-gradient(to left, ${primary}66, transparent)` }} />
             </div>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -295,7 +321,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
-              <div className="bg-slate-900/50 rounded-lg p-6 text-sm text-slate-300 border border-slate-700">
+              <div className="rounded-2xl p-6 text-sm text-slate-300 border" style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, boxShadow: pageTheme.cardShadow }}>
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
             </div>

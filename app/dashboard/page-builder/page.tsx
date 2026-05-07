@@ -19,6 +19,7 @@ import {
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal, LogOut,
+  Sparkles, Eye, Smartphone, Monitor, Wand2, Zap,
 } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -547,29 +548,34 @@ function SortableSectionRow({
       ref={setNodeRef}
       style={style}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
-      className="px-4 py-2.5 flex items-center justify-between gap-3 border-b last:border-b-0 border-slate-800/60"
+      className={`px-4 py-3 flex items-center justify-between gap-3 border-b last:border-b-0 border-white/[0.05] transition-colors ${isDragging ? 'bg-indigo-500/10' : 'hover:bg-white/[0.025]'}`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           aria-label={t.reorderSection}
-          className="text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing"
+          className="text-slate-600 hover:text-slate-300 cursor-grab active:cursor-grabbing transition-colors p-0.5"
           {...attributes}
           {...listeners}
         >
-          ☰
+          <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+            <circle cx="5" cy="3.5" r="1.3"/><circle cx="11" cy="3.5" r="1.3"/>
+            <circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/>
+            <circle cx="5" cy="12.5" r="1.3"/><circle cx="11" cy="12.5" r="1.3"/>
+          </svg>
         </button>
-        <span className="w-5 text-center">{SECTION_ORDER_LABELS[sectionKey].icon}</span>
-        <span className="text-sm text-slate-200">{t[SECTION_LABEL_KEY[sectionKey]]}</span>
+        <span className="text-base select-none">{SECTION_ORDER_LABELS[sectionKey].icon}</span>
+        <span className={`text-sm font-medium ${enabled ? 'text-slate-200' : 'text-slate-500'}`}>{t[SECTION_LABEL_KEY[sectionKey]]}</span>
       </div>
 
       <button
         type="button"
         onClick={() => onToggle(sectionKey)}
-        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${enabled ? 'bg-blue-600' : 'bg-slate-700'}`}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-all duration-200 ${enabled ? 'bg-indigo-600' : 'bg-slate-700/80'}`}
+        style={enabled ? {boxShadow:'0 0 10px rgba(99,102,241,0.45)'} : {}}
         aria-pressed={enabled}
       >
-        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${enabled ? 'translate-x-4' : 'translate-x-1'}`} />
+        <span className={`inline-block rounded-full bg-white shadow-sm transition-transform duration-200 ${enabled ? 'translate-x-5' : 'translate-x-1'}`} style={{width:'18px',height:'18px'}} />
       </button>
     </div>
   );
@@ -1197,11 +1203,46 @@ export default function PageBuilderPage() {
         @keyframes wa9l-orb-a { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(50px,-40px) scale(1.08)} 66%{transform:translate(-30px,25px) scale(0.95)} }
         @keyframes wa9l-orb-b { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-60px,30px) scale(1.06)} 66%{transform:translate(35px,-25px) scale(0.97)} }
         @keyframes wa9l-orb-c { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(25px,40px) scale(1.04)} }
+        @keyframes wa9l-shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+        @keyframes wa9l-pulse-ring { 0%{transform:scale(.95);opacity:.6} 50%{opacity:.25} 100%{transform:scale(1.4);opacity:0} }
+        @keyframes wa9l-fade-up { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+        .wa9l-fade { animation: wa9l-fade-up .35s ease-out both; }
         .wa9l-glass {
-          background: rgba(6,6,20,0.52);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: rgba(5,5,18,0.64);
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          border: 1px solid rgba(255,255,255,0.09);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 4px 28px rgba(0,0,0,0.28);
+        }
+        .wa9l-glass-strong {
+          background: linear-gradient(135deg, rgba(13,13,32,0.85), rgba(8,8,22,0.78));
+          backdrop-filter: blur(28px);
+          -webkit-backdrop-filter: blur(28px);
+          border: 1px solid rgba(255,255,255,0.10);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 12px 40px rgba(0,0,0,0.45), 0 0 60px rgba(99,102,241,0.05);
+        }
+        .wa9l-tab-trigger { position: relative; overflow: hidden; }
+        .wa9l-tab-trigger[data-state="active"]::before {
+          content:''; position:absolute; inset:0;
+          background: radial-gradient(circle at 50% 120%, rgba(255,255,255,0.18), transparent 60%);
+          pointer-events:none;
+        }
+        .wa9l-phone-frame {
+          background: linear-gradient(180deg, #1a1a2e, #0a0a18);
+          border-radius: 38px;
+          padding: 12px;
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 30px 60px rgba(0,0,0,0.6), 0 0 100px rgba(99,102,241,0.12);
+        }
+        .wa9l-pulse-dot { position: relative; }
+        .wa9l-pulse-dot::after {
+          content:''; position:absolute; inset:-4px; border-radius:9999px;
+          background: currentColor; opacity:.5;
+          animation: wa9l-pulse-ring 1.8s ease-out infinite;
+        }
+        .wa9l-card {
+          background: linear-gradient(160deg, rgba(15,23,42,0.82) 0%, rgba(3,7,18,0.76) 100%);
+          border: 1px solid rgba(148,163,184,0.1);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.28);
         }
         .wa9l-gradient-text {
           background: linear-gradient(135deg,#818cf8 0%,#a78bfa 50%,#c4b5fd 100%);
@@ -1209,6 +1250,22 @@ export default function PageBuilderPage() {
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
+        .wa9l-field {
+          background: rgba(12,14,30,0.80) !important;
+          border-color: rgba(100,116,139,0.6) !important;
+          transition: border-color .18s ease, box-shadow .18s ease;
+        }
+        .wa9l-field:focus,.wa9l-field:focus-visible {
+          border-color: rgba(129,140,248,0.85) !important;
+          box-shadow: 0 0 0 3px rgba(99,102,241,0.18) !important;
+          outline: none;
+        }
+        /* thin scrollbar for editor panel */
+        .pb-scroll { scrollbar-width: thin; scrollbar-color: rgba(71,85,105,0.5) transparent; }
+        .pb-scroll::-webkit-scrollbar { width: 3px; }
+        .pb-scroll::-webkit-scrollbar-track { background: transparent; }
+        .pb-scroll::-webkit-scrollbar-thumb { background: rgba(71,85,105,0.55); border-radius: 99px; }
+        .pb-scroll::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.75); }
       `}</style>
       {/* ambient orbs */}
       <div aria-hidden="true" style={{position:'fixed',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:0}}>
@@ -1254,72 +1311,138 @@ export default function PageBuilderPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="mb-1 relative z-10">
-        <h1 className="text-2xl font-bold wa9l-gradient-text">{t.pageBuilderTitle}</h1>
-        <p className="text-sm text-slate-400">{t.pageBuilderSub}</p>
-      </div>
+      {(() => {
+        const completionDone = profileCompletionItems.filter(i => i.done).length;
+        const completionTotal = profileCompletionItems.length;
+        const completionPct = Math.round((completionDone / completionTotal) * 100);
+        const enabledSections = SECTION_ORDER_KEYS.filter(k => sections[k]).length;
+        const publishedListings = listings.filter(l => l.published !== false).length;
+        const ringSize = 56;
+        const ringStroke = 5;
+        const ringR = (ringSize - ringStroke) / 2;
+        const ringC = 2 * Math.PI * ringR;
+        const ringOffset = ringC - (completionPct / 100) * ringC;
+        return (
+          <div className="mb-1 relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between wa9l-fade">
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0" style={{ width: ringSize, height: ringSize }}>
+                <svg width={ringSize} height={ringSize} className="-rotate-90">
+                  <circle cx={ringSize/2} cy={ringSize/2} r={ringR} stroke="rgba(255,255,255,0.08)" strokeWidth={ringStroke} fill="none" />
+                  <circle
+                    cx={ringSize/2} cy={ringSize/2} r={ringR}
+                    stroke="url(#wa9l-ring-grad)" strokeWidth={ringStroke}
+                    strokeLinecap="round" fill="none"
+                    strokeDasharray={ringC} strokeDashoffset={ringOffset}
+                    style={{ transition: 'stroke-dashoffset .6s ease' }}
+                  />
+                  <defs>
+                    <linearGradient id="wa9l-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#818cf8" />
+                      <stop offset="100%" stopColor="#c4b5fd" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">{completionPct}%</div>
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/25 bg-gradient-to-r from-indigo-500/15 to-violet-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-200 shadow-lg shadow-indigo-950/20">
+                  <Sparkles className="h-3 w-3" />
+                  Studio Mode
+                </div>
+                <h1 className="mt-1.5 text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
+                <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <Building2 className="h-3.5 w-3.5 text-indigo-300" />
+                <div className="leading-tight">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{t.tabListings}</div>
+                  <div className="text-sm font-bold text-white">{publishedListings}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <Layout className="h-3.5 w-3.5 text-violet-300" />
+                <div className="leading-tight">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{lang === 'ar' ? 'أقسام مفعّلة' : 'Sections'}</div>
+                  <div className="text-sm font-bold text-white">{enabledSections}/{SECTION_ORDER_KEYS.length}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <Palette className="h-3.5 w-3.5" style={{ color: primaryColor }} />
+                <div className="leading-tight">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{lang === 'ar' ? 'التصميم' : 'Theme'}</div>
+                  <div className="text-sm font-bold text-white capitalize">{selectedTheme}</div>
+                </div>
+                <span className="ml-1 h-2.5 w-2.5 rounded-full ring-2 ring-white/10" style={{ backgroundColor: primaryColor, boxShadow: `0 0 14px ${primaryColor}` }} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Top bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 wa9l-glass rounded-2xl p-4 md:p-5 relative z-10">
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-0.5">{t.publicPageUrl}</p>
-          <p className="text-blue-400 font-mono text-sm truncate">{publicUrl}</p>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 wa9l-glass rounded-3xl px-5 py-4 relative z-10">
+        <div className="min-w-0 flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-black/25 border border-blue-400/15 rounded-2xl px-3 py-2 min-w-0 max-w-xs sm:max-w-md">
+            <Globe className="h-3.5 w-3.5 shrink-0 text-blue-300" />
+            <p className="text-blue-200 font-mono text-xs truncate">{publicUrl}</p>
+          </div>
           {shouldShowInvalidUrlWarning && (
-            <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {t.invalidBaseUrl}
+            <p className="text-xs text-red-400 flex items-center gap-1 shrink-0">
+              <AlertCircle className="h-3 w-3" />{t.invalidBaseUrl}
             </p>
           )}
           {shouldShowMissingUrlInfo && (
-            <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {t.missingBaseUrl}
+            <p className="text-xs text-amber-400 flex items-center gap-1 shrink-0">
+              <AlertCircle className="h-3 w-3" />{t.missingBaseUrl}
             </p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           {dirty && saveStatus !== 'saving' && (
-            <span className="text-xs text-amber-400 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-              حفظ تلقائي خلال ثوانٍ...
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-300 bg-amber-400/10 border border-amber-400/20 rounded-full px-3 py-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              {lang === 'ar' ? 'حفظ تلقائي...' : 'Saving soon...'}
             </span>
           )}
           {saveStatus === 'saving' && (
-            <span className="text-xs text-slate-400 flex items-center gap-1.5">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              {t.saving}
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-800/60 border border-slate-700/40 rounded-full px-3 py-1">
+              <Loader2 className="h-3 w-3 animate-spin" />{t.saving}
             </span>
           )}
           {saveStatus === 'saved' && !dirty && (
-            <span className="text-xs text-green-400 flex items-center gap-1.5">
-              <Check className="h-3 w-3" />
-              {t.saved}
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-3 py-1">
+              <Check className="h-3 w-3" />{t.saved}
             </span>
           )}
-          <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
-            <QrCode className="h-3.5 w-3.5" /> QR
-          </Button>
-          <Button size="sm" variant="ghost" onClick={copyLink} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
-            {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? t.copied : t.copyLink}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => window.open(publicPath, '_blank', 'noopener,noreferrer')} className="text-slate-300 hover:text-white hover:bg-slate-800 gap-1.5">
-            <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="text-slate-300 hover:text-red-300 hover:bg-red-500/10 gap-1.5">
-            <LogOut className="h-3.5 w-3.5" /> {t.signOut}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
+              <QrCode className="h-3.5 w-3.5" /> QR
+            </Button>
+            <Button size="sm" variant="ghost" onClick={copyLink} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
+              {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? t.copied : t.copyLink}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => window.open(publicPath, '_blank', 'noopener,noreferrer')} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400/20 gap-1.5 text-xs transition-all">
+              <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="h-8 px-2.5 rounded-xl text-slate-500 hover:text-red-300 hover:bg-red-500/10 transition-all">
+              <LogOut className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Main artistic square workspace */}
-      <div className="relative z-10 w-full rounded-3xl overflow-hidden xl:min-h-[820px] p-3 md:p-4 lg:p-5" style={{background:'rgba(4,4,16,0.60)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',border:'1px solid rgba(255,255,255,0.07)',boxShadow:'0 0 80px rgba(99,102,241,0.08),0 0 120px rgba(139,92,246,0.06)' }}>
+      <div className="relative z-10 w-full rounded-[2rem] overflow-hidden xl:min-h-[840px] p-3 md:p-4 lg:p-5" style={{background:'linear-gradient(145deg,rgba(5,5,20,0.78),rgba(12,16,36,0.68))',backdropFilter:'blur(28px)',WebkitBackdropFilter:'blur(28px)',border:'1px solid rgba(255,255,255,0.08)',boxShadow:'0 0 60px rgba(99,102,241,0.10),0 0 120px rgba(139,92,246,0.07),inset 0 1px 0 rgba(255,255,255,0.05)' }}>
         <div className="grid h-full xl:grid-cols-[minmax(500px,1fr)_minmax(620px,1.2fr)] gap-4 lg:gap-5 items-stretch">
 
         {/* Editor panel */}
-        <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-1.5">
+        <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-2 pb-scroll">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 wa9l-glass rounded-xl p-1.5 h-auto gap-1">
+            <TabsList className="sticky top-0 z-30 w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 wa9l-glass-strong rounded-2xl p-1.5 h-auto gap-1">
               {([
                 { value: 'control', icon: SlidersHorizontal, label: t.tabControl },
                 { value: 'design',   icon: Layout,   label: t.tabDesign   },
@@ -1330,9 +1453,9 @@ export default function PageBuilderPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="flex items-center justify-center gap-1.5 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 text-slate-400 hover:text-white rounded-lg py-2 transition-all"
+                  className="wa9l-tab-trigger flex items-center justify-center gap-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-600 data-[state=active]:via-violet-600 data-[state=active]:to-fuchsia-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/40 data-[state=active]:scale-[1.02] text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-xl py-2.5 px-3 transition-all duration-200"
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{label}</span>
                 </TabsTrigger>
               ))}
@@ -1340,7 +1463,7 @@ export default function PageBuilderPage() {
 
             {/* ── CONTROL: unified page control panel ── */}
             <TabsContent value="control" className="mt-4 space-y-4">
-              <div className="wa9l-glass rounded-xl overflow-hidden">
+              <div className="wa9l-card rounded-2xl overflow-hidden">
                 <div className="px-4 pt-4 pb-3 border-b border-white/[0.06] space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-white">{t.pageControlTitle}</p>
@@ -1364,8 +1487,8 @@ export default function PageBuilderPage() {
                 </DndContext>
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.pageSettingsTitle}
                 </p>
 
@@ -1406,7 +1529,7 @@ export default function PageBuilderPage() {
 
             {/* ── DESIGN: themes + visual brand ── */}
             <TabsContent value="design" className="mt-4 space-y-4">
-              <div className="wa9l-glass rounded-xl p-4 xl:p-5">
+              <div className="wa9l-card rounded-2xl p-4 xl:p-5">
                 <p className="text-sm font-bold text-white mb-1">{t.chooseDesign}</p>
                 <p className="text-slate-400 text-sm mb-4">{t.chooseDesignSub}</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -1415,7 +1538,7 @@ export default function PageBuilderPage() {
                       key={theme.id}
                       onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
                       className={`relative rounded-xl overflow-hidden cursor-pointer transition-all border-2 ${
-                        selectedTheme === theme.id ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.02]' : 'border-slate-600 hover:border-slate-400 hover:scale-[1.01]'
+                        selectedTheme === theme.id ? 'border-indigo-400 shadow-xl shadow-indigo-500/25 scale-[1.02] ring-1 ring-indigo-400/30' : 'border-slate-700/60 hover:border-slate-500 hover:scale-[1.01]'
                       }`}
                       aria-label={`Select theme ${theme.label}`}
                       aria-pressed={selectedTheme === theme.id}
@@ -1481,7 +1604,7 @@ export default function PageBuilderPage() {
                       </div>
 
                       {selectedTheme === theme.id && (
-                        <div className="absolute top-2 left-2 bg-blue-500 rounded-full p-0.5 shadow-lg">
+                        <div className="absolute top-2 left-2 bg-indigo-500 rounded-full p-1 shadow-lg shadow-indigo-500/40">
                           <CheckCircle2 className="h-3 w-3 text-white" />
                         </div>
                       )}
@@ -1490,8 +1613,8 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.brandColor}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-1">
@@ -1501,7 +1624,7 @@ export default function PageBuilderPage() {
                       onClick={() => { setPrimaryColor(c); markDirty(); }}
                       title={c}
                       aria-label={`Choose brand color ${c}`}
-                      className="h-7 w-7 rounded-full border-2 transition-all hover:scale-110"
+                      className="h-8 w-8 rounded-full border-2 transition-all hover:scale-110 hover:shadow-lg"
                       style={{
                         backgroundColor: c,
                         borderColor: primaryColor === c ? 'white' : 'transparent',
@@ -1524,14 +1647,14 @@ export default function PageBuilderPage() {
                     value={primaryColor}
                     onChange={(e) => { setPrimaryColor(e.target.value); markDirty(); }}
                     maxLength={7}
-                    className="bg-slate-800 border-slate-700 text-white w-28 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="wa9l-field text-white w-28 font-mono text-sm"
                   />
                   <span className="text-xs text-slate-500">{t.brandColorHint}</span>
                 </div>
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.logoLabel}
                 </p>
                 <ImageUploader
@@ -1542,8 +1665,8 @@ export default function PageBuilderPage() {
                 />
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.coverLabel}
                 </p>
                 <ImageUploader
@@ -1558,20 +1681,20 @@ export default function PageBuilderPage() {
             {/* ── IDENTITY: name + biz type + tagline + bio + licences ── */}
             <TabsContent value="identity" className="mt-4 space-y-4">
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.businessNameLabel}
                 </p>
                 <Input
                   value={agencyName}
                   onChange={(e) => { setAgencyName(e.target.value); markDirty(); }}
                   placeholder={t.businessNamePlaceholder}
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="wa9l-field text-white placeholder:text-slate-600"
                 />
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.businessTypeLabel}
                 </p>
                 <p className="text-xs text-slate-500">{t.businessTypeSub}</p>
@@ -1607,8 +1730,8 @@ export default function PageBuilderPage() {
                 </select>
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.pageContentLabel}
                 </p>
 
@@ -1619,7 +1742,7 @@ export default function PageBuilderPage() {
                     onChange={(e) => updatePageConfig({ hero_headline: e.target.value })}
                     placeholder={t.heroHeadlinePlaceholder}
                     maxLength={200}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="wa9l-field text-white placeholder:text-slate-600"
                   />
                   <p className="text-[11px] text-slate-500 text-left">{(pageConfig.hero_headline || '').length}/200</p>
                 </div>
@@ -1631,7 +1754,7 @@ export default function PageBuilderPage() {
                     onChange={(e) => updateProfile({ tagline: e.target.value })}
                     placeholder={t.taglinePlaceholder}
                     maxLength={200}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="wa9l-field text-white placeholder:text-slate-600"
                   />
                   <p className="text-[11px] text-slate-500 text-left">{(profile.tagline || '').length}/200</p>
                 </div>
@@ -1644,7 +1767,7 @@ export default function PageBuilderPage() {
                     placeholder={t.bioPlaceholder}
                     rows={6}
                     maxLength={2000}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                    className="wa9l-field text-white placeholder:text-slate-600 resize-none"
                   />
                   <p className="text-[11px] text-slate-500 text-left">{(profile.bio || '').length}/2000</p>
                 </div>
@@ -1678,7 +1801,7 @@ export default function PageBuilderPage() {
                             updateProfile({ licence_numbers: updated });
                           }}
                           placeholder={t.licenceTypePlaceholder}
-                          className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          className="wa9l-field text-white text-xs placeholder:text-slate-600"
                         />
                         <Input
                           value={entry.number}
@@ -1688,7 +1811,7 @@ export default function PageBuilderPage() {
                             updateProfile({ licence_numbers: updated });
                           }}
                           placeholder={t.licenceNumPlaceholder}
-                          className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          className="wa9l-field text-white placeholder:text-slate-600"
                         />
                       </div>
                       <button
@@ -1706,8 +1829,8 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.seoLabel}
                 </p>
                 <p className="text-xs text-slate-500">{t.seoSub}</p>
@@ -1717,7 +1840,7 @@ export default function PageBuilderPage() {
                   <Input
                     value={pageConfig.seo_title || ''}
                     onChange={(e) => updatePageConfig({ seo_title: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    className="wa9l-field text-white placeholder:text-slate-600"
                     placeholder={`${agencyName || t.businessNameFallback}`}
                     maxLength={120}
                   />
@@ -1729,7 +1852,7 @@ export default function PageBuilderPage() {
                   <Textarea
                     value={pageConfig.seo_description || ''}
                     onChange={(e) => updatePageConfig({ seo_description: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
+                    className="wa9l-field text-white placeholder:text-slate-600 resize-none"
                     placeholder={t.seoDescPlaceholder}
                     rows={3}
                     maxLength={160}
@@ -1762,7 +1885,7 @@ export default function PageBuilderPage() {
 
             {/* POSTS */}
             <TabsContent value="posts" className="mt-4 space-y-4">
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold text-white">{t.manageListings}</p>
@@ -1778,52 +1901,52 @@ export default function PageBuilderPage() {
                 </div>
 
                 {showListingForm && (
-                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+                  <div className="wa9l-card rounded-2xl p-4 space-y-4">
                     <p className="text-sm font-medium text-white">{editingListing ? t.editListingTitle : t.newListingTitle}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{isCarDealer ? t.fieldMake : t.fieldCategory}</Label>
-                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder={isCarDealer ? t.categoryPlaceholderCar : t.categoryPlaceholder} />
+                        <Input value={listingForm.property_type} onChange={(e) => setListingForm({ ...listingForm, property_type: e.target.value })} className="wa9l-field text-white text-sm" placeholder={isCarDealer ? t.categoryPlaceholderCar : t.categoryPlaceholder} />
                       </div>
                     <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldName}</Label>
                         <Input
                           value={listingForm.title}
                           onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
-                          className="bg-slate-900 border-slate-700 text-white text-sm"
+                          className="wa9l-field text-white text-sm"
                           placeholder={t.fieldName}
                         />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldPrice}</Label>
-                        <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="1000000" />
+                        <Input type="number" value={listingForm.price} onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })} className="wa9l-field text-white text-sm" placeholder="1000000" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldLocation}</Label>
-                        <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="Dubai Marina" />
+                        <Input value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} className="wa9l-field text-white text-sm" placeholder="Dubai Marina" />
                       </div>
                       {usesRealEstateFields && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldBedrooms}</Label>
-                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="4" />
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="4" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldBathrooms}</Label>
-                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="3" />
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="3" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldArea}</Label>
-                        <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="450" />
+                        <Input type="number" value={listingForm.area_sqm} onChange={(e) => setListingForm({ ...listingForm, area_sqm: e.target.value })} className="wa9l-field text-white text-sm" placeholder="450" />
                       </div>
                       </>)}
                       {isCarDealer && (<>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldYear}</Label>
-                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="2024" />
+                        <Input type="number" value={listingForm.bedrooms} onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="2024" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-slate-400 text-xs">{t.fieldMileage}</Label>
-                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="bg-slate-900 border-slate-700 text-white text-sm" placeholder="85000" />
+                        <Input type="number" value={listingForm.bathrooms} onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })} className="wa9l-field text-white text-sm" placeholder="85000" />
                       </div>
                       </>)}
                     </div>
@@ -1962,8 +2085,8 @@ export default function PageBuilderPage() {
 
             {/* ── CONNECT: contact + social + SEO ── */}
             <TabsContent value="connect" className="mt-4 space-y-4">
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.contactTitle}
                 </p>
 
@@ -2018,7 +2141,7 @@ export default function PageBuilderPage() {
                           updateProfile({ extra_phones: updated });
                         }}
                         placeholder="+966 50 000 0000"
-                        className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 pr-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="wa9l-field text-white placeholder:text-slate-600 pl-9 pr-9"
                       />
                       <button
                         type="button"
@@ -2036,8 +2159,8 @@ export default function PageBuilderPage() {
               </div>
 
               {/* Working hours */}
-              <div className="wa9l-glass rounded-xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.workingHoursTitle}
                 </p>
                 <div className="flex items-center justify-between">
@@ -2062,11 +2185,12 @@ export default function PageBuilderPage() {
                       <button
                         type="button"
                         onClick={() => setDay({ enabled: !h.enabled })}
-                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ h.enabled ? 'bg-blue-600' : 'bg-slate-700' }`}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-all duration-200 ${ h.enabled ? 'bg-indigo-600' : 'bg-slate-700/80' }`}
+                        style={h.enabled ? {boxShadow:'0 0 8px rgba(99,102,241,0.4)'} : {}}
                         aria-label={`Toggle working hours for ${DAY_LABELS[day]}`}
                         aria-pressed={h.enabled}
                       >
-                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${ h.enabled ? 'translate-x-4' : 'translate-x-1' }`} />
+                        <span className={`inline-block rounded-full bg-white shadow-sm transition-transform duration-200 ${ h.enabled ? 'translate-x-5' : 'translate-x-1' }`} style={{width:'18px',height:'18px'}} />
                       </button>
                       <span className={`w-16 text-sm ${h.enabled ? 'text-white' : 'text-slate-500'}`}>{DAY_LABELS[day]}</span>
                       {h.enabled ? (
@@ -2075,14 +2199,14 @@ export default function PageBuilderPage() {
                             type="time"
                             value={h.open}
                             onChange={(e) => setDay({ open: e.target.value })}
-                            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-md px-2 py-1 text-xs"
+                            className="flex-1 wa9l-field text-white rounded-md px-2 py-1 text-xs"
                           />
                           <span className="text-slate-500 text-xs">–</span>
                           <input
                             type="time"
                             value={h.close}
                             onChange={(e) => setDay({ close: e.target.value })}
-                            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-md px-2 py-1 text-xs"
+                            className="flex-1 wa9l-field text-white rounded-md px-2 py-1 text-xs"
                           />
                         </div>
                       ) : (
@@ -2092,8 +2216,8 @@ export default function PageBuilderPage() {
                   );
                 })}
               </div>
-              <div className="wa9l-glass rounded-xl p-5 space-y-4">
-                <p className="flex items-center gap-2 text-sm font-medium text-white">
+              <div className="wa9l-card rounded-2xl p-5 space-y-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
                   {t.socialTitle}
                 </p>
                 <p className="text-xs text-slate-500">{t.socialSub}</p>
@@ -2138,7 +2262,7 @@ export default function PageBuilderPage() {
                       value={profile.social_links?.snapchat || ''}
                       onChange={(e) => updateSocial('snapchat', e.target.value)}
                       placeholder="username"
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
                   </div>
                 </div>
@@ -2156,7 +2280,7 @@ export default function PageBuilderPage() {
                       value={profile.social_links?.tiktok || ''}
                       onChange={(e) => updateSocial('tiktok', e.target.value)}
                       placeholder="username"
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
                   </div>
                 </div>
@@ -2174,7 +2298,7 @@ export default function PageBuilderPage() {
                       value={profile.social_links?.telegram || ''}
                       onChange={(e) => updateSocial('telegram', e.target.value)}
                       placeholder="username"
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
                   </div>
                 </div>
@@ -2192,7 +2316,7 @@ export default function PageBuilderPage() {
                       value={profile.social_links?.discord || ''}
                       onChange={(e) => updateSocial('discord', e.target.value)}
                       placeholder="username"
-                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pl-9 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="wa9l-field text-white placeholder:text-slate-600 pl-9"
                     />
                   </div>
                 </div>
@@ -2201,26 +2325,25 @@ export default function PageBuilderPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Save button + status + completion checklist */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                onClick={handleSave}
-                disabled={saveStatus === 'saving'}
-                className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-6 gap-2 disabled:opacity-60 shadow-lg shadow-indigo-500/20"
-              >
-                {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-                {saveStatus === 'saving' ? t.saving : t.saveNow}
-              </Button>
-
+          {/* Save button + status */}
+          <div className="wa9l-card rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+            <Button
+              onClick={handleSave}
+              disabled={saveStatus === 'saving'}
+              className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:from-indigo-500 hover:via-violet-500 hover:to-purple-500 text-white px-7 gap-2 disabled:opacity-50 shadow-lg shadow-indigo-500/30 font-semibold rounded-xl transition-all"
+            >
+              {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saveStatus === 'saving' ? t.saving : t.saveNow}
+            </Button>
+            <div className="flex items-center gap-3">
               {saveStatus === 'saved' && (
-                <span className="flex items-center gap-1.5 text-sm text-green-400">
-                  <CheckCircle2 className="h-4 w-4" /> {t.autoSaved}
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-3 py-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {t.autoSaved}
                 </span>
               )}
               {saveStatus === 'error' && saveError && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300 text-sm max-w-sm">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
                   <span>{saveError}</span>
                 </div>
               )}
@@ -2233,41 +2356,51 @@ export default function PageBuilderPage() {
 
         {/* Live Preview */}
         <div className="min-w-0 relative z-0 xl:col-start-2 xl:row-start-1 xl:h-full">
-          <div className="wa9l-glass rounded-xl overflow-hidden h-full flex flex-col">
+          <div className="wa9l-card rounded-2xl overflow-hidden h-full flex flex-col">
 
-            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t.livePreview}</span>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[10px] text-green-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
-                    {t.live}
-                  </span>
+            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02] shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-green-500/10 text-green-300 ring-1 ring-green-400/20 shrink-0">
+                  <Globe className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-slate-200 uppercase tracking-wider">{t.livePreview}</p>
+                  <p className="max-w-[180px] sm:max-w-[260px] truncate font-mono text-[10px] text-slate-500 leading-tight">{publicPath}</p>
+                </div>
               </div>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-2.5 py-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                {t.live}
+              </span>
             </div>
 
-            <div className="px-3 py-2 flex items-center justify-end gap-2" style={{ backgroundColor: 'rgba(6,6,20,0.55)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {/* Device toggle */}
-              <div className="flex items-center gap-0.5 shrink-0">
+            <div className="px-3 py-2.5 flex items-center justify-between gap-2" style={{ backgroundColor: 'rgba(6,6,20,0.55)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
+              </div>
+              {/* Device segmented toggle */}
+              <div className="inline-flex items-center gap-0.5 rounded-xl bg-black/40 ring-1 ring-white/[0.06] p-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => setPreviewDevice('mobile')}
-                  title="معاينة الجوال"
-                  className={`p-1 rounded transition-colors ${previewDevice === 'mobile' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  title={lang === 'ar' ? 'معاينة الجوال' : 'Mobile preview'}
+                  aria-pressed={previewDevice === 'mobile'}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'mobile' ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                    <path d="M8 16.25a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z" />
-                    <path fillRule="evenodd" d="M4 4a3 3 0 013-3h6a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V4zm4-1.5v.75c0 .414.336.75.75.75h2.5a.75.75 0 00.75-.75V2.5h.25A1.5 1.5 0 0113.5 4v12a1.5 1.5 0 01-1.5 1.5H8A1.5 1.5 0 016.5 16V4A1.5 1.5 0 018 2.5h.25v-.75z" clipRule="evenodd" />
-                  </svg>
+                  <Smartphone className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{lang === 'ar' ? 'جوال' : 'Mobile'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewDevice('desktop')}
-                  title="معاينة سطح المكتب"
-                  className={`p-1 rounded transition-colors ${previewDevice === 'desktop' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  title={lang === 'ar' ? 'معاينة سطح المكتب' : 'Desktop preview'}
+                  aria-pressed={previewDevice === 'desktop'}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'desktop' ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                    <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5zm1.5 0v7.5c0 .414.336.75.75.75h11.5a.75.75 0 00.75-.75v-7.5a.75.75 0 00-.75-.75H4.25a.75.75 0 00-.75.75z" clipRule="evenodd" />
-                  </svg>
+                  <Monitor className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{lang === 'ar' ? 'سطح المكتب' : 'Desktop'}</span>
                 </button>
               </div>
             </div>

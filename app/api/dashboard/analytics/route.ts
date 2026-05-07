@@ -37,12 +37,17 @@ export async function GET(request: NextRequest) {
       labelFormat = 'day'
     }
 
-    const [pageViewsSnap, leadsSnap] = await Promise.all([
+    const [pageViewsSnap, leadsSnap, listingViewsSnap] = await Promise.all([
       adminDb.collection('page_views')
         .where('tenantId', '==', session.tenantId)
         .where('createdAt', '>=', startDate)
         .get(),
       adminDb.collection('leads').where('tenantId', '==', session.tenantId).count().get(),
+      adminDb.collection('page_views')
+        .where('tenantId', '==', session.tenantId)
+        .where('createdAt', '>=', startDate)
+        .select('listingId')
+        .get(),
     ])
 
     const bucketMap: Record<string, number> = {}
@@ -53,6 +58,19 @@ export async function GET(request: NextRequest) {
       bucketMap[k] = (bucketMap[k] ?? 0) + 1
     })
 
+    // ── Per-listing view counts ───────────────────────────
+    const listingViewMap: Record<string, number> = {}
+    listingViewsSnap.docs.forEach(d => {
+      const lid = d.data().listingId
+      if (lid && typeof lid === 'string') {
+        listingViewMap[lid] = (listingViewMap[lid] ?? 0) + 1
+      }
+    })
+    const listingViews = Object.entries(listingViewMap)
+      .map(([listingId, views]) => ({ listingId, views }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 20) // top-20
+
     const pageViews = Object.entries(bucketMap).sort().map(([date, views]) => ({ date, views }))
 
     const totalViewsSnap = await adminDb.collection('page_views')
@@ -62,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     const response = NextResponse.json({
       pageViews,
-      listingViews: [],
+      listingViews,
       totalViews: totalViewsSnap.data().count,
       totalLeads: leadsSnap.data().count,
       period,

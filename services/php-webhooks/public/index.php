@@ -56,50 +56,118 @@ if ($path === '/webhooks/partner' && $method === 'POST') {
 }
 
 if ($path === '/dispatch' && $method === 'POST') {
-    $target = getenv('MAIN_APP_WEBHOOK_TARGET') ?: 'http://host.docker.internal:3000/api/integrations/webhooks';
-    $maxAttempts = (int)(getenv('MAX_DISPATCH_ATTEMPTS') ?: 5);
+    $target        = getenv('MAIN_APP_WEBHOOK_TARGET') ?: 'http://host.docker.internal:3000/api/integrations/webhooks';
+    $maxAttempts   = (int)(getenv('MAX_DISPATCH_ATTEMPTS') ?: 5);
+    $gatewaySecret = (string)(getenv('GATEWAY_DISPATCH_SECRET') ?: '');
+
+    /** Structured log helper — emits JSON lines for log aggregators (Loki, CloudWatch, etc.) */
+    $log = static function (string $level, string $message, array $context = []): void {
+        $line = array_merge([
+            'ts'      => gmdate('c'),
+            'level'   => $level,
+            'service' => 'php-webhook-gateway',
+            'message' => $message,
+        ], $context);
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+        fwrite(STDERR, json_encode($line, JSON_UNESCAPED_UNICODE) . "\n");
+    };
 
     $processed = 0;
+    $succeeded = 0;
+    $deadLettered = 0;
+
     foreach ($store->pending() as $event) {
         $processed++;
-        $attempts = (int)($event['attempts'] ?? 0) + 1;
+        $attempts  = (int)($event['attempts'] ?? 0) + 1;
+        $eventId   = (string)($event['id'] ?? 'unknown');
+
+        // ── Exponential backoff: only re-dispatch if enough time has passed ──
+        // Delay schedule (seconds): 0, 30, 120, 600, 3600
+        $backoffSeconds = [0, 30, 120, 600, 3600];
+        $nextRetryAt    = (int)($event['next_retry_at'] ?? 0);
+        if ($attempts > 1 && time() < $nextRetryAt) {
+            $log('debug', 'Skipping event — backoff not elapsed', [
+                'event_id'     => $eventId,
+                'attempts'     => $attempts - 1,
+                'next_retry_at'=> gmdate('c', $nextRetryAt),
+            ]);
+            continue;
+        }
+
+        $headers = [
+            'Content-Type: application/json',
+        ];
+        if ($gatewaySecret !== '') {
+            $headers[] = 'x-gateway-secret: ' . $gatewaySecret;
+        }
+
+        $postBody = json_encode([
+            'partner'          => $event['partner'] ?? 'unknown',
+            'payload'          => $event['payload'] ?? [],
+            'gateway_event_id' => $event['id'] ?? null,
+            'attempt'          => $attempts,
+        ], JSON_THROW_ON_ERROR);
 
         $ch = curl_init($target);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS => json_encode([
-                'partner' => $event['partner'] ?? 'unknown',
-                'payload' => $event['payload'] ?? [],
-                'gateway_event_id' => $event['id'] ?? null,
-                'attempt' => $attempts,
-            ], JSON_THROW_ON_ERROR),
-            CURLOPT_TIMEOUT => 8,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_POSTFIELDS     => $postBody,
+            CURLOPT_TIMEOUT        => 8,
         ]);
 
         curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $httpCode  = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
         curl_close($ch);
 
         if ($httpCode >= 200 && $httpCode < 300) {
             $store->ack((string)$event['_file']);
+            $succeeded++;
+            $log('info', 'Webhook event dispatched', [
+                'event_id' => $eventId,
+                'attempt'  => $attempts,
+                'http'     => $httpCode,
+            ]);
             continue;
         }
 
+        // Determine if we should dead-letter or re-enqueue
         $event['attempts'] = $attempts;
+        $store->ack((string)$event['_file']);
+
         if ($attempts >= $maxAttempts) {
-            $store->ack((string)$event['_file']);
-            $store->deadLetter($event, $curlError !== '' ? $curlError : ('http_status_' . $httpCode));
+            $reason = $curlError !== '' ? $curlError : ('http_status_' . $httpCode);
+            $store->deadLetter($event, $reason);
+            $deadLettered++;
+            $log('error', 'Webhook event dead-lettered', [
+                'event_id' => $eventId,
+                'attempts' => $attempts,
+                'reason'   => $reason,
+            ]);
             continue;
         }
 
-        $store->ack((string)$event['_file']);
+        // Calculate next retry timestamp using exponential backoff
+        $delaySecs           = $backoffSeconds[min($attempts, count($backoffSeconds) - 1)];
+        $event['next_retry_at'] = time() + $delaySecs;
         $store->enqueue($event);
+        $log('warn', 'Webhook event re-queued with backoff', [
+            'event_id'       => $eventId,
+            'attempt'        => $attempts,
+            'http'           => $httpCode,
+            'retry_in_secs'  => $delaySecs,
+            'next_retry_at'  => gmdate('c', $event['next_retry_at']),
+        ]);
     }
 
-    send_json(200, ['processed' => $processed]);
+    send_json(200, [
+        'processed'    => $processed,
+        'succeeded'    => $succeeded,
+        'dead_lettered'=> $deadLettered,
+        'requeued'     => $processed - $succeeded - $deadLettered,
+    ]);
 }
 
 send_json(404, ['error' => 'Not found']);
