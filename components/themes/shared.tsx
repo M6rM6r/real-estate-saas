@@ -658,9 +658,9 @@ export function WorkingHours({ hours, textClass = 'text-gray-400', lang = 'ar' }
         const h = hours[day]
         if (!h) return null
         return (
-          <div key={day} className={`flex justify-between text-xs ${textClass}`}>
-            <span>{dayLabels[day] ?? day}</span>
-            <span>{h.enabled ? `${h.open} – ${h.close}` : closedLabel}</span>
+          <div key={day} className={`flex justify-between text-xs ${h.enabled ? textClass : ''}`} style={h.enabled ? undefined : { borderInlineStart: '2px solid rgba(248,113,113,0.5)', paddingInlineStart: '6px' }}>
+            <span style={h.enabled ? undefined : { textDecoration: 'line-through', color: 'rgba(248,113,113,0.6)' }}>{dayLabels[day] ?? day}</span>
+            <span style={h.enabled ? undefined : { color: 'rgba(248,113,113,0.6)' }}>{h.enabled ? `${h.open} – ${h.close}` : closedLabel}</span>
           </div>
         )
       })}
@@ -731,6 +731,7 @@ export function PropertyCard({
   const sLabels2 = statusLabels ?? STATUS_LABELS
   const offerColor = listing.offer_type === 'rent' ? 'rgba(5,150,105,0.88)' : 'rgba(37,99,235,0.88)'
   const isCarDealer = businessType === 'car_dealer'
+  const [imgError, setImgError] = useState(false)
 
   return (
     <button
@@ -741,13 +742,14 @@ export function PropertyCard({
     >
       {/* Image area */}
       <div className="relative overflow-hidden">
-        {listing.images[0] ? (
+        {listing.images[0] && !imgError ? (
           <Image
             src={listing.images[0]}
             alt={listing.title}
             width={400}
             height={256}
             className={`w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${imageHeight}`}
+            onError={() => setImgError(true)}
           />
         ) : (
           <div
@@ -853,10 +855,12 @@ export function EmptyState({
   icon,
   label,
   accent,
+  lang = 'ar',
 }: {
   icon: 'listings' | 'news' | 'gallery'
   label?: string
   accent?: string
+  lang?: 'ar' | 'en'
 }) {
   const icons = {
     listings: (
@@ -880,7 +884,9 @@ export function EmptyState({
     ),
   }
 
-  const defaultLabels = { listings: 'لا توجد عروض متاحة', news: 'لا توجد أخبار', gallery: 'لا توجد صور' }
+  const defaultLabels = lang === 'en'
+    ? { listings: 'No listings available', news: 'No news yet', gallery: 'No photos yet' }
+    : { listings: 'لا توجد عروض متاحة', news: 'لا توجد أخبار', gallery: 'لا توجد صور' }
 
   return (
     <div className="col-span-full flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/10 bg-white/[0.03] py-16 text-center">

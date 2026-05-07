@@ -73,6 +73,23 @@ export default function LoginPage() {
   const t = translations[lang];
   const isRTL = lang === 'ar';
 
+  const mapFirebaseError = (err: unknown, lang: Lang): string => {
+    const code = (err as { code?: string })?.code ?? '';
+    const messages: Record<string, { ar: string; en: string }> = {
+      'auth/invalid-credential':     { ar: 'البريد أو كلمة المرور غير صحيحة', en: 'Invalid email or password' },
+      'auth/invalid-email':          { ar: 'صيغة البريد الإلكتروني غير صحيحة', en: 'Invalid email format' },
+      'auth/user-not-found':         { ar: 'البريد أو كلمة المرور غير صحيحة', en: 'Invalid email or password' },
+      'auth/wrong-password':         { ar: 'البريد أو كلمة المرور غير صحيحة', en: 'Invalid email or password' },
+      'auth/too-many-requests':      { ar: 'تم تجاوز عدد المحاولات، حاول لاحقاً', en: 'Too many attempts, try again later' },
+      'auth/user-disabled':          { ar: 'هذا الحساب موقوف', en: 'This account is disabled' },
+      'auth/network-request-failed': { ar: 'تحقق من اتصالك بالإنترنت', en: 'Check your internet connection' },
+    };
+    const entry = messages[code];
+    if (entry) return entry[lang];
+    if (err instanceof Error && err.message) return err.message;
+    return lang === 'ar' ? 'حدث خطأ، حاول مجدداً' : 'An error occurred, please try again';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -95,7 +112,7 @@ export default function LoginPage() {
       document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
       router.push('/dashboard');
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t.loginFailed);
+      setError(mapFirebaseError(e, lang));
     } finally {
       setLoading(false);
     }

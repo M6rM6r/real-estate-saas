@@ -28,6 +28,7 @@ import { CSS } from '@dnd-kit/utilities';
 import 'react-image-crop/dist/ReactCrop.css';
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp';
 import { useLanguage } from '@/app/dashboard/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 
 const PB_T = {
   ar: {
@@ -715,6 +716,7 @@ const isValidUrl = (value: string) => {
 
 export default function PageBuilderPage() {
   const { lang } = useLanguage();
+  const { toast } = useToast();
   const t = PB_T[lang as keyof typeof PB_T];
   const DAY_LABELS = { sun: t.sun, mon: t.mon, tue: t.tue, wed: t.wed, thu: t.thu, fri: t.fri, sat: t.sat };
   const [data, setData] = useState<ProfileResponse | null>(null);
@@ -1100,6 +1102,11 @@ export default function PageBuilderPage() {
     } catch (e) {
       setSaveStatus('error');
       setSaveError(e instanceof Error ? e.message : 'Save failed. Please try again.');
+      toast({
+        title: lang === 'ar' ? 'فشل الحفظ التلقائي' : 'Auto-save failed',
+        description: lang === 'ar' ? 'تعذّر حفظ التغييرات، حاول مجدداً.' : 'Could not save changes, please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -1119,6 +1126,17 @@ export default function PageBuilderPage() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [dirty, saveStatus]);
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
 
   // Fire the debounced auto-save when the timer triggers
   useEffect(() => {
@@ -2046,14 +2064,21 @@ export default function PageBuilderPage() {
                 ) : (
                   <div className="space-y-2">
                     {listings.map((listing) => (
-                      <div key={listing.id} className="bg-slate-800 rounded-lg p-3 border border-slate-700 flex gap-3 items-center">
+                      <div key={listing.id} className={`bg-slate-800 rounded-lg p-3 border border-slate-700 flex gap-3 items-center transition-opacity ${listing.published === false ? 'opacity-60' : ''}`}>
                         {listing.images?.[0] && (
                           <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
                             <Image src={listing.images[0]} alt="" fill className="object-cover" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-white text-sm truncate">{listing.title}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-white text-sm truncate">{listing.title}</p>
+                            {listing.published === false && (
+                              <span className="shrink-0 inline-flex items-center rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+                                {lang === 'en' ? 'Draft' : 'مسودة'}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-blue-400 text-sm font-bold">{listing.price?.toLocaleString('en-US')} {displayCurrency}</p>
                           <div className="flex gap-3 text-xs text-slate-400 mt-0.5">
                             {listing.location && <span>{listing.location}</span>}
