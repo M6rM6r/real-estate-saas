@@ -764,18 +764,6 @@ export function PropertyCard({
         {/* Bottom gradient for price overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
-        {/* Offer type badge — top left */}
-        {listing.offer_type && (
-          <span
-            className="absolute top-3 start-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10 shadow-lg backdrop-blur"
-            style={{ backgroundColor: offerColor }}
-          >
-            {listing.offer_type === 'rent'
-              ? (lang === 'en' ? 'For Rent' : 'للإيجار')
-              : (lang === 'en' ? 'For Sale' : 'للبيع')}
-          </span>
-        )}
-
 
         {/* Price overlay — bottom of image */}
         {listing.price != null && (
