@@ -22,7 +22,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeLuxury({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -87,6 +87,21 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         .lux-revealed { opacity: 1; transform: translateY(0); }
         .lux-gold { color: var(--lux-gold); }
         .lux-border { border-color: var(--lux-gold) !important; }
+        .lux-underline {
+          display: inline-block;
+          position: relative;
+        }
+        .lux-underline::after {
+          content: '';
+          position: absolute;
+          left: 0; right: 0; bottom: -4px;
+          height: 2px;
+          background: ${primary};
+          transform: scaleX(0);
+          transform-origin: center;
+          animation: lux-expand 1.2s 0.4s ease forwards;
+        }
+        @keyframes lux-expand { from { transform: scaleX(0); } to { transform: scaleX(1); } }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
@@ -110,7 +125,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — full bleed, no card */}
         {sections.hero && (
-          <section data-section="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
+          <section data-section="hero" className="relative min-h-[55vh] flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" priority />
             ) : (
@@ -121,7 +136,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain mx-auto mb-8 opacity-90" priority />
               )}
-              <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-6 leading-none tracking-tight text-white" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+              <h1 className="lux-underline text-5xl sm:text-7xl md:text-8xl font-bold mb-6 leading-none tracking-tight text-white" style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 'clamp(2.5rem, 8vw, 6rem)' }}>
                 {tenant.name}
               </h1>
               <div className="w-24 h-px mx-auto mb-6" style={{ backgroundColor: primary }} />
@@ -187,7 +202,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                 </div>
               )}
 
-              {filtered.length === 0 && <p className="text-center py-12 text-gray-400">لا توجد عروض لهذا التصنيف</p>}
+              {filtered.length === 0 && <div className="grid"><EmptyState icon="listings" accent={primary} /></div>}
 
               {/* Featured listing */}
               {featured && (
@@ -214,19 +229,19 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                           {featured.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}
                         </p>
                       )}
-                      {featured.location && <p className="text-sm text-gray-500 mb-4">📍 {featured.location}</p>}
+                      {featured.location && <p className="text-sm text-gray-500 mb-4 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {featured.location}</p>}
                       <div className="flex gap-4 text-sm text-gray-500">
                         {tenant.business_type === 'car_dealer' ? (
                           <>
-                            {featured.bedrooms != null && <span>📅 {featured.bedrooms}</span>}
-                            {featured.bathrooms != null && <span>🛣️ {featured.bathrooms} km</span>}
-                            {featured.property_type && <span>🏷️ {featured.property_type}</span>}
+                            {featured.bedrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M6.5 3.75a.75.75 0 00-1.5 0v10.5a.75.75 0 001.5 0V3.75z"/></svg> {featured.bedrooms}</span>}
+                            {featured.bathrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5z" clipRule="evenodd"/></svg> {featured.bathrooms} km</span>}
+                            {featured.property_type && <span>{featured.property_type}</span>}
                           </>
                         ) : (
                           <>
-                            {featured.bedrooms != null && <span>🛏 {featured.bedrooms} غرفة</span>}
-                            {featured.bathrooms != null && <span>🚿 {featured.bathrooms} حمام</span>}
-                            {featured.area_sqm != null && <span>📐 {featured.area_sqm} م²</span>}
+                            {featured.bedrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M2.879 7.121A3 3 0 007.5 6.196a3.001 3.001 0 002.634 1.55 3 3 0 002.584-1.435 3.001 3.001 0 002.298 1.38 3 3 0 001.9-5.34.75.75 0 00-.812-.14L14.648 3H5.353l-1.455-.439a.75.75 0 00-.812.14 3 3 0 00-.207 4.42zM4 12v-2.586l.311.311A4.491 4.491 0 007.5 11c1.123 0 2.151-.4 2.94-1.059.749.659 1.727 1.059 2.81 1.059 1.083 0 2.062-.4 2.811-1.059.345.304.733.546 1.152.713L17.5 11V12H4z"/></svg> {featured.bedrooms}</span>}
+                            {featured.bathrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5V11h-.5a.5.5 0 00-.5.5v1A3.5 3.5 0 005.5 16v.5a.5.5 0 001 0V16h7v.5a.5.5 0 001 0V16a3.5 3.5 0 003.5-3.5v-1a.5.5 0 00-.5-.5H17V3.5A1.5 1.5 0 0015.5 2h-11z" clipRule="evenodd"/></svg> {featured.bathrooms}</span>}
+                            {featured.area_sqm != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M1 2.75A.75.75 0 011.75 2h16.5a.75.75 0 010 1.5H17v10.75a.75.75 0 01-1.5 0V3.5H4.5v10.75a.75.75 0 01-1.5 0V3.5H1.75A.75.75 0 011 2.75z" clipRule="evenodd"/></svg> {featured.area_sqm} م²</span>}
                           </>
                         )}
                       </div>
@@ -260,19 +275,19 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       <div className="p-5">
                         <h3 className="font-semibold mb-2 text-gray-200">{l.title}</h3>
                         {l.price != null && <p className="font-bold text-lg mb-1" style={{ color: primary }}>{l.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}</p>}
-                        {l.location && <p className="text-xs text-gray-600 mb-3">📍 {l.location}</p>}
+                        {l.location && <p className="text-xs text-gray-600 mb-3 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {l.location}</p>}
                         <div className="flex gap-3 text-xs text-gray-600">
                           {tenant.business_type === 'car_dealer' ? (
                             <>
-                              {l.bedrooms != null && <span>📅 {l.bedrooms}</span>}
-                              {l.bathrooms != null && <span>🛣️ {l.bathrooms} km</span>}
-                              {l.property_type && <span>🏷️ {l.property_type}</span>}
+                              {l.bedrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path d="M6.5 3.75a.75.75 0 00-1.5 0v10.5a.75.75 0 001.5 0V3.75z"/></svg> {l.bedrooms}</span>}
+                              {l.bathrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5z" clipRule="evenodd"/></svg> {l.bathrooms} km</span>}
+                              {l.property_type && <span>{l.property_type}</span>}
                             </>
                           ) : (
                             <>
-                              {l.bedrooms != null && <span>🛏 {l.bedrooms}</span>}
-                              {l.bathrooms != null && <span>🚿 {l.bathrooms}</span>}
-                              {l.area_sqm != null && <span>📐 {l.area_sqm} م²</span>}
+                              {l.bedrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path d="M2.879 7.121A3 3 0 007.5 6.196a3.001 3.001 0 002.634 1.55 3 3 0 002.584-1.435 3.001 3.001 0 002.298 1.38 3 3 0 001.9-5.34.75.75 0 00-.812-.14L14.648 3H5.353l-1.455-.439a.75.75 0 00-.812.14 3 3 0 00-.207 4.42zM4 12v-2.586l.311.311A4.491 4.491 0 007.5 11c1.123 0 2.151-.4 2.94-1.059.749.659 1.727 1.059 2.81 1.059 1.083 0 2.062-.4 2.811-1.059.345.304.733.546 1.152.713L17.5 11V12H4z"/></svg> {l.bedrooms}</span>}
+                              {l.bathrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5V11h-.5a.5.5 0 00-.5.5v1A3.5 3.5 0 005.5 16v.5a.5.5 0 001 0V16h7v.5a.5.5 0 001 0V16a3.5 3.5 0 003.5-3.5v-1a.5.5 0 00-.5-.5H17V3.5A1.5 1.5 0 0015.5 2h-11z" clipRule="evenodd"/></svg> {l.bathrooms}</span>}
+                              {l.area_sqm != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M1 2.75A.75.75 0 011.75 2h16.5a.75.75 0 010 1.5H17v10.75a.75.75 0 01-1.5 0V3.5H4.5v10.75a.75.75 0 01-1.5 0V3.5H1.75A.75.75 0 011 2.75z" clipRule="evenodd"/></svg> {l.area_sqm} م²</span>}
                             </>
                           )}
                         </div>

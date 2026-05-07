@@ -20,7 +20,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeNature({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -86,6 +86,12 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         .nat-btn { background: var(--nat-primary); }
         .nat-text { color: var(--nat-primary); }
         .nat-chip-active { background: var(--nat-primary); color: #fff; border-color: var(--nat-primary); }
+        .nat-hero-mesh {
+          background:
+            radial-gradient(ellipse 70% 60% at 15% 35%, ${primary}33 0%, transparent 65%),
+            radial-gradient(ellipse 55% 55% at 85% 65%, ${primary}1a 0%, transparent 60%),
+            ${pageTheme.bg};
+        }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
@@ -110,8 +116,8 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Hero */}
         {sections.hero && (
-          <section data-section="hero" className="relative flex items-center justify-center overflow-hidden pt-20 sm:pt-24 pb-20"
-            style={{ order: sectionOrder.hero, background: `linear-gradient(160deg, ${primary}22 0%, ${primary}08 50%, #f0fdf4 100%)` }}>
+          <section data-section="hero" className="nat-hero-mesh relative flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-10"
+            style={{ order: sectionOrder.hero }}>
             {profile?.cover_url && (
               <>
                 <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
@@ -120,7 +126,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             )}
             <div className="relative z-10 text-center px-4 max-w-2xl mx-auto w-full">
               <div className="border px-8 py-10 shadow-2xl mx-auto"
-                style={{ backgroundColor: 'rgba(10,26,14,0.85)', borderColor: `${primary}40`, borderRadius: '32px', backdropFilter: 'blur(12px)' }}>
+                style={{ backgroundColor: 'rgba(10,26,14,0.88)', borderColor: `${primary}40`, borderRadius: '32px', backdropFilter: 'blur(14px)', boxShadow: `0 0 0 1px ${primary}28, 0 32px 64px rgba(0,0,0,0.55)` }}>
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full shadow-md" style={{ border: `3px solid ${primary}40` }} priority />
                 )}
@@ -136,8 +142,13 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Listings */}
-        {sections.listings && published.length > 0 && (
+        {sections.listings && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+            <div className="flex items-center gap-3 mb-7">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 shrink-0" style={{ color: primary }}><path fillRule="evenodd" d="M9.664 1.319a.75.75 0 01.672 0 41.059 41.059 0 018.198 5.424.75.75 0 01-.254 1.285 31.372 31.372 0 00-7.86 3.83.75.75 0 01-.84 0 31.508 31.508 0 00-2.08-1.287V9.394c0-.244.065-.484.188-.698a38.998 38.998 0 005.726-4.41L8.18 7.75a.75.75 0 01-.36-1.298c.01-.008 1.854-1.274 1.844-5.133zM6.5 9.394v.106a30.5 30.5 0 00-3.232 3.25.75.75 0 001.114 1.005A29 29 0 016.5 11.025v4.726a.75.75 0 001.5 0v-4.633a31.383 31.383 0 013.835-2.668.75.75 0 00-.84-1.248A32.904 32.904 0 008 9.394z" clipRule="evenodd"/></svg>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: pageTheme.headingFont }}>{THEME_LABELS[lang].listingsHeading}</h2>
+              <div className="flex-1 h-px ml-4" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
+            </div>
 
             {/* Filters */}
             {propertyTypes.length > 0 && (
@@ -164,7 +175,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
               </div>
             )}
             {filtered.length === 0 ? (
-              <p className="text-center py-12 text-gray-400">لا توجد عروض لهذا التصنيف</p>
+              <EmptyState icon="listings" accent={primary} />
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {filtered.map(l => (

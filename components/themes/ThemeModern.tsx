@@ -9,7 +9,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
+  SocialLinks, WorkingHours, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeModern({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -83,6 +83,12 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         @supports(padding-bottom:env(safe-area-inset-bottom)){
           .safe-pb { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
         }
+        .hero-mesh {
+          background:
+            radial-gradient(ellipse 80% 50% at 20% 40%, ${primary}44 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 80% 70%, ${primary}22 0%, transparent 55%),
+            ${pageTheme.bg};
+        }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
@@ -109,8 +115,8 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-screen flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className="relative flex-1 min-h-[40vh] lg:min-h-screen">
+          <section data-section="hero" className={`min-h-[55vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className="relative flex-1 min-h-[30vh] lg:min-h-[55vh]">
               {profile?.cover_url ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority /> : <div className="w-full h-full min-h-[40vh]" style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }} />}
             </div>
             <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 py-16" style={{ backgroundColor: pageTheme.bg }}>
@@ -137,8 +143,8 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[100dvh] flex flex-col items-center justify-end pb-10 sm:pb-20 bg-cover bg-center pt-24 sm:pt-28"
-            style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+          <section data-section="hero" className="hero-mesh relative min-h-[55vh] flex flex-col items-center justify-end pb-8 sm:pb-12 bg-cover bg-center pt-24 sm:pt-28"
+            style={{ order: sectionOrder.hero }}>
             {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
@@ -146,7 +152,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
               <div className={`border rounded-3xl px-5 sm:px-8 py-7 sm:py-10 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-md' : ''}`}
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder }}>
+                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}33, 0 25px 50px rgba(0,0,0,0.6)` }}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg" priority />}
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary === '#2563eb' ? '#93c5fd' : primary }}>{profile.tagline}</p>}
@@ -164,8 +170,12 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Listings */}
-        {sections.listings && published.length > 0 && (
+        {sections.listings && (
           <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
+              <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
+            </div>
 
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -204,7 +214,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
               </div>
             )}
             {displayed.length === 0 ? (
-              <p className={`text-center py-12 ${mutedClass}`}>لا توجد عروض لهذا التصنيف</p>
+              <div className="grid"><EmptyState icon="listings" accent={primary} /></div>
             ) : (
               <div className={`grid grid-cols-1 ${pageConfig.listings_columns === 2 ? 'sm:grid-cols-2' : pageConfig.listings_columns === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-3'} gap-6`}>
                 {displayed.map(l => (

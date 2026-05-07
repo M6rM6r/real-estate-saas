@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { BedDouble, Bath, Ruler, CalendarDays, Gauge, Tag } from 'lucide-react'
 import { buildWhatsAppLink } from '@/lib/whatsapp'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -686,7 +687,10 @@ export function ListingBadges({
 
       {listing.images.length > 1 && (
         <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1">
-          📷 {listing.images.length}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+            <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v7a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+          </svg>
+          {listing.images.length}
         </span>
       )}
     </>
@@ -746,19 +750,31 @@ export function PropertyCard({
             className={`w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${imageHeight}`}
           />
         ) : (
-          <div className={`w-full flex flex-col items-center justify-center gap-2 ${imageHeight}`} style={{ background: sectionAlt }}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div
+            className={`w-full flex flex-col items-center justify-center gap-2 ${imageHeight}`}
+            style={{ background: `linear-gradient(135deg, ${sectionAlt} 0%, rgba(0,0,0,0.3) 100%)` }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 22V12h6v10" />
             </svg>
-            <span className="text-xs opacity-40">{lang === 'en' ? 'No image' : 'لا توجد صورة'}</span>
           </div>
         )}
 
         {/* Bottom gradient for price overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
-        
+        {/* Offer type badge — top left */}
+        {listing.offer_type && (
+          <span
+            className="absolute top-2 start-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10"
+            style={{ backgroundColor: offerColor }}
+          >
+            {listing.offer_type === 'rent'
+              ? (lang === 'en' ? 'For Rent' : 'للإيجار')
+              : (lang === 'en' ? 'For Sale' : 'للبيع')}
+          </span>
+        )}
 
 
         {/* Price overlay — bottom of image */}
@@ -796,17 +812,17 @@ export function PropertyCard({
           <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
             {listing.bedrooms != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>📅</span> {listing.bedrooms}
+                <CalendarDays className="w-3.5 h-3.5 shrink-0" /> {listing.bedrooms}
               </span>
             )}
             {listing.bathrooms != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>🛣️</span> {listing.bathrooms} km
+                <Gauge className="w-3.5 h-3.5 shrink-0" /> {listing.bathrooms}{lang === 'en' ? ' km' : ' كم'}
               </span>
             )}
             {listing.property_type && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>🏷️</span> {listing.property_type}
+                <Tag className="w-3.5 h-3.5 shrink-0" /> {listing.property_type}
               </span>
             )}
           </div>
@@ -815,22 +831,67 @@ export function PropertyCard({
           <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
             {listing.bedrooms != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>🛏</span> {listing.bedrooms}
+                <BedDouble className="w-3.5 h-3.5 shrink-0" /> {listing.bedrooms}
               </span>
             )}
             {listing.bathrooms != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>🚿</span> {listing.bathrooms}
+                <Bath className="w-3.5 h-3.5 shrink-0" /> {listing.bathrooms}
               </span>
             )}
             {listing.area_sqm != null && (
               <span className="flex items-center gap-1 opacity-80">
-                <span>📐</span> {listing.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}
+                <Ruler className="w-3.5 h-3.5 shrink-0" /> {listing.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}
               </span>
             )}
           </div>
         )}
       </div>
     </button>
+  )
+}
+
+// ─── EmptyState ──────────────────────────────────────────────────────────────
+
+export function EmptyState({
+  icon,
+  label,
+  accent,
+}: {
+  icon: 'listings' | 'news' | 'gallery'
+  label?: string
+  accent?: string
+}) {
+  const icons = {
+    listings: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+        <path d="M9 22V12h6v10" />
+      </svg>
+    ),
+    news: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10">
+        <path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2z" />
+        <path d="M14 2v6h6M8 13h8M8 17h4" />
+      </svg>
+    ),
+    gallery: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <path d="M21 15l-5-5L5 21" />
+      </svg>
+    ),
+  }
+
+  const defaultLabels = { listings: 'لا توجد عروض متاحة', news: 'لا توجد أخبار', gallery: 'لا توجد صور' }
+
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-center opacity-50">
+      <div style={{ color: accent ?? '#94a3b8' }}>{icons[icon]}</div>
+      <p className="text-sm font-medium" style={{ color: accent ?? '#94a3b8' }}>
+        {label ?? defaultLabels[icon]}
+      </p>
+    </div>
   )
 }

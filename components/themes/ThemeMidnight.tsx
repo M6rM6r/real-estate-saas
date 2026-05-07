@@ -9,7 +9,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
-  SocialLinks, WorkingHours, PropertyCard, THEME_LABELS,
+  SocialLinks, WorkingHours, PropertyCard, EmptyState, WaIcon, ListingBadges, THEME_LABELS,
 } from './shared'
 
 export default function ThemeMidnight({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -79,11 +79,14 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         .mid-reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
         .mid-revealed { opacity: 1; transform: translateY(0); }
         .mid-glow { box-shadow: 0 0 24px ${primary}33, 0 2px 8px rgba(0,0,0,0.4); }
+        .mid-card-hover:hover { box-shadow: 0 0 0 1px ${primary}55, 0 8px 32px ${primary}22; }
         .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none; }
         .scrollbar-hide::-webkit-scrollbar { display:none; }
         @supports(padding-bottom:env(safe-area-inset-bottom)){
           .safe-pb { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
         }
+        .mid-orb-1 { position:absolute; top:-15%; left:-10%; width:55vw; height:55vw; max-width:520px; max-height:520px; border-radius:50%; background:radial-gradient(circle, ${primary}1a 0%, transparent 70%); pointer-events:none; }
+        .mid-orb-2 { position:absolute; bottom:-10%; right:-8%; width:45vw; height:45vw; max-width:420px; max-height:420px; border-radius:50%; background:radial-gradient(circle, ${primary}14 0%, transparent 70%); pointer-events:none; }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
@@ -109,8 +112,8 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-[68vh] sm:min-h-[72vh] lg:min-h-[88vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className="relative flex-1 min-h-[26vh] sm:min-h-[32vh] lg:min-h-[88vh]">
+          <section data-section="hero" className={`min-h-[44vh] sm:min-h-[48vh] lg:min-h-[55vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className="relative flex-1 min-h-[20vh] sm:min-h-[24vh] lg:min-h-[55vh]">
               {profile?.cover_url
                 ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
                 : <div className="w-full h-full min-h-[40vh]" style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }} />
@@ -140,8 +143,10 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[72dvh] sm:min-h-[82dvh] lg:min-h-[92dvh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24"
+          <section data-section="hero" className="relative min-h-[48vh] sm:min-h-[52vh] lg:min-h-[58vh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24 overflow-hidden"
             style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+            <div className="mid-orb-1" />
+            <div className="mid-orb-2" />
             {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
@@ -166,11 +171,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         )}
 
         {/* Listings */}
-        {sections.listings && published.length > 0 && (
+        {sections.listings && (
           <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">{THEME_LABELS[lang].listingsHeading}</h2>
             </div>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
@@ -208,7 +213,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               </div>
             )}
             {displayed.length === 0 ? (
-              <p className="text-center py-12 text-slate-500">لا توجد عروض لهذا التصنيف</p>
+              <EmptyState icon="listings" accent={primary} />
             ) : (
               <div className={`grid grid-cols-1 ${colsClass} gap-6`}>
                 {displayed.map(l => (
