@@ -428,13 +428,15 @@ export function PropertyDetailModal({
           {/* Sidebar */}
           <div className="lg:w-80 space-y-6">
             {/* Price */}
+            {property.price != null && (
             <div className="bg-gradient-to-br rounded-xl p-6 text-white" style={{ background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}11)`, borderColor: accentColor, borderWidth: '1px' }}>
               <p className="text-gray-300 text-sm mb-2">{L.price}</p>
               <p className="text-5xl font-bold flex items-baseline gap-2">
                 <span className="text-2xl font-semibold opacity-80">{property.currency ?? 'SAR'}</span>
-                {property.price ? property.price.toLocaleString('en-US') : L.priceUnset}
+                {property.price.toLocaleString('en-US')}
               </p>
             </div>
+            )}
 
             {/* Features */}
             {(property.features && property.features.length > 0) && (
