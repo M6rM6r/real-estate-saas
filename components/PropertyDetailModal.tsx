@@ -455,7 +455,6 @@ export function PropertyDetailModal({
 
             {/* Share */}
             <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <p className="font-semibold text-white text-sm mb-3">{L.share}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
