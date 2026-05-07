@@ -162,7 +162,7 @@ export default function LoginPage() {
           <div className={`w-full max-w-[460px] space-y-4`}>
 
             {/* Brand */}
-            <div className="rounded-2xl px-6 py-5 text-center">
+            <div className="rounded-2xl px-6 py-5 text-center" style={{background:'rgba(6,6,20,0.45)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}}>
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden shadow-2xl mb-3">
                 <img src="/web-app-manifest-192x192.png" alt="Wa9l" className="w-full h-full object-cover" />
               </div>
@@ -173,7 +173,7 @@ export default function LoginPage() {
             </div>
 
             {/* Login form */}
-            <div className="rounded-2xl p-6 space-y-5" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}}>
+            <div className="rounded-2xl p-6 space-y-5" style={{background:'rgba(6,6,20,0.55)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}}>
               <div className="text-center">
                 <h2 className="text-base font-bold text-white drop-shadow">{t.agencyLogin}</h2>
               </div>
@@ -236,7 +236,7 @@ export default function LoginPage() {
 
             {/* Demo CTA */}
             <div className="relative rounded-2xl overflow-hidden">
-              <div className="absolute inset-0" style={{background:'rgba(0,0,0,0)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)'}} />
+              <div className="absolute inset-0" style={{background:'rgba(55,30,100,0.50)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}} />
               <div className="relative px-5 py-4 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-sm font-bold text-slate-100">{t.demoTitle}</h2>
