@@ -12,7 +12,7 @@ const translations = {
   ar: {
     brandName: 'Wa9l',
     brandAr: 'واصل',
-    brandSubtitle: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
+    brandSubtitle: 'المنصة الإحترافية لإنشاء المواقع الإلكترونية.',
     noAccount: 'لا حاجة لحساب',
     demoTitle: 'جرّب النسخة التجريبية',
     demoDesc: 'استكشف لوحة التحكم كاملةً — العروض، وصفحة منشأتك — ببيانات تجريبية جاهزة.',
@@ -32,7 +32,7 @@ const translations = {
   en: {
     brandName: 'Wa9l',
     brandAr: 'واصل',
-    brandSubtitle: 'The professional platform for managing modern business pages.',
+    brandSubtitle: 'The professional platform for building business websites.',
     noAccount: 'No account needed',
     demoTitle: 'Try the Demo',
     demoDesc: 'Explore the full dashboard — listings, your business page — with ready demo data.',
@@ -151,17 +151,17 @@ export default function LoginPage() {
           style={{ backgroundImage: "url('/gemini-bg.png')" }}
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-black/70" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/55 via-transparent to-violet-950/45" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-transparent to-violet-950/25" aria-hidden="true" />
 
         {/* Ambient orbs */}
-        <div aria-hidden="true" className="wa9l-orb-a absolute -top-28 -left-28 w-[500px] h-[500px] bg-indigo-600 rounded-full blur-[130px] pointer-events-none" />
-        <div aria-hidden="true" className="wa9l-orb-b absolute -bottom-28 -right-28 w-[540px] h-[540px] bg-violet-600 rounded-full blur-[140px] pointer-events-none" />
-        <div aria-hidden="true" className="wa9l-orb-c absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500 rounded-full blur-[90px] pointer-events-none" />
+        <div aria-hidden="true" className="wa9l-orb-a absolute -top-28 -left-28 w-[500px] h-[500px] bg-indigo-600 rounded-full blur-[130px] pointer-events-none opacity-40" />
+        <div aria-hidden="true" className="wa9l-orb-b absolute -bottom-28 -right-28 w-[540px] h-[540px] bg-violet-600 rounded-full blur-[140px] pointer-events-none opacity-35" />
+        <div aria-hidden="true" className="wa9l-orb-c absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500 rounded-full blur-[90px] pointer-events-none opacity-25" />
 
         {/* Content */}
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-14">
-          <div className={`w-full max-w-[420px] space-y-5 transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`w-full max-w-[420px] space-y-5`}>
 
             {/* Brand */}
             <div className="wa9l-f0 text-center space-y-2">
@@ -172,7 +172,6 @@ export default function LoginPage() {
                 <h1 className="text-[2.6rem] font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                   {t.brandName}
                 </h1>
-                <p className="text-indigo-300/75 text-sm font-medium mt-0.5">{t.brandAr}</p>
                 <p className="text-slate-400/80 text-sm mt-2 leading-relaxed max-w-[300px] mx-auto">{t.brandSubtitle}</p>
               </div>
             </div>
@@ -190,14 +189,11 @@ export default function LoginPage() {
 
             {/* Demo CTA */}
             <div className="wa9l-f2 relative rounded-2xl overflow-hidden border border-indigo-500/20">
-              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-600/88 via-violet-600/82 to-purple-700/88" />
+              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-900/97 via-violet-900/95 to-purple-950/97" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.10),transparent_55%)]" />
               <div className="relative p-5">
-                <span className="inline-flex bg-indigo-300/15 text-indigo-200 text-xs px-2.5 py-0.5 rounded-full border border-indigo-300/25 font-medium mb-3">
-                  {t.noAccount}
-                </span>
                 <h2 className="text-base font-bold text-slate-100 mb-1">{t.demoTitle}</h2>
-                <p className="text-indigo-200/60 text-sm mb-4 leading-relaxed">{t.demoDesc}</p>
+                <p className="text-indigo-200/80 text-sm mb-4 leading-relaxed">{t.demoDesc}</p>
                 <button
                   type="button"
                   onClick={handleDemo}
@@ -211,10 +207,10 @@ export default function LoginPage() {
             </div>
 
             {/* Login form */}
-            <div className="wa9l-f3 wa9l-glass rounded-2xl p-6 space-y-5 border border-slate-700/35">
+            <div className="wa9l-f3 rounded-2xl p-6 space-y-5 border border-slate-700/50" style={{background:'rgba(5,5,18,0.92)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}}>
               <div>
                 <h2 className="text-base font-bold text-slate-100">{t.agencyLogin}</h2>
-                <p className="text-slate-500 text-sm mt-0.5">{t.haveAccount}</p>
+                <p className="text-slate-400 text-sm mt-0.5">{t.haveAccount}</p>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">

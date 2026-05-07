@@ -18,10 +18,25 @@ const inter = Inter({
   weight: ['300', '400', '500', '600', '700', '800'],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app';
+
 export const metadata: Metadata = {
   title: 'Wa9l — واصل',
   description: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://real-estate-saas--rewrew7.us-east4.hosted.app'),
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    title: 'Wa9l — واصل',
+    description: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
+    url: APP_URL,
+    siteName: 'Wa9l',
+    locale: 'ar_SA',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Wa9l — واصل',
+    description: 'المنصة الاحترافية لإدارة صفحات الأعمال الحديثة.',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
