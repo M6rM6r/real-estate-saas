@@ -59,10 +59,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const savedLang = localStorage.getItem('app_lang') as Lang | null;
     if (savedLang === 'ar' || savedLang === 'en') setLangState(savedLang);
   }, []);
@@ -160,61 +158,30 @@ export default function LoginPage() {
         <div aria-hidden="true" className="wa9l-orb-c absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500 rounded-full blur-[90px] pointer-events-none opacity-25" />
 
         {/* Content */}
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-14">
-          <div className={`w-full max-w-[420px] space-y-5`}>
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+          <div className={`w-full max-w-[460px] space-y-4`}>
 
-            {/* Brand */}
-            <div className="wa9l-f0 text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-[72px] h-[72px] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 mb-1 ring-1 ring-indigo-500/20">
+            {/* Brand — compact */}
+            <div className="text-center flex items-center justify-center gap-3 mb-2">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden shadow-lg ring-1 ring-indigo-500/20 shrink-0">
                 <img src="/web-app-manifest-192x192.png" alt="Wa9l" className="w-full h-full object-cover" />
               </div>
-              <div>
-                <h1 className="text-[2.6rem] font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
+              <div className="text-left">
+                <h1 className="text-3xl font-extrabold leading-none bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent tracking-tight">
                   {t.brandName}
                 </h1>
-                <p className="text-slate-400/80 text-sm mt-2 leading-relaxed max-w-[300px] mx-auto">{t.brandSubtitle}</p>
-              </div>
-            </div>
-
-            {/* Language toggle */}
-            <div className="wa9l-f1 flex justify-center">
-              <button
-                onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/65 hover:bg-slate-700/80 text-slate-300 hover:text-slate-100 text-sm transition-all duration-200 border border-slate-600/35 backdrop-blur-sm"
-              >
-                <Globe className="h-3.5 w-3.5 shrink-0" />
-                {lang === 'ar' ? 'English' : 'العربية'}
-              </button>
-            </div>
-
-            {/* Demo CTA */}
-            <div className="wa9l-f2 relative rounded-2xl overflow-hidden border border-indigo-500/20">
-              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-900/97 via-violet-900/95 to-purple-950/97" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.10),transparent_55%)]" />
-              <div className="relative p-5">
-                <h2 className="text-base font-bold text-slate-100 mb-1">{t.demoTitle}</h2>
-                <p className="text-indigo-200/80 text-sm mb-4 leading-relaxed">{t.demoDesc}</p>
-                <button
-                  type="button"
-                  onClick={handleDemo}
-                  className="group flex items-center justify-center gap-2 w-full bg-slate-900/55 hover:bg-slate-900/75 text-slate-100 font-semibold py-2.5 rounded-xl border border-indigo-300/25 hover:border-indigo-300/55 transition-all duration-200 active:scale-[0.98] backdrop-blur-sm"
-                >
-                  <ArrowRight className={`h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 ${isRTL ? 'rotate-180' : ''}`} />
-                  {t.enterDemo}
-                  <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform duration-200" />
-                </button>
+                <p className="text-slate-400/80 text-xs mt-0.5">{t.brandSubtitle}</p>
               </div>
             </div>
 
             {/* Login form */}
-            <div className="wa9l-f3 rounded-2xl p-6 space-y-5 border border-slate-700/50" style={{background:'rgba(5,5,18,0.92)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)'}}>
+            <div className="rounded-2xl p-6 space-y-5 border border-slate-700/50" style={{background:'rgba(5,5,18,0.88)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)'}}>
               <div>
                 <h2 className="text-base font-bold text-slate-100">{t.agencyLogin}</h2>
-                <p className="text-slate-400 text-sm mt-0.5">{t.haveAccount}</p>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="wa9l-email" className="text-slate-300 text-sm block">{t.email}</Label>
+                  <Label htmlFor="wa9l-email" className="text-slate-400 text-sm block">{t.email}</Label>
                   <Input
                     id="wa9l-email"
                     type="email"
@@ -223,12 +190,12 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     dir="ltr"
                     autoComplete="email"
-                    className="bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors"
+                    className="h-11 text-sm bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors"
                     placeholder={t.emailPlaceholder}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="wa9l-password" className="text-slate-300 text-sm block">{t.password}</Label>
+                  <Label htmlFor="wa9l-password" className="text-slate-400 text-sm block">{t.password}</Label>
                   <div className="relative">
                     <Input
                       id="wa9l-password"
@@ -238,7 +205,7 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       dir="ltr"
                       autoComplete="current-password"
-                      className="bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors pr-10"
+                      className="h-11 text-sm bg-slate-800/60 border-slate-600/50 text-slate-100 placeholder:text-slate-500 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/55 transition-colors pr-10"
                       placeholder={t.passwordPlaceholder}
                       aria-describedby={error ? 'wa9l-login-error' : undefined}
                     />
@@ -253,15 +220,15 @@ export default function LoginPage() {
                   </div>
                 </div>
                 {error && (
-                  <div id="wa9l-login-error" role="alert" className="flex items-center gap-2 bg-red-950/55 border border-red-700/45 text-red-300 text-sm rounded-lg px-3 py-2.5">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <div id="wa9l-login-error" role="alert" className="flex items-center gap-2 bg-red-950/55 border border-red-700/45 text-red-300 text-xs rounded-lg px-3 py-2">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-indigo-900/45 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-indigo-900/45 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
                   {t.login}
@@ -269,9 +236,37 @@ export default function LoginPage() {
               </form>
             </div>
 
-            {/* Footer */}
-            <div className="wa9l-f4 text-center pb-2">
-              <p className="text-slate-600/80 text-xs">{t.footer}</p>
+            {/* Demo CTA */}
+            <div className="relative rounded-2xl overflow-hidden border border-indigo-500/25">
+              <div className="absolute inset-0 bg-gradient-to-bl from-indigo-900/95 via-violet-900/92 to-purple-950/95" style={{backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)'}} />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.07),transparent_55%)]" />
+              <div className="relative px-5 py-4 flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-sm font-bold text-slate-100">{t.demoTitle}</h2>
+                  <p className="text-indigo-200/70 text-xs mt-0.5 leading-relaxed">{t.demoDesc}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDemo}
+                  className="group shrink-0 flex items-center gap-1.5 bg-slate-900/60 hover:bg-slate-900/80 text-slate-100 font-semibold text-xs py-2 px-3.5 rounded-xl border border-indigo-300/25 hover:border-indigo-300/55 transition-all duration-200 active:scale-[0.97] backdrop-blur-sm whitespace-nowrap"
+                >
+                  <ArrowRight className={`h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 ${isRTL ? 'rotate-180' : ''}`} />
+                  {t.enterDemo}
+                  <Sparkles className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Footer + language toggle */}
+            <div className="flex items-center justify-between pt-1 px-0.5">
+              <p className="text-slate-600/70 text-[11px]">{t.footer}</p>
+              <button
+                onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/50 hover:bg-slate-700/70 text-slate-400 hover:text-slate-200 text-xs transition-all border border-slate-600/25 backdrop-blur-sm"
+              >
+                <Globe className="h-3 w-3 shrink-0" />
+                {lang === 'ar' ? 'English' : 'العربية'}
+              </button>
             </div>
 
           </div>
