@@ -248,17 +248,6 @@ export function PropertyDetailModal({
                     {statusCfg.label}
                   </span>
                 )}
-                {property.offer_type && (
-                  <span
-                    className="inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-                    style={{
-                      color: property.offer_type === 'rent' ? '#34d399' : '#60a5fa',
-                      backgroundColor: property.offer_type === 'rent' ? 'rgba(52,211,153,0.12)' : 'rgba(96,165,250,0.12)',
-                    }}
-                  >
-                    {property.offer_type === 'rent' ? L.offerRent : L.offerSale}
-                  </span>
-                )}
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-white leading-snug line-clamp-2">{property.title}</h2>
               {property.location && (
