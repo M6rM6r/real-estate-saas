@@ -1263,19 +1263,19 @@ export default function PageBuilderPage() {
           box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.28);
         }
         .wa9l-gradient-text {
-          background: linear-gradient(135deg,#818cf8 0%,#a78bfa 50%,#c4b5fd 100%);
+          background: linear-gradient(135deg,#38bdf8 0%,#60a5fa 50%,#93c5fd 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
         .wa9l-field {
-          background: rgba(12,14,30,0.80) !important;
-          border-color: rgba(100,116,139,0.6) !important;
+          background: rgba(8,15,28,0.85) !important;
+          border-color: rgba(71,85,105,0.6) !important;
           transition: border-color .18s ease, box-shadow .18s ease;
         }
         .wa9l-field:focus,.wa9l-field:focus-visible {
-          border-color: rgba(129,140,248,0.85) !important;
-          box-shadow: 0 0 0 3px rgba(99,102,241,0.18) !important;
+          border-color: rgba(56,189,248,0.75) !important;
+          box-shadow: 0 0 0 3px rgba(14,165,233,0.15) !important;
           outline: none;
         }
         /* thin scrollbar for editor panel */
@@ -1287,9 +1287,9 @@ export default function PageBuilderPage() {
       `}</style>
       {/* ambient orbs */}
       <div aria-hidden="true" style={{position:'fixed',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:0}}>
-        <div style={{position:'absolute',top:'-8%',right:'12%',width:'600px',height:'600px',borderRadius:'50%',background:'radial-gradient(circle,rgba(99,102,241,0.18) 0%,transparent 70%)',filter:'blur(70px)',animation:'wa9l-orb-a 18s ease-in-out infinite'}} />
-        <div style={{position:'absolute',top:'35%',left:'3%',width:'450px',height:'450px',borderRadius:'50%',background:'radial-gradient(circle,rgba(139,92,246,0.14) 0%,transparent 70%)',filter:'blur(60px)',animation:'wa9l-orb-b 22s ease-in-out infinite'}} />
-        <div style={{position:'absolute',bottom:'8%',right:'28%',width:'380px',height:'380px',borderRadius:'50%',background:'radial-gradient(circle,rgba(59,130,246,0.11) 0%,transparent 70%)',filter:'blur(55px)',animation:'wa9l-orb-c 26s ease-in-out infinite'}} />
+        <div style={{position:'absolute',top:'-8%',right:'12%',width:'600px',height:'600px',borderRadius:'50%',background:'radial-gradient(circle,rgba(14,165,233,0.14) 0%,transparent 70%)',filter:'blur(70px)',animation:'wa9l-orb-a 18s ease-in-out infinite'}} />
+        <div style={{position:'absolute',top:'35%',left:'3%',width:'450px',height:'450px',borderRadius:'50%',background:'radial-gradient(circle,rgba(30,58,138,0.18) 0%,transparent 70%)',filter:'blur(60px)',animation:'wa9l-orb-b 22s ease-in-out infinite'}} />
+        <div style={{position:'absolute',bottom:'8%',right:'28%',width:'380px',height:'380px',borderRadius:'50%',background:'radial-gradient(circle,rgba(51,65,85,0.22) 0%,transparent 70%)',filter:'blur(55px)',animation:'wa9l-orb-c 26s ease-in-out infinite'}} />
       </div>
 
       {/* QR Code Dialog */}
@@ -1329,76 +1329,10 @@ export default function PageBuilderPage() {
           </div>
         </DialogContent>
       </Dialog>
-      {(() => {
-        const completionDone = profileCompletionItems.filter(i => i.done).length;
-        const completionTotal = profileCompletionItems.length;
-        const completionPct = Math.round((completionDone / completionTotal) * 100);
-        const enabledSections = SECTION_ORDER_KEYS.filter(k => sections[k]).length;
-        const publishedListings = listings.filter(l => l.published !== false).length;
-        const ringSize = 56;
-        const ringStroke = 5;
-        const ringR = (ringSize - ringStroke) / 2;
-        const ringC = 2 * Math.PI * ringR;
-        const ringOffset = ringC - (completionPct / 100) * ringC;
-        return (
-          <div className="mb-1 relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between wa9l-fade">
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0" style={{ width: ringSize, height: ringSize }}>
-                <svg width={ringSize} height={ringSize} className="-rotate-90">
-                  <circle cx={ringSize/2} cy={ringSize/2} r={ringR} stroke="rgba(255,255,255,0.08)" strokeWidth={ringStroke} fill="none" />
-                  <circle
-                    cx={ringSize/2} cy={ringSize/2} r={ringR}
-                    stroke="url(#wa9l-ring-grad)" strokeWidth={ringStroke}
-                    strokeLinecap="round" fill="none"
-                    strokeDasharray={ringC} strokeDashoffset={ringOffset}
-                    style={{ transition: 'stroke-dashoffset .6s ease' }}
-                  />
-                  <defs>
-                    <linearGradient id="wa9l-ring-grad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#818cf8" />
-                      <stop offset="100%" stopColor="#c4b5fd" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">{completionPct}%</div>
-              </div>
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/25 bg-gradient-to-r from-indigo-500/15 to-violet-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-200 shadow-lg shadow-indigo-950/20">
-                  <Sparkles className="h-3 w-3" />
-                  Studio Mode
-                </div>
-                <h1 className="mt-1.5 text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
-                <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                <Building2 className="h-3.5 w-3.5 text-indigo-300" />
-                <div className="leading-tight">
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{t.tabListings}</div>
-                  <div className="text-sm font-bold text-white">{publishedListings}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                <Layout className="h-3.5 w-3.5 text-violet-300" />
-                <div className="leading-tight">
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{lang === 'ar' ? 'أقسام مفعّلة' : 'Sections'}</div>
-                  <div className="text-sm font-bold text-white">{enabledSections}/{SECTION_ORDER_KEYS.length}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                <Palette className="h-3.5 w-3.5" style={{ color: primaryColor }} />
-                <div className="leading-tight">
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">{lang === 'ar' ? 'التصميم' : 'Theme'}</div>
-                  <div className="text-sm font-bold text-white capitalize">{selectedTheme}</div>
-                </div>
-                <span className="ml-1 h-2.5 w-2.5 rounded-full ring-2 ring-white/10" style={{ backgroundColor: primaryColor, boxShadow: `0 0 14px ${primaryColor}` }} />
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      <div className="mb-1 relative z-10 wa9l-fade">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
+        <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
+      </div>
 
       {/* Top bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 wa9l-glass rounded-3xl px-5 py-4 relative z-10">
