@@ -207,7 +207,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 </div>
                 {/* Details on left */}
                 <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
-                  <span className="text-xs font-bold tracking-widest uppercase mb-3 dsr-text">عرض مميز</span>
                   <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{featured.title}</h3>
                   {featured.price != null && (
                     <p className="text-2xl font-black dsr-text mb-3">

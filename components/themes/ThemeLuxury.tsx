@@ -234,7 +234,6 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       <ListingBadges listing={featured} primary={primary} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                     </div>
                     <div className="flex-1 p-8 flex flex-col justify-center" style={{ backgroundColor: '#111' }}>
-                      <span className="text-xs tracking-widest uppercase mb-3" style={{ color: primary }}>مميز</span>
                       <h3 className="text-2xl sm:text-3xl font-bold mb-3" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#e8e0d0' }}>
                         {featured.title}
                       </h3>
