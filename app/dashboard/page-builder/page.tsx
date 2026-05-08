@@ -19,7 +19,7 @@ import {
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal, LogOut,
-  Sparkles, Eye, Smartphone, Monitor, Wand2, Zap,
+  Sparkles, Eye, Wand2, Zap,
 } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -749,7 +749,6 @@ export default function PageBuilderPage() {
   const [listingError, setListingError] = useState('');
   const [listingPublished, setListingPublished] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
-  const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('desktop');
   const [showQrModal, setShowQrModal] = useState(false);
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
@@ -2337,28 +2336,6 @@ export default function PageBuilderPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
               </div>
               {/* Device segmented toggle */}
-              <div className="inline-flex items-center gap-0.5 rounded-xl bg-black/40 ring-1 ring-white/[0.06] p-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice('mobile')}
-                  title={lang === 'ar' ? 'معاينة الجوال' : 'Mobile preview'}
-                  aria-pressed={previewDevice === 'mobile'}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'mobile' ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <Smartphone className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{lang === 'ar' ? 'جوال' : 'Mobile'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDevice('desktop')}
-                  title={lang === 'ar' ? 'معاينة سطح المكتب' : 'Desktop preview'}
-                  aria-pressed={previewDevice === 'desktop'}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'desktop' ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <Monitor className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{lang === 'ar' ? 'سطح المكتب' : 'Desktop'}</span>
-                </button>
-              </div>
             </div>
 
             {/* Live inline preview — renders theme component directly, no save needed */}
@@ -2367,16 +2344,7 @@ export default function PageBuilderPage() {
               <div
                 className="overflow-y-auto overflow-x-hidden"
                 onClick={(e) => e.preventDefault()}
-                style={previewDevice === 'mobile' ? {
-                  width: '390px',
-                  height: '844px',
-                  transform: 'scale(0.78)',
-                  transformOrigin: 'top right',
-                  isolation: 'isolate',
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                } : {
+                style={{
                   position: 'relative',
                   isolation: 'isolate',
                   transform: 'translateZ(0)',
