@@ -195,7 +195,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                     </span>
                     {L.listingsHeadingAlt}
                   </div>
-                  {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl ring-2" style={{ ringColor: `${primary}44` }} priority />}
+                  {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}44` }} priority />}
                   <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-[0.95] tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
                   {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
                   {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/65 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
