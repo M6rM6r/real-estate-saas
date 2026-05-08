@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Wa9l — واصل | المنصة الاحترافية لإدارة صفحات الأعمال';
+export const alt = 'Wa9l — Professional Business Page Management Platform';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -112,7 +112,7 @@ export default function OgImage() {
               letterSpacing: '2px',
             }}
           >
-            واصل
+            WASL
           </div>
         </div>
 

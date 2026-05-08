@@ -25,7 +25,9 @@ async function getProfileData(tenantId: string) {
   }
 }
 
-function generateFallbackImage(name: string = 'REW') {
+function generateFallbackImage(rawName: string = 'REW') {
+  // Strip Arabic/RTL characters to avoid Satori font shaping crash
+  const name = rawName.replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g, '').trim() || 'REW'
   return new ImageResponse(
     (
       <div
@@ -104,7 +106,10 @@ export default async function Image({ params }: { params: { slug: string } }) {
 
     const primaryColor = tenant.primary_color || '#2563eb'
     const coverUrl = profile?.coverUrl || profile?.cover_url
-    const tagline = profile?.tagline || 'Leading Business Experiences'
+    // Strip Arabic characters — Satori edge runtime can't handle Arabic OpenType shaping
+    const strip = (s: string) => s.replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g, '').trim()
+    const tenantName = strip(tenant.name || '') || tenant.name || 'REW'
+    const tagline = strip(profile?.tagline || '') || 'Leading Business Experiences'
 
     return new ImageResponse(
       (
@@ -157,7 +162,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
                 maxWidth: '1000px',
               }}
             >
-              {tenant.name}
+              {tenantName}
             </h1>
 
             <div
