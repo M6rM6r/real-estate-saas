@@ -2284,17 +2284,14 @@ export default function PageBuilderPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Save button + status */}
-          <div className="wa9l-card rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={saveStatus === 'saving'}
-              className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 text-white px-7 gap-2 disabled:opacity-50 shadow-lg shadow-green-500/30 font-semibold rounded-xl transition-all"
-            >
-              {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saveStatus === 'saving' ? t.saving : t.saveNow}
-            </Button>
+          {/* Save status */}
+          <div className="wa9l-card rounded-2xl px-5 py-4 flex flex-wrap items-center justify-end gap-3">
             <div className="flex items-center gap-3">
+              {saveStatus === 'saving' && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t.saving}
+                </span>
+              )}
               {saveStatus === 'saved' && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-3 py-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5" /> {t.autoSaved}
