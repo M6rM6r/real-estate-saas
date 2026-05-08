@@ -729,15 +729,41 @@ export function PropertyCard({
   lang?: 'ar' | 'en'
 }) {
   const sLabels2 = statusLabels ?? STATUS_LABELS
-  const offerColor = listing.offer_type === 'rent' ? 'rgba(5,150,105,0.88)' : 'rgba(37,99,235,0.88)'
   const isCarDealer = businessType === 'car_dealer'
   const [imgError, setImgError] = useState(false)
+  const [hovered, setHovered] = useState(false)
+
+  const hasSpecs = isCarDealer
+    ? (listing.bedrooms != null || listing.bathrooms != null || listing.property_type)
+    : (showRealEstateFields && !isCarDealer && (listing.bedrooms != null || listing.bathrooms != null || listing.area_sqm != null))
+
+  const realEstateSpecs = !isCarDealer && showRealEstateFields ? [
+    listing.bedrooms != null ? { icon: <BedDouble className="w-3.5 h-3.5" />, value: listing.bedrooms, label: lang === 'en' ? 'Beds' : 'غرف' } : null,
+    listing.bathrooms != null ? { icon: <Bath className="w-3.5 h-3.5" />, value: listing.bathrooms, label: lang === 'en' ? 'Baths' : 'حمامات' } : null,
+    listing.area_sqm != null ? { icon: <Ruler className="w-3.5 h-3.5" />, value: `${listing.area_sqm}`, label: lang === 'en' ? 'sqm' : 'م²' } : null,
+  ].filter(Boolean) as { icon: React.ReactNode; value: string | number; label: string }[] : []
+
+  const carSpecs = isCarDealer ? [
+    listing.bedrooms != null ? { icon: <CalendarDays className="w-3.5 h-3.5" />, value: listing.bedrooms, label: lang === 'en' ? 'Year' : 'سنة' } : null,
+    listing.bathrooms != null ? { icon: <Gauge className="w-3.5 h-3.5" />, value: listing.bathrooms, label: lang === 'en' ? 'km' : 'كم' } : null,
+    listing.property_type ? { icon: <Tag className="w-3.5 h-3.5" />, value: listing.property_type, label: lang === 'en' ? 'Type' : 'نوع' } : null,
+  ].filter(Boolean) as { icon: React.ReactNode; value: string | number; label: string }[] : []
+
+  const specs = isCarDealer ? carSpecs : realEstateSpecs
 
   return (
     <button
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={`text-right group border overflow-hidden transition-all duration-300 w-full active:scale-[0.97] hover:-translate-y-2 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 ${surfaceClass}`}
-      style={{ ...cardStyle, boxShadow: `${cardStyle.boxShadow ?? '0 1px 4px rgba(0,0,0,.35)'}, inset 0 1px 0 rgba(255,255,255,.06)` }}
+      style={{
+        ...cardStyle,
+        borderColor: hovered ? `${primary}55` : cardStyle.borderColor,
+        boxShadow: hovered
+          ? `${cardStyle.boxShadow ?? ''}, 0 0 0 1px ${primary}28`
+          : `${cardStyle.boxShadow ?? '0 1px 4px rgba(0,0,0,.35)'}, inset 0 1px 0 rgba(255,255,255,.06)`,
+      }}
       aria-label={lang === 'en' ? `View details: ${listing.title}` : `عرض التفاصيل: ${listing.title}`}
     >
       {/* Image area */}
@@ -825,7 +851,7 @@ export function PropertyCard({
       {/* Card body */}
       <div className="p-4 sm:p-5">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="font-bold text-sm sm:text-base line-clamp-2 leading-snug">{listing.title}</h3>
+          <h3 className="font-bold text-base sm:text-[17px] line-clamp-2 leading-snug">{listing.title}</h3>
           <span
             className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100"
             style={{ backgroundColor: `${primary}22`, color: primary }}
@@ -836,50 +862,32 @@ export function PropertyCard({
           </span>
         </div>
         {listing.location && (
-          <div className={`flex items-center gap-1 text-xs mb-2 ${mutedClass}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className={`flex items-center gap-1 text-xs mb-2.5 ${mutedClass}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="line-clamp-1">{listing.location}</span>
           </div>
         )}
-        {isCarDealer && (listing.bedrooms != null || listing.bathrooms != null || listing.property_type) && (
-          <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
-            {listing.bedrooms != null && (
-              <span className="flex items-center gap-1 opacity-80">
-                <CalendarDays className="w-3.5 h-3.5 shrink-0" /> {listing.bedrooms}
-              </span>
-            )}
-            {listing.bathrooms != null && (
-              <span className="flex items-center gap-1 opacity-80">
-                <Gauge className="w-3.5 h-3.5 shrink-0" /> {listing.bathrooms}{lang === 'en' ? ' km' : ' كم'}
-              </span>
-            )}
-            {listing.property_type && (
-              <span className="flex items-center gap-1 opacity-80">
-                <Tag className="w-3.5 h-3.5 shrink-0" /> {listing.property_type}
-              </span>
-            )}
-          </div>
-        )}
-        {showRealEstateFields && !isCarDealer && (listing.bedrooms != null || listing.bathrooms != null || listing.area_sqm != null) && (
-          <div className="flex items-center gap-3 text-xs" style={{ color: primary }}>
-            {listing.bedrooms != null && (
-              <span className="flex items-center gap-1 opacity-80">
-                <BedDouble className="w-3.5 h-3.5 shrink-0" /> {listing.bedrooms}
-              </span>
-            )}
-            {listing.bathrooms != null && (
-              <span className="flex items-center gap-1 opacity-80">
-                <Bath className="w-3.5 h-3.5 shrink-0" /> {listing.bathrooms}
-              </span>
-            )}
-            {listing.area_sqm != null && (
-              <span className="flex items-center gap-1 opacity-80">
-                <Ruler className="w-3.5 h-3.5 shrink-0" /> {listing.area_sqm}{lang === 'en' ? ' sqm' : ' م²'}
-              </span>
-            )}
+
+        {/* Specs mini-grid */}
+        {specs.length > 0 && (
+          <div
+            className="grid mt-2 pt-2.5"
+            style={{
+              gridTemplateColumns: `repeat(${specs.length}, 1fr)`,
+              borderTop: `1px solid ${primary}18`,
+              direction: 'ltr',
+            }}
+          >
+            {specs.map((spec, i) => (
+              <div key={i} className={`flex flex-col items-center gap-0.5 py-1 px-1 text-center ${i > 0 ? 'border-l border-white/[0.06]' : ''}`}>
+                <span style={{ color: primary }}>{spec.icon}</span>
+                <span className="text-xs font-bold leading-none mt-0.5" style={{ color: primary }}>{spec.value}</span>
+                <span className="text-[9px] leading-none mt-0.5" style={{ color: 'rgba(148,163,184,0.6)' }}>{spec.label}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

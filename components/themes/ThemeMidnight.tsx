@@ -85,8 +85,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         @supports(padding-bottom:env(safe-area-inset-bottom)){
           .safe-pb { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
         }
-        .mid-orb-1 { position:absolute; top:-15%; left:-10%; width:55vw; height:55vw; max-width:520px; max-height:520px; border-radius:50%; background:radial-gradient(circle, ${primary}1a 0%, transparent 70%); pointer-events:none; }
-        .mid-orb-2 { position:absolute; bottom:-10%; right:-8%; width:45vw; height:45vw; max-width:420px; max-height:420px; border-radius:50%; background:radial-gradient(circle, ${primary}14 0%, transparent 70%); pointer-events:none; }
+        .mid-orb-1 { position:absolute; top:-15%; left:-10%; width:55vw; height:55vw; max-width:520px; max-height:520px; border-radius:50%; background:radial-gradient(circle, ${primary}28 0%, transparent 70%); filter:blur(64px); pointer-events:none; animation:orb-a 22s ease-in-out infinite; }
+        .mid-orb-2 { position:absolute; bottom:-10%; right:-8%; width:45vw; height:45vw; max-width:420px; max-height:420px; border-radius:50%; background:radial-gradient(circle, ${primary}1c 0%, transparent 70%); filter:blur(52px); pointer-events:none; animation:orb-b 28s ease-in-out infinite; }
+        .mid-orb-3 { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); width:35vw; height:35vw; max-width:320px; max-height:320px; border-radius:50%; background:radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%); filter:blur(48px); pointer-events:none; }
+        @keyframes orb-a { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-50px,35px);} }
+        @keyframes orb-b { 0%,100%{transform:translate(0,0);} 50%{transform:translate(40px,-45px);} }
         .mid-grid {
           background-image:
             linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
@@ -164,7 +167,8 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="mid-orb-1" />
             <div className="mid-orb-2" />
-            <div className="mid-grid absolute inset-0 opacity-70" />
+            <div className="mid-orb-3" />
+            <div className="mid-grid absolute inset-0" style={{ opacity: 0.03 }} />
             {profile?.cover_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
@@ -176,19 +180,25 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className="mid-panel border rounded-[2rem] px-5 sm:px-8 py-7 sm:py-10 mx-auto backdrop-blur-xl"
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder }}>
-                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold text-white/70">
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+              <div className="mid-panel border rounded-[2rem] px-5 sm:px-8 py-8 sm:py-12 mx-auto backdrop-blur-2xl"
+                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px ${primary}33, inset 0 1px 0 rgba(255,255,255,.08)` }}>
+                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-bold text-white/70" style={{ backgroundColor: `${primary}1a`, borderColor: `${primary}33` }}>
+                  <span className="relative h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }}>
+                    <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: primary, opacity: 0.5 }} />
+                  </span>
                   {L.listingsHeadingAlt}
                 </div>
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-lg" priority />}
-                <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight text-white">{tenant.name}</h1>
-                {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary }}>{profile.tagline}</p>}
-                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-lg text-white/70 mb-6">{pageConfig.hero_headline}</p>}
+                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-2xl ring-2" style={{ ringColor: `${primary}55` }} priority />}
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-3 leading-[0.95] tracking-tight text-white">{tenant.name}</h1>
+                {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: primary }}>{profile.tagline}</p>}
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/60 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
                 {whatsapp && (
-                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:opacity-95" style={{ backgroundColor: primary, boxShadow: `0 18px 42px ${primary}44` }}>
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
+                    style={{ background: `linear-gradient(135deg, ${primary}, rgba(99,102,241,0.9))`, boxShadow: `0 20px 48px ${primary}55, 0 4px 12px rgba(0,0,0,0.3)` }}>
                     {pageConfig.hero_cta_text || L.contactHeading}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                      <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
+                    </svg>
                   </a>
                 )}
               </div>
@@ -205,16 +215,6 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-10 rounded-full" style={{ backgroundColor: primary, boxShadow: `0 0 26px ${primary}` }} />
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.25em]" style={{ color: primary }}>{published.length} {L.listingsHeadingAlt}</p>
-                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white">{THEME_LABELS[lang].listingsHeading}</h2>
-                </div>
-              </div>
-              <div className="h-px flex-1" style={{ background: `linear-gradient(to left, ${primary}66, transparent)` }} />
-            </div>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}

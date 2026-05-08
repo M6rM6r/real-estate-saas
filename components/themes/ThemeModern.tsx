@@ -85,17 +85,27 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         }
         .hero-mesh {
           background:
-            radial-gradient(ellipse 80% 50% at 20% 40%, ${primary}44 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 80% 70%, ${primary}22 0%, transparent 55%),
+            radial-gradient(ellipse 80% 50% at 20% 40%, ${primary}55 0%, transparent 65%),
+            radial-gradient(ellipse 60% 50% at 80% 65%, ${primary}28 0%, transparent 60%),
+            radial-gradient(ellipse 40% 35% at 55% 15%, ${primary}18 0%, transparent 50%),
             ${pageTheme.bg};
         }
+        .hero-mesh-grid {
+          background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+          background-size: 48px 48px;
+        }
+        .hero-orb-1 { position:absolute; top:-10%; right:5%; width:480px; height:480px; border-radius:50%; background:radial-gradient(circle,${primary}22 0%,transparent 70%); filter:blur(60px); animation:orb-drift-a 20s ease-in-out infinite; pointer-events:none; }
+        .hero-orb-2 { position:absolute; bottom:5%; left:8%; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle,${primary}14 0%,transparent 70%); filter:blur(50px); animation:orb-drift-b 26s ease-in-out infinite; pointer-events:none; }
+        @keyframes orb-drift-a { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-40px,30px);} }
+        @keyframes orb-drift-b { 0%,100%{transform:translate(0,0);} 50%{transform:translate(30px,-40px);} }
         .theme-shell {
           background-image:
-            radial-gradient(circle at 15% 5%, ${primary}1f 0%, transparent 30%),
-            radial-gradient(circle at 90% 28%, ${primary}14 0%, transparent 28%);
+            radial-gradient(circle at 15% 5%, ${primary}18 0%, transparent 30%),
+            radial-gradient(circle at 90% 28%, ${primary}10 0%, transparent 28%);
         }
         .theme-pill {
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.18);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 16px 40px rgba(0,0,0,.28);
         }
       `}</style>
 
@@ -172,22 +182,34 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
               </div>
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
+            <div className="hero-orb-1" aria-hidden="true" />
+            <div className="hero-orb-2" aria-hidden="true" />
             <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto w-full">
-              <div className={`border rounded-[2rem] px-5 sm:px-10 py-8 sm:py-12 shadow-2xl mx-auto${pageTheme.heroCardBlur ? ' backdrop-blur-xl' : ''}`}
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}33, 0 30px 70px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,.08)` }}>
-                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/75 theme-pill">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }} />
-                  {L.listingsHeadingAlt}
+              <div className={`relative border rounded-[2rem] px-5 sm:px-10 py-8 sm:py-14 shadow-2xl mx-auto overflow-hidden${pageTheme.heroCardBlur ? ' backdrop-blur-2xl' : ''}`}
+                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}44, 0 32px 80px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,.10)` }}>
+                <div className="absolute inset-0 hero-mesh-grid opacity-100 pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold text-white/80 theme-pill" style={{ borderColor: `${primary}44`, backgroundColor: `${primary}18` }}>
+                    <span className="relative h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }}>
+                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: primary, opacity: 0.5 }} />
+                    </span>
+                    {L.listingsHeadingAlt}
+                  </div>
+                  {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl ring-2" style={{ ringColor: `${primary}44` }} priority />}
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-[0.95] tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
+                  {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
+                  {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/65 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
+                  {whatsapp && (
+                    <a href={waLink} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
+                      style={{ backgroundColor: primary, boxShadow: `0 20px 48px ${primary}55, 0 4px 12px rgba(0,0,0,0.3)` }}>
+                      {pageConfig.hero_cta_text || L.contactHeading}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
+                      </svg>
+                    </a>
+                  )}
                 </div>
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white p-1 shadow-lg" priority />}
-                <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
-                {profile?.tagline && <p className="text-base sm:text-xl font-medium mb-3 opacity-90" style={{ color: primary === '#2563eb' ? '#93c5fd' : primary }}>{profile.tagline}</p>}
-                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-lg text-white/75 mb-6">{pageConfig.hero_headline}</p>}
-                {whatsapp && (
-                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:opacity-95" style={{ backgroundColor: primary, boxShadow: `0 18px 38px ${primary}44` }}>
-                    {pageConfig.hero_cta_text || L.contactHeading}
-                  </a>
-                )}
               </div>
             </div>
             {/* Scroll indicator */}
@@ -203,14 +225,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em]" style={{ color: primary }}>{published.length} {L.listingsHeadingAlt}</p>
-                <h2 className="text-3xl sm:text-4xl font-extrabold" style={{ fontFamily: pageTheme.headingFont }}>{L.listingsHeading}</h2>
-              </div>
-              <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
-            </div>
-
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
@@ -282,15 +296,30 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* About */}
         {sections.about && (
-          <section data-section="about" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-3xl mx-auto text-center" style={{ order: sectionOrder.about }}>
-
-            {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg ${bodyClass}`}>{profile.bio}</p>}
-            {(profile?.licence_numbers && profile.licence_numbers.length > 0)
-              ? profile.licence_numbers.map((l, i) => (
-                  <p key={i} className={`mt-2 text-xs font-mono ${mutedClass}`}>{l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}</p>
-                ))
-              : profile?.licence_no && <p className={`mt-4 text-sm font-mono ${mutedClass}`}>{L.licencePrefix} {profile.licence_no}</p>
-            }
+          <section data-section="about" className="reveal py-16 sm:py-20 px-4 md:px-8" style={{ order: sectionOrder.about }}>
+            <div className="max-w-3xl mx-auto text-center">
+              {profile?.logo_url && (
+                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80}
+                  className="w-16 h-16 mx-auto rounded-2xl object-contain mb-6 shadow-xl"
+                  style={{ boxShadow: `0 8px 32px ${primary}44` }} />
+              )}
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: primary }}>{L.about}</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h2>
+              {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg max-w-2xl mx-auto ${bodyClass}`}>{profile.bio}</p>}
+              {(profile?.licence_numbers && profile.licence_numbers.length > 0) ? (
+                <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                  {profile.licence_numbers.map((l, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono" style={{ borderColor: `${primary}33`, color: primary, backgroundColor: `${primary}0d` }}>
+                      {l.label ? `${l.label}: ` : `${L.licencePrefix} `}{l.number}
+                    </span>
+                  ))}
+                </div>
+              ) : profile?.licence_no && (
+                <span className="mt-6 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono" style={{ borderColor: `${primary}33`, color: primary, backgroundColor: `${primary}0d` }}>
+                  {L.licencePrefix} {profile.licence_no}
+                </span>
+              )}
+            </div>
           </section>
         )}
 
@@ -311,29 +340,56 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="bg-gray-900 text-white py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ order: sectionOrder.footer }}>
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <footer className="text-white pb-28 sm:pb-0 safe-pb" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.footer }}>
+            <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${primary}55, transparent)` }} />
+            <div className="max-w-7xl mx-auto px-4 md:px-8 pt-12 pb-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+              {/* Brand */}
               <div>
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={64} height={64} className="w-16 h-16 object-contain mb-3 rounded" />}
-                <h3 className="text-xl font-bold">{tenant.name}</h3>
-                {profile?.bio && <p className="text-gray-400 text-sm mt-2 line-clamp-3">{profile.bio}</p>}
-                {profile?.contact_address && <p className="flex items-center gap-2 text-gray-300 text-sm mt-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-gray-400"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {profile.contact_address}</p>}
+                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={56} height={56} className="w-12 h-12 object-contain mb-4 rounded-xl" />}
+                <h3 className="text-lg font-bold text-white mb-2">{tenant.name}</h3>
+                {profile?.bio && <p className="text-slate-500 text-xs leading-relaxed line-clamp-3">{profile.bio}</p>}
+                {profile?.contact_address && (
+                  <p className="flex items-start gap-2 text-slate-500 text-xs mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: primary }}><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg>
+                    {profile.contact_address}
+                  </p>
+                )}
               </div>
+              {/* Contact */}
               <div>
-                <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">التواصل</h4>
-                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-green-400"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg> {waDisplay}</a>}
-                {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-2" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-gray-400"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
-                <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: primary }}>{L.footerContact}</h4>
+                {whatsapp && (
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-2.5" dir="ltr">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0 text-green-400"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg>
+                    {waDisplay}
+                  </a>
+                )}
+                {profile?.contact_phone && (
+                  <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-2.5" dir="ltr">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0" style={{ color: primary }}><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg>
+                    {profile.contact_phone}
+                  </a>
+                )}
+                {profile?.contact_email && (
+                  <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors" dir="ltr">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0" style={{ color: primary }}><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg>
+                    {profile.contact_email}
+                  </a>
+                )}
+              </div>
+              {/* Social + Hours */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: primary }}>Social</h4>
+                <SocialLinks profile={profile} waLink={waLink} />
                 {sections.working_hours && profile?.working_hours && (
-                  <div className="mt-6 pt-4 border-t border-gray-800">
-                    <h5 className="font-semibold text-sm text-gray-300 mb-2">{L.workingHoursHeading}</h5>
-                    <WorkingHours hours={profile.working_hours} lang={lang} />
+                  <div className="mt-6 pt-5 border-t" style={{ borderColor: pageTheme.cardBorder }}>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] mb-3" style={{ color: primary }}>{L.workingHoursHeading}</p>
+                    <WorkingHours hours={profile.working_hours} lang={lang} textClass="text-slate-400" />
                   </div>
                 )}
               </div>
-
             </div>
-            <div className="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+            <div className="border-t px-4 py-5 text-center text-xs text-slate-600" style={{ borderColor: pageTheme.cardBorder }}>
               {L.footerCopyright} © {new Date().getFullYear()} {tenant.name}
             </div>
           </footer>

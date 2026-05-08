@@ -92,6 +92,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             radial-gradient(ellipse 55% 55% at 85% 65%, ${primary}1a 0%, transparent 60%),
             ${pageTheme.bg};
         }
+        @keyframes nat-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+        .nat-card { animation: nat-float 5s ease-in-out infinite; }
+        .nat-leaf-blob { position:absolute; top:-8%; left:-12%; width:65%; aspect-ratio:1; background:radial-gradient(ellipse 60% 50% at 30% 40%, ${primary}22 0%, transparent 70%); filter:blur(48px); pointer-events:none; border-radius:60% 40% 55% 45% / 50% 55% 45% 50%; }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
@@ -129,18 +132,28 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
               </div>
             )}
+            <div className="nat-leaf-blob" />
             <div className="relative z-10 text-center px-4 max-w-2xl mx-auto w-full">
-              <div className="border px-8 py-10 shadow-2xl mx-auto"
-                style={{ backgroundColor: 'rgba(10,26,14,0.88)', borderColor: `${primary}40`, borderRadius: '32px', backdropFilter: 'blur(14px)', boxShadow: `0 0 0 1px ${primary}28, 0 32px 64px rgba(0,0,0,0.55)` }}>
+              <div className="nat-card border px-8 py-10 shadow-2xl mx-auto"
+                style={{ backgroundColor: 'rgba(10,26,14,0.90)', borderColor: `${primary}44`, borderRadius: '32px', backdropFilter: 'blur(16px)', boxShadow: `0 0 0 1px ${primary}28, 0 32px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)` }}>
                 {profile?.logo_url && (
-                  <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full shadow-md" style={{ border: `3px solid ${primary}40` }} priority />
+                  <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full shadow-md" style={{ border: `3px solid ${primary}44` }} priority />
                 )}
-                <h1 className="text-3xl sm:text-5xl font-bold mb-3 text-white leading-tight" style={{ fontFamily: pageTheme.headingFont }}>
+                <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 text-white leading-tight" style={{ fontFamily: pageTheme.headingFont }}>
                   {tenant.name}
                 </h1>
                 {profile?.tagline && <p className="nat-text text-lg font-semibold mb-3">{profile.tagline}</p>}
-                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto">{pageConfig.hero_headline}</p>}
-
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
+                {whatsapp && (
+                  <a href={waLink} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
+                    style={{ backgroundColor: primary, boxShadow: `0 16px 40px ${primary}55` }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                      <path d="M9.653.5a.75.75 0 01.694 0l7.5 4a.75.75 0 010 1.333L10.348 9.5a.75.75 0 01-.694 0L2.152 5.833a.75.75 0 010-1.333l7.5-4zM3.25 8.032l6.5 3.465 6.5-3.465V13.5a.75.75 0 01-.406.666l-6.5 3.5a.75.75 0 01-.69 0l-6.5-3.5A.75.75 0 013.25 13.5V8.032z" />
+                    </svg>
+                    {pageConfig.hero_cta_text || L.contactHeading}
+                  </a>
+                )}
               </div>
             </div>
           </section>
@@ -149,13 +162,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-center gap-3 mb-7">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 shrink-0" style={{ color: primary }}><path fillRule="evenodd" d="M9.664 1.319a.75.75 0 01.672 0 41.059 41.059 0 018.198 5.424.75.75 0 01-.254 1.285 31.372 31.372 0 00-7.86 3.83.75.75 0 01-.84 0 31.508 31.508 0 00-2.08-1.287V9.394c0-.244.065-.484.188-.698a38.998 38.998 0 005.726-4.41L8.18 7.75a.75.75 0 01-.36-1.298c.01-.008 1.854-1.274 1.844-5.133zM6.5 9.394v.106a30.5 30.5 0 00-3.232 3.25.75.75 0 001.114 1.005A29 29 0 016.5 11.025v4.726a.75.75 0 001.5 0v-4.633a31.383 31.383 0 013.835-2.668.75.75 0 00-.84-1.248A32.904 32.904 0 008 9.394z" clipRule="evenodd"/></svg>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: pageTheme.headingFont }}>{THEME_LABELS[lang].listingsHeading}</h2>
-              <div className="flex-1 h-px ml-4" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
-            </div>
-
-            {/* Filters */}
+            {/* Filters */
             {propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (

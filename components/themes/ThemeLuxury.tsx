@@ -102,6 +102,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           animation: lux-expand 1.2s 0.4s ease forwards;
         }
         @keyframes lux-expand { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        @keyframes scroll-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
       `}</style>
 
       <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
@@ -138,31 +139,37 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                 )}
               </div>
             )}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.75) 100%)' }} />
-            <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-16">
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.88) 100%)' }} />
+            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pt-24 pb-16">
               {profile?.logo_url && (
-                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain mx-auto mb-8 opacity-90" priority />
+                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-14 h-14 object-contain mx-auto mb-10 opacity-85" priority />
               )}
-              <h1 className="lux-underline text-5xl sm:text-7xl md:text-8xl font-bold mb-6 leading-none tracking-tight text-white" style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 'clamp(2.5rem, 8vw, 6rem)' }}>
+              <h1 className="lux-underline text-6xl sm:text-8xl md:text-9xl font-bold leading-none mb-0 text-white" style={{ fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
                 {tenant.name}
               </h1>
-              <div className="w-24 h-px mx-auto mb-6" style={{ backgroundColor: primary }} />
+              <div className="w-20 h-px mx-auto my-7" style={{ backgroundColor: primary }} />
               {profile?.tagline && (
-                <p className="text-lg sm:text-2xl font-light tracking-widest mb-8" style={{ color: primary }}>
+                <p className="text-base sm:text-xl font-light italic tracking-wide mb-6" style={{ color: primary, fontFamily: "Georgia, 'Times New Roman', serif" }}>
                   {profile.tagline}
                 </p>
               )}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && (
-                <p className="text-base sm:text-lg text-white/70 mb-10 max-w-xl mx-auto font-light leading-relaxed">
+                <p className="text-sm sm:text-base text-white/60 mb-10 max-w-xl mx-auto font-light leading-relaxed">
                   {pageConfig.hero_headline}
                 </p>
               )}
-
+              {whatsapp && (
+                <a href={waLink} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-none px-8 py-3.5 text-xs font-bold tracking-[0.2em] uppercase text-black transition-all hover:opacity-90 active:scale-95"
+                  style={{ backgroundColor: primary, boxShadow: `0 16px 48px ${primary}44` }}>
+                  {pageConfig.hero_cta_text || L.contactHeading}
+                </a>
+              )}
             </div>
-            {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-              <div className="w-px h-10 animate-pulse" style={{ backgroundColor: primary }} />
-              <span className="text-xs tracking-widest uppercase" style={{ color: primary }}>اكتشف</span>
+            {/* SCROLL indicator */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+              <span className="text-[10px] tracking-[0.4em] uppercase" style={{ color: primary }}>SCROLL</span>
+              <div className="w-px h-10" style={{ background: `linear-gradient(to bottom, ${primary}, transparent)`, animation: 'scroll-pulse 2s ease-in-out infinite' }} />
             </div>
           </section>
         )}

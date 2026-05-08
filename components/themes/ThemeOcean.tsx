@@ -150,12 +150,6 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-center gap-3 mb-7">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 shrink-0" style={{ color: primary }}><path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM9.25 4.065A8.963 8.963 0 005 3c-.85 0-1.673.118-2.454.339A.75.75 0 002 4.06v11a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.065z"/></svg>
-              <h2 className="text-2xl sm:text-3xl font-bold" style={{ fontFamily: pageTheme.headingFont, color: '#e0f2fe' }}>{THEME_LABELS[lang].listingsHeading}</h2>
-              <div className="flex-1 h-px ml-4" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
-            </div>
-
             {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (

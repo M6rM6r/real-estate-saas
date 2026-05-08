@@ -165,11 +165,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {/* Featured listing — wide horizontal */}
         {sections.listings && (
           <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            <div className="flex items-center gap-3 mb-7">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 shrink-0" style={{ color: primary }}><path fillRule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clipRule="evenodd"/></svg>
-              <h2 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: pageTheme.headingFont, color: '#fef3c7' }}>{THEME_LABELS[lang].listingsHeading}</h2>
-              <div className="flex-1 h-px ml-4" style={{ background: `linear-gradient(to right, ${primary}66, transparent)` }} />
-            </div>
             {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
