@@ -13,6 +13,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+function healthColor(score: number): string {
+  if (score >= 70) return '#00ff41'
+  if (score >= 35) return '#ffb441'
+  return '#ff4141'
+}
+
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -156,8 +162,10 @@ export default function AdminDashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#00ff41]/10">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Color</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Status</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Agency</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Health</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Posts</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Joined</th>
                   <th className="text-right px-6 py-3 text-xs font-medium text-[#00ff41]/40 uppercase">Actions</th>
@@ -166,6 +174,15 @@ export default function AdminDashboardPage() {
               <tbody>
                 {data.allAgencies.map((a) => (
                   <tr key={a.id} className="border-b border-[#00ff41]/10 hover:bg-[#00ff41]/5">
+                    <td className="px-6 py-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-block w-3.5 h-3.5 rounded-full border border-white/10"
+                          style={{ backgroundColor: a.primaryColor ?? '#3B82F6' }}
+                        />
+                        <span className="text-[#00ff41]/45 text-xs">{a.primaryColor ?? '#3B82F6'}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-3">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${
                         a.status === 'active'
@@ -177,6 +194,17 @@ export default function AdminDashboardPage() {
                       </span>
                     </td>
                     <td className="px-6 py-3 text-[#00ff41] font-medium">{a.name}</td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-[#00ff41]/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width: `${a.healthScore}%`, backgroundColor: healthColor(a.healthScore) }}
+                          />
+                        </div>
+                        <span className="text-xs" style={{ color: healthColor(a.healthScore) }}>{a.healthScore}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-3 text-[#00ff41]/60">{a.postCount}</td>
                     <td className="px-6 py-3 text-[#00ff41]/60">
                       {new Date(a.created_at).toLocaleDateString('en-US')}

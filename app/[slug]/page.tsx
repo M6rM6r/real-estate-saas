@@ -1,6 +1,7 @@
 ﻿import { adminDb } from '@/lib/firebase-admin'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
 import PageViewTracker from '@/components/PageViewTracker'
@@ -56,11 +57,36 @@ const serialize = (obj: any): any => {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params
   try {
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
+
+  let tenantSlug = slug
+
+  // Check if the host matches a custom domain
+  if (host && host !== 'localhost:3000' && host !== 'app.rewrew7.web.app' && !host.includes('vercel.app')) {
+    try {
+      const customDomainSnap = await withRetry(() =>
+        adminDb.collection('tenants')
+          .where('custom_domain', '==', host)
+          .where('status', '==', 'active')
+          .limit(1)
+          .get()
+      , 3, 600)
+      if (!customDomainSnap.empty) {
+        const tenantData = customDomainSnap.docs[0].data()
+        tenantSlug = tenantData.slug
+      }
+    } catch (error) {
+      // If custom domain lookup fails, continue with original slug
+      console.error('Custom domain lookup failed:', error)
+    }
+  }
+
   const tenantsSnap = await withRetry(() =>
-    adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+    adminDb.collection('tenants').where('slug', '==', tenantSlug).where('status', '==', 'active').limit(1).get()
   , 3, 600)
   if (tenantsSnap.empty) {
-    if (slug === DEMO_SLUG || slug === SAUDI_CAR_DEMO_SLUG || slug === LEGACY_DEMO_SLUG) {
+    if (tenantSlug === DEMO_SLUG || tenantSlug === SAUDI_CAR_DEMO_SLUG || tenantSlug === LEGACY_DEMO_SLUG) {
       return { title: 'مجموعة صالح للسيارات — ديمو', description: 'ديمو صفحة معرض سيارات محلي في السعودية باستخدام أدوات بناء الصفحات.' }
     }
     return { title: 'Not Found' }
@@ -206,25 +232,49 @@ const DEMO_DATA = {
 
 export default async function AgencyPage({ params }: { params: { slug: string } }) {
   const { slug } = params
+  const headersList = await headers()
+  const host = headersList.get('host') || ''
 
   if (slug === LEGACY_DEMO_SLUG) {
     redirect(`/${SAUDI_CAR_DEMO_SLUG}`)
   }
 
+  let tenantSlug = slug
+
+  // Check if the host matches a custom domain
+  if (host && host !== 'localhost:3000' && host !== 'app.rewrew7.web.app' && !host.includes('vercel.app')) {
+    try {
+      const customDomainSnap = await withRetry(() =>
+        adminDb.collection('tenants')
+          .where('custom_domain', '==', host)
+          .where('status', '==', 'active')
+          .limit(1)
+          .get()
+      , 3, 600)
+      if (!customDomainSnap.empty) {
+        const tenantData = customDomainSnap.docs[0].data()
+        tenantSlug = tenantData.slug
+      }
+    } catch (error) {
+      // If custom domain lookup fails, continue with original slug
+      console.error('Custom domain lookup failed:', error)
+    }
+  }
+
   let tenantsSnap: any
   try {
     tenantsSnap = await withRetry(() =>
-      adminDb.collection('tenants').where('slug', '==', slug).where('status', '==', 'active').limit(1).get()
+      adminDb.collection('tenants').where('slug', '==', tenantSlug).where('status', '==', 'active').limit(1).get()
     , 3, 600)
   } catch {
     tenantsSnap = { empty: true, docs: [] }
   }
   if (tenantsSnap.empty) {
     // Fallback static demo page only when there is no matching tenant.
-    if (slug === DEMO_SLUG || slug === SAUDI_CAR_DEMO_SLUG) {
+    if (tenantSlug === DEMO_SLUG || tenantSlug === SAUDI_CAR_DEMO_SLUG) {
       return (
         <PublicAgencyPage
-          tenant={{ ...DEMO_DATA.tenant, slug } as any}
+          tenant={{ ...DEMO_DATA.tenant, slug: tenantSlug } as any}
           profile={DEMO_DATA.profile as any}
           listings={DEMO_DATA.listings as any}
           news={DEMO_DATA.news as any}

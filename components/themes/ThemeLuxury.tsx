@@ -22,6 +22,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, EmptyState, THEME_LABELS,
 } from './shared'
 
@@ -29,6 +30,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
   const primary = tenant.primary_color ?? '#c9a84c'
   const pageTheme = PAGE_THEMES['luxury'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -62,7 +64,11 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -102,27 +108,9 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           animation: lux-expand 1.2s 0.4s ease forwards;
         }
         @keyframes lux-expand { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-        @keyframes scroll-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0' }}>
-
-        {/* Sticky minimal nav */}
-        <nav className={`fixed inset-x-0 z-40 transition-all duration-500 top-0 ${scrolled ? 'bg-black/90 backdrop-blur border-b border-yellow-900/30' : 'bg-transparent'}`}>
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {profile?.logo_url ? (
-                <Image src={profile.logo_url} alt={tenant.name} width={36} height={36} className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: primary, color: '#0a0a0a' }}>
-                  {tenant.name.charAt(0)}
-                </div>
-              )}
-              <span className="font-light tracking-widest text-sm uppercase text-white/90">{tenant.name}</span>
-            </div>
-
-          </div>
-        </nav>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e8e0d0', fontFamily: headingFont }}>
 
         {/* Hero — full bleed, no card */}
         {sections.hero && (
@@ -130,26 +118,19 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" priority />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: `linear-gradient(135deg, #0a0a0a 0%, #1a1209 100%)` }}>
-                {isPreview && (
-                  <div className="flex flex-col items-center justify-center gap-2 text-white/50 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-                  </div>
-                )}
-              </div>
+              <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #0a0a0a 0%, #1a1209 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.88) 100%)' }} />
             <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pt-24 pb-16">
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-14 h-14 object-contain mx-auto mb-10 opacity-85" priority />
               )}
-              <h1 className="lux-underline text-6xl sm:text-8xl md:text-9xl font-bold leading-none mb-0 text-white" style={{ fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
+              <h1 className="lux-underline text-6xl sm:text-8xl md:text-9xl font-bold leading-none mb-0 text-white" style={{ fontFamily: headingFont, letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
                 {tenant.name}
               </h1>
               <div className="w-20 h-px mx-auto my-7" style={{ backgroundColor: primary }} />
               {profile?.tagline && (
-                <p className="text-base sm:text-xl font-light italic tracking-wide mb-6" style={{ color: primary, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                <p className="text-base sm:text-xl font-light italic tracking-wide mb-6" style={{ color: primary, fontFamily: headingFont }}>
                   {profile.tagline}
                 </p>
               )}
@@ -158,18 +139,6 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                   {pageConfig.hero_headline}
                 </p>
               )}
-              {whatsapp && (
-                <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-none px-8 py-3.5 text-xs font-bold tracking-[0.2em] uppercase text-black transition-all hover:opacity-90 active:scale-95"
-                  style={{ backgroundColor: primary, boxShadow: `0 16px 48px ${primary}44` }}>
-                  {pageConfig.hero_cta_text || L.contactHeading}
-                </a>
-              )}
-            </div>
-            {/* SCROLL indicator */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
-              <span className="text-[10px] tracking-[0.4em] uppercase" style={{ color: primary }}>SCROLL</span>
-              <div className="w-px h-10" style={{ background: `linear-gradient(to bottom, ${primary}, transparent)`, animation: 'scroll-pulse 2s ease-in-out infinite' }} />
             </div>
           </section>
         )}
@@ -234,7 +203,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       <ListingBadges listing={featured} primary={primary} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
                     </div>
                     <div className="flex-1 p-8 flex flex-col justify-center" style={{ backgroundColor: '#111' }}>
-                      <h3 className="text-2xl sm:text-3xl font-bold mb-3" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#e8e0d0' }}>
+                      <h3 className="text-2xl sm:text-3xl font-bold mb-3" style={{ fontFamily: headingFont, color: '#e8e0d0' }}>
                         {featured.title}
                       </h3>
                       {featured.price != null && (
@@ -319,7 +288,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-10">
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
-                <h2 className="text-2xl font-bold tracking-widest uppercase" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>{L.newsHeading}</h2>
+                <h2 className="text-2xl font-bold tracking-widest uppercase" style={{ fontFamily: headingFont, color: primary }}>{L.newsHeading}</h2>
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
               </div>
               <div className="space-y-8">
@@ -347,7 +316,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
           <section data-section="about" className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.about }}>
             <div className="max-w-2xl mx-auto">
               <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: primary }} />
-              <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+              <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: headingFont }}>
                 &ldquo;{profile.bio}&rdquo;
               </p>
               {(profile.licence_numbers && profile.licence_numbers.length > 0)
@@ -371,7 +340,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email || profile?.contact_address) && (
         <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.contact }}>
           <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: primary }}>
+            <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: headingFont, color: primary }}>
               {L.contactHeading}
             </h2>
             <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: `${primary}60` }} />

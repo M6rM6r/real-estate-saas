@@ -64,6 +64,7 @@ export type Profile = {
     hero_style?: 'centered' | 'split' | 'minimal'
     hero_cta_text?: string
     button_shape?: 'pill' | 'soft' | 'sharp'
+    headingFont?: string
     seo_title?: string
     seo_description?: string
     announcement_text?: string
@@ -146,9 +147,9 @@ export const DAY_LABELS_EN: Record<string, string> = {
 
 export const THEME_LABELS = {
   ar: {
-    about: 'من نحن',
-    contactHeading: 'تواصل معنا',
-    contactSubtitle: 'نسعد بخدمتك — تواصل معنا عبر:',
+    about: 'نبذة',
+    contactHeading: 'التواصل',
+    contactSubtitle: 'نسعد بخدمتك — عبر:',
     listingsHeading: 'قائمة العروض',
     listingsHeadingAlt: 'العروض المتاحة',
     newsHeading: 'آخر الأخبار',
@@ -229,6 +230,7 @@ export function getPageConfig(profile: Profile) {
     hero_style: 'centered' as 'centered' | 'split' | 'minimal',
     hero_cta_text: 'تواصل عبر واتساب',
     button_shape: 'soft' as 'pill' | 'soft' | 'sharp',
+    headingFont: 'inherit',
     seo_title: '',
     seo_description: '',
     announcement_text: '',
@@ -238,6 +240,11 @@ export function getPageConfig(profile: Profile) {
     offer_label_2: 'للإيجار',
     page_lang: 'ar' as 'ar' | 'en',
     ...(profile?.page_config ?? {}),
+    // Global UI decision: keep hero centered (no split header layout)
+    hero_style: 'centered' as 'centered' | 'split' | 'minimal',
+    // Global UI decision: hide search + price sort chips on public themes
+    show_listing_search: false,
+    show_listing_sort: false,
   }
 }
 
@@ -287,6 +294,12 @@ export function getBtnRadius(buttonShape: string, themeRadius: string) {
   if (buttonShape === 'pill') return '9999px'
   if (buttonShape === 'sharp') return '0px'
   return themeRadius
+}
+
+export function getHeadingFont(selectedFont?: string, fallbackFont?: string) {
+  if (selectedFont && selectedFont !== 'inherit') return selectedFont
+  if (fallbackFont) return fallbackFont
+  return 'inherit'
 }
 
 // ─── Icons ──────────────────────────────────────────────────────────────────

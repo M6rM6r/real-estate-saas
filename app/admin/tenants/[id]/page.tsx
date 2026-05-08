@@ -41,6 +41,7 @@ type TenantDetail = {
   status: 'active' | 'suspended';
   business_type?: string;
   primary_color?: string;
+  custom_domain?: string;
   createdAt?: string;
   created_at?: string;
   listingCount?: number;
@@ -150,6 +151,7 @@ export default function AdminTenantDetailPage() {
       business_type: data.business_type ?? 'real_estate',
       theme: data.theme ?? 'modern',
       primary_color: data.primary_color ?? '#3B82F6',
+      custom_domain: data.custom_domain ?? '',
     });
     setSaveError(null);
     setEditing(true);
@@ -311,6 +313,7 @@ export default function AdminTenantDetailPage() {
               { label: 'Status',       value: data.status },
               { label: 'Business Type', value: (() => { const b = BUSINESS_TYPES[data.business_type ?? 'real_estate']; return b ? `${b.icon} ${b.label}` : (data.business_type ?? '—'); })() },
               { label: 'Theme',        value: data.theme ?? 'modern' },
+              { label: 'Custom Domain', value: data.custom_domain || '—' },
               { label: 'Joined',       value: createdDate },
               { label: 'Tenant ID',    value: data.id },
             ].map(f => (
@@ -384,6 +387,11 @@ export default function AdminTenantDetailPage() {
                 <Input value={editForm.primary_color ?? ''} onChange={e => setEditForm(f => ({ ...f, primary_color: e.target.value }))}
                   className="bg-[#0a0a0a] border-[#00ff41]/20 text-[#00ff41] h-8 text-xs font-mono flex-1" maxLength={7} />
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[#00ff41]/50 text-[10px] uppercase">Custom Domain</Label>
+              <Input value={editForm.custom_domain ?? ''} onChange={e => setEditForm(f => ({ ...f, custom_domain: e.target.value }))}
+                className="bg-[#0a0a0a] border-[#00ff41]/20 text-[#00ff41] h-8 text-xs font-mono" placeholder="e.g., myagency.com" />
             </div>
           </div>
         )}

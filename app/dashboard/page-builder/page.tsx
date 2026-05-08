@@ -36,9 +36,10 @@ const PB_T = {
     zoomLabel: 'التكبير', resetCrop: 'إعادة الضبط',
     changeImg: 'تغيير', clickUpload: 'اضغط لاختيار صورة', clickOrDrag: 'اضغط أو اسحب صورة هنا',
     changeImage: 'تغيير الصورة', uploadFailed: 'فشل الرفع', uploadHint: 'JPG · PNG · WebP · حتى 5 MB',
+    removeImage: 'حذف الصورة', deleteImage: 'حذف',
     reorderSection: 'إعادة ترتيب القسم',
-    sectionHero: 'القسم الرئيسي', sectionListings: 'العروض', sectionAbout: 'من نحن',
-    sectionContact: 'تواصل معنا', sectionWorkingHours: 'أوقات العمل', sectionFooter: 'التذييل',
+    sectionHero: 'القسم الرئيسي', sectionListings: 'العروض', sectionAbout: 'نبذة',
+    sectionContact: 'التواصل', sectionWorkingHours: 'أوقات العمل', sectionFooter: 'التذييل',
     sun: 'الأحد', mon: 'الإثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس', fri: 'الجمعة', sat: 'السبت',
     loadingPage: 'جاري تحميل إعدادات صفحتك...',
     pageBuilderTitle: 'منشئ الصفحة', pageBuilderSub: 'خصّص صفحتك العامة التي يراها عملاؤك',
@@ -53,6 +54,7 @@ const PB_T = {
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
     pageSettingsTitle: '🎛️ إعدادات الصفحة', heroHeadlineLabel: 'العنوان الرئيسي للصفحة',
     heroHeadlinePlaceholder: 'اكتشف أفضل العروض لديك', pageLangLabel: 'لغة الصفحة',
+    fontFamilyLabel: 'نوع الخط', fontFamilyHint: 'اختر الخط الذي يظهر في العناوين الرئيسية بصفحتك',
     showListingSortLabel: 'عرض أزرار الترتيب في العروض', showListingSortHint: 'يسمح للزوار بترتيب العروض حسب السعر أو الأحدث',
     chooseDesign: 'اختر تصميم صفحتك', chooseDesignSub: 'سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ',
     brandColor: '🎨 لون العلامة التجارية', brandColorHint: 'يُستخدم كلون رئيسي في صفحتك',
@@ -105,6 +107,7 @@ const PB_T = {
     zoomLabel: 'Zoom', resetCrop: 'Reset',
     changeImg: 'Change', clickUpload: 'Click to upload', clickOrDrag: 'Click or drag image here',
     changeImage: 'Change Image', uploadFailed: 'Upload failed', uploadHint: 'JPG · PNG · WebP · up to 5 MB',
+    removeImage: 'Remove Image', deleteImage: 'Delete',
     reorderSection: 'Reorder section',
     sectionHero: 'Header', sectionListings: 'Listings', sectionAbout: 'About Us',
     sectionContact: 'Contact', sectionWorkingHours: 'Working Hours', sectionFooter: 'Footer',
@@ -122,6 +125,7 @@ const PB_T = {
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
     pageSettingsTitle: '🎛️ Page Settings', heroHeadlineLabel: 'Main Page Headline',
     heroHeadlinePlaceholder: 'Discover the best listings', pageLangLabel: 'Page Language',
+    fontFamilyLabel: 'Font Family', fontFamilyHint: 'Choose the font used for key headings on your page',
     showListingSortLabel: 'Show Sort Buttons on Listings', showListingSortHint: 'Lets visitors sort listings by price or newest',
     chooseDesign: 'Choose Your Page Design', chooseDesignSub: 'The design will be applied instantly to the preview and saved to your page',
     brandColor: '🎨 Brand Color', brandColorHint: 'Used as the primary color in your page',
@@ -456,6 +460,16 @@ function ImageUploader({
             <p className="text-[11px] text-slate-600">{t.uploadHint}</p>
             {err && <p className="text-[11px] text-red-400">{err}</p>}
           </div>
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors"
+              title={t.removeImage}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
         </div>
       ) : (
@@ -471,6 +485,19 @@ function ImageUploader({
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> {t.changeImage}</>}
               </div>
+              {!uploading && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange('');
+                  }}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-red-500/80 hover:bg-red-600 rounded-lg text-white"
+                  title={t.removeImage}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           ) : (
             <div className="w-full h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
@@ -512,8 +539,8 @@ type SectionOrderKey = (typeof SECTION_ORDER_KEYS)[number];
 const SECTION_ORDER_LABELS: Record<SectionOrderKey, { icon: string; label: string }> = {
   hero: { icon: '🏠', label: 'القسم الرئيسي' },
   listings: { icon: '🏘️', label: 'العروض' },
-  about: { icon: '👥', label: 'من نحن' },
-  contact: { icon: '📞', label: 'تواصل معنا' },
+  about: { icon: '👥', label: 'نبذة' },
+  contact: { icon: '📞', label: 'التواصل' },
   working_hours: { icon: '🕒', label: 'أوقات العمل' },
   footer: { icon: '▬', label: 'التذييل' },
 };
@@ -594,6 +621,7 @@ const DEFAULT_PAGE_CONFIG: NonNullable<Profile['page_config']> = {
   hero_style: 'centered',
   hero_cta_text: 'تواصل عبر واتساب',
   button_shape: 'soft',
+  headingFont: 'inherit',
   seo_title: '',
   seo_description: '',
   announcement_text: '',
@@ -648,6 +676,45 @@ const CURRENCY_OPTIONS = [
   { code: 'USD', symbol: '$', nameAr: 'دولار' },
   { code: 'EUR', symbol: '€', nameAr: 'يورو' },
   { code: 'GBP', symbol: '£', nameAr: 'جنيه إسترليني' },
+] as const;
+
+const FONT_OPTIONS = [
+  {
+    id: 'inherit',
+    labelAr: 'افتراضي حسب القالب',
+    labelEn: 'Theme Default',
+    css: 'inherit',
+  },
+  {
+    id: 'tajawal',
+    labelAr: 'تجوال (واضح وحديث)',
+    labelEn: 'Tajawal (Clean Modern)',
+    css: "'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif",
+  },
+  {
+    id: 'cairo',
+    labelAr: 'القاهرة (متوازن)',
+    labelEn: 'Cairo (Balanced)',
+    css: "'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif",
+  },
+  {
+    id: 'almarai',
+    labelAr: 'المراعي (سلس)',
+    labelEn: 'Almarai (Smooth)',
+    css: "'Almarai', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif",
+  },
+  {
+    id: 'system',
+    labelAr: 'خط النظام (سريع)',
+    labelEn: 'System UI (Fast)',
+    css: "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+  },
+  {
+    id: 'serif',
+    labelAr: 'كلاسيكي (Serif)',
+    labelEn: 'Classic Serif',
+    css: "'Noto Naskh Arabic', 'Amiri', Georgia, 'Times New Roman', serif",
+  },
 ] as const;
 
 const demoListings = [
@@ -715,7 +782,7 @@ const isValidUrl = (value: string) => {
 };
 
 export default function PageBuilderPage() {
-  const { lang } = useLanguage();
+  const { lang, toggleLang } = useLanguage();
   const { toast } = useToast();
   const t = PB_T[lang as keyof typeof PB_T];
   const DAY_LABELS = { sun: t.sun, mon: t.mon, tue: t.tue, wed: t.wed, thu: t.thu, fri: t.fri, sat: t.sat };
@@ -1191,6 +1258,7 @@ export default function PageBuilderPage() {
   }
 
   const slug = data?.tenant?.slug || '';
+  const customDomain = data?.tenant?.custom_domain || '';
   const configuredBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
   const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -1204,9 +1272,10 @@ export default function PageBuilderPage() {
     }
   }
 
-  const baseUrl = 'https://wa9l.website';
-  const publicUrl = slug ? `${baseUrl}/${slug}` : baseUrl;
-  const publicPath = slug ? `/${slug}` : '/';
+  const baseUrl = customDomain ? `https://${customDomain}` : 'https://wa9l.website';
+  const publicUrl = customDomain ? `https://${customDomain}` : (slug ? `https://wa9l.website/${slug}` : 'https://wa9l.website');
+  const displayUrl = publicUrl.replace(/^https?:\/\//, '');
+  const publicPath = customDomain ? '/' : (slug ? `/${slug}` : '/');
   const shouldShowInvalidUrlWarning = Boolean(configuredBaseUrl) && !isConfiguredBaseUrlValid;
   const shouldShowMissingUrlInfo = !configuredBaseUrl;
   const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
@@ -1310,7 +1379,7 @@ export default function PageBuilderPage() {
                 includeMargin={false}
               />
             </div>
-            <p className="text-xs text-slate-400 font-mono break-all text-center">{publicUrl}</p>
+            <p className="text-xs text-slate-400 font-mono break-all text-center">{displayUrl}</p>
             <div className="flex gap-2 w-full">
               <Button onClick={downloadQr} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
                 <Download className="h-4 w-4" /> {t.downloadPng}
@@ -1328,9 +1397,19 @@ export default function PageBuilderPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="mb-1 relative z-10 wa9l-fade">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
+      <div className="mb-1 relative z-10 wa9l-fade flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
+          <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
+        </div>
+        <button
+          type="button"
+          onClick={toggleLang}
+          className="px-3 py-2 rounded-lg border border-slate-600 text-slate-300 hover:text-blue-200 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all text-sm font-medium"
+          title={lang === 'ar' ? 'Switch to English' : 'تبديل إلى العربية'}
+        >
+          {lang === 'ar' ? '🇬🇧 EN' : '🇸🇦 AR'}
+        </button>
       </div>
 
       {/* Top bar */}
@@ -1338,7 +1417,7 @@ export default function PageBuilderPage() {
         <div className="min-w-0 flex items-center gap-3">
           <div className="flex items-center gap-2 bg-black/25 border border-blue-400/15 rounded-2xl px-3 py-2 min-w-0 max-w-xs sm:max-w-md">
             <Globe className="h-3.5 w-3.5 shrink-0 text-blue-300" />
-            <p className="text-blue-200 font-mono text-xs truncate">{publicUrl}</p>
+            <p className="text-blue-200 font-mono text-xs truncate">{displayUrl}</p>
           </div>
           {shouldShowInvalidUrlWarning && (
             <p className="text-xs text-red-400 flex items-center gap-1 shrink-0">
@@ -1461,20 +1540,6 @@ export default function PageBuilderPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 py-1">
-                  <div>
-                    <p className="text-sm text-white">{t.showListingSortLabel}</p>
-                    <p className="text-xs text-slate-500">{t.showListingSortHint}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => updatePageConfig({ show_listing_sort: !(pageConfig.show_listing_sort ?? true) })}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${ (pageConfig.show_listing_sort ?? true) ? 'bg-blue-600' : 'bg-slate-700' }`}
-                    aria-pressed={pageConfig.show_listing_sort ?? true}
-                  >
-                    <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${ (pageConfig.show_listing_sort ?? true) ? 'translate-x-4' : 'translate-x-1' }`} />
-                  </button>
-                </div>
               </div>
             </TabsContent>
 
@@ -1487,8 +1552,14 @@ export default function PageBuilderPage() {
                   {Object.values(PAGE_THEMES).filter((theme: any) => theme.dark).map((theme: any) => (
                     <button
                       key={theme.id}
-                      onClick={() => { setSelectedTheme(theme.id); markDirty(); }}
-                      className={`relative rounded-xl overflow-hidden cursor-pointer transition-all border-2 ${
+                      onClick={() => { 
+                        setSelectedTheme(theme.id); 
+                        updatePageConfig({ 
+                          button_shape: theme.buttonShape
+                        });
+                        markDirty(); 
+                      }}
+                      className={`relative rounded-xl overflow-hidden cursor-pointer transition-all border-2 group ${
                         selectedTheme === theme.id ? 'border-indigo-400 shadow-xl shadow-indigo-500/25 scale-[1.02] ring-1 ring-indigo-400/30' : 'border-slate-700/60 hover:border-slate-500 hover:scale-[1.01]'
                       }`}
                       aria-label={`Select theme ${theme.label}`}
@@ -1546,12 +1617,15 @@ export default function PageBuilderPage() {
                         </div>
                       </div>
 
-                      {/* Label overlay at bottom */}
+                      {/* Label overlay with emoji at bottom */}
                       <div className="flex items-center justify-between px-2.5 py-2" style={{ backgroundColor: theme.dark ? '#111' : '#f8fafc', borderTop: `1px solid ${theme.cardBorder}` }}>
-                        <p className="text-xs font-bold" style={{ color: theme.dark ? '#fff' : '#0f172a', fontFamily: theme.headingFont }}>{theme.label}</p>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: theme.accent + '22', color: theme.accent }}>
-                          {theme.labelEn}
-                        </span>
+                        <div className="flex flex-col gap-0.5 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-lg">{theme.emoji}</span>
+                            <p className="text-xs font-bold" style={{ color: theme.dark ? '#fff' : '#0f172a', fontFamily: theme.headingFont }}>{theme.label}</p>
+                          </div>
+                          <p className="text-[10px] text-gray-400">{theme.description}</p>
+                        </div>
                       </div>
 
                       {selectedTheme === theme.id && (
@@ -1601,6 +1675,30 @@ export default function PageBuilderPage() {
                     className="wa9l-field text-white w-28 font-mono text-sm"
                   />
                   <span className="text-xs text-slate-500">{t.brandColorHint}</span>
+                </div>
+              </div>
+
+              <div className="wa9l-card rounded-2xl p-5 space-y-3">
+                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
+                  {t.fontFamilyLabel}
+                </p>
+                <p className="text-xs text-slate-500">{t.fontFamilyHint}</p>
+                <select
+                  value={pageConfig.headingFont || 'inherit'}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updatePageConfig({ headingFont: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
+                >
+                  {FONT_OPTIONS.map((f) => (
+                    <option key={f.id} value={f.css}>
+                      {lang === 'ar' ? f.labelAr : f.labelEn}
+                    </option>
+                  ))}
+                </select>
+                <div className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-3">
+                  <p className="text-[11px] text-slate-500 mb-2">{lang === 'ar' ? 'معاينة الخط' : 'Font preview'}</p>
+                  <p style={{ fontFamily: pageConfig.headingFont || 'inherit' }} className="text-lg text-white font-bold leading-relaxed">
+                    {lang === 'ar' ? 'مطر العقارية — واجهة احترافية لعروضك' : 'Matar Real Estate — Professional listings showcase'}
+                  </p>
                 </div>
               </div>
 
@@ -1827,7 +1925,7 @@ export default function PageBuilderPage() {
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
                         {pageConfig.seo_description || profile.bio || t.bizDescFallback}
                       </p>
-                      <p className="text-[10px] text-slate-600 mt-1 truncate">{publicUrl}</p>
+                      <p className="text-[10px] text-slate-600 mt-1 truncate">{displayUrl}</p>
                     </div>
                   </div>
                 </div>
@@ -2335,7 +2433,15 @@ export default function PageBuilderPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
               </div>
-              {/* Device segmented toggle */}
+              <button
+                type="button"
+                onClick={() => updatePageConfig({ page_lang: pageConfig.page_lang === 'ar' ? 'en' : 'ar' })}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.10] bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-slate-300 hover:text-blue-200 hover:border-blue-400/30 hover:bg-blue-500/10 transition-all"
+                aria-label={lang === 'ar' ? 'تبديل لغة الصفحة' : 'Toggle page language'}
+              >
+                <Globe className="h-3 w-3" />
+                <span>{(pageConfig.page_lang ?? 'ar') === 'ar' ? 'AR → EN' : 'EN → AR'}</span>
+              </button>
             </div>
 
             {/* Live inline preview — renders theme component directly, no save needed */}
@@ -2355,6 +2461,7 @@ export default function PageBuilderPage() {
                 {/* CSS-var wrapper: overrides :root --primary instantly without save */}
                 <div style={{ '--primary': primaryColor, '--accent': primaryColor } as React.CSSProperties}>
                 <PublicAgencyPage
+                  key={`preview-${selectedTheme}-${pageConfig.page_lang ?? 'ar'}`}
                   tenant={{
                     id: data?.tenant?.id ?? 'preview',
                     name: agencyName,

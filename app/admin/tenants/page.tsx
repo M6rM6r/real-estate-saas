@@ -54,19 +54,7 @@ const SORT_OPTIONS = [
   { value: 'listings', label: 'Most Listings' },
   { value: 'leads',    label: 'Most Leads' },
   { value: 'starred',  label: 'Starred First' },
-  { value: 'health',   label: 'Best Health' },
 ];
-
-function tenantHealth(t: Tenant): number {
-  // Weighted score: listings contribute 10pts, leads 15pts, agents 5pts — capped at 100
-  return Math.min(100, (t.listingCount ?? 0) * 10 + (t.leadCount ?? 0) * 15 + (t.agentCount ?? 0) * 5);
-}
-
-function healthColor(score: number): string {
-  if (score >= 70) return '#00ff41';
-  if (score >= 35) return '#ffb441';
-  return '#ff4141';
-}
 
 const emptyForm = {
   name: '', slug: '', email: '', tempPassword: '',
@@ -102,6 +90,7 @@ export default function AdminTenantsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
+  const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
 
   // Bulk
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -211,13 +200,15 @@ export default function AdminTenantsPage() {
       case 'listings': list = [...list].sort((a, b) => (b.listingCount ?? 0) - (a.listingCount ?? 0)); break;
       case 'leads':    list = [...list].sort((a, b) => (b.leadCount ?? 0) - (a.leadCount ?? 0)); break;
       case 'starred':  list = [...list].sort((a, b) => (starred.has(b.id) ? 1 : 0) - (starred.has(a.id) ? 1 : 0)); break;
-      case 'health':   list = [...list].sort((a, b) => tenantHealth(b) - tenantHealth(a)); break;
       default:         list = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     return list;
   }, [tenants, search, statusFilter, typeFilter, sortBy, starredFilter, starred]);
 
   const allSelected = filtered.length > 0 && filtered.every(t => selected.has(t.id));
+
+  const activeTenants = useMemo(() => filtered.filter(t => t.status === 'active'), [filtered]);
+  const suspendedTenants = useMemo(() => filtered.filter(t => t.status === 'suspended'), [filtered]);
 
   const toggleAll = () => {
     if (allSelected) setSelected(new Set());
@@ -412,7 +403,21 @@ export default function AdminTenantsPage() {
           </SelectContent>
         </Select>
 
-        <span className="text-[#00ff41]/30 text-xs ml-auto">{filtered.length} results</span>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="inline-flex rounded-md border border-[#00ff41]/20 overflow-hidden">
+            <button
+              onClick={() => setViewMode('board')}
+              className={`h-8 px-3 text-xs font-mono transition-colors ${viewMode === 'board' ? 'bg-[#00ff41]/15 text-[#00ff41]' : 'text-[#00ff41]/40 hover:text-[#00ff41]/70 hover:bg-[#00ff41]/5'}`}>
+              Board
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`h-8 px-3 text-xs font-mono border-l border-[#00ff41]/20 transition-colors ${viewMode === 'table' ? 'bg-[#00ff41]/15 text-[#00ff41]' : 'text-[#00ff41]/40 hover:text-[#00ff41]/70 hover:bg-[#00ff41]/5'}`}>
+              Table
+            </button>
+          </div>
+          <span className="text-[#00ff41]/30 text-xs">{filtered.length} results</span>
+        </div>
         <button
           onClick={() => setStarredFilter(v => !v)}
           title="Show starred only"
@@ -448,11 +453,92 @@ export default function AdminTenantsPage() {
         </div>
       )}
 
-      {/* Table */}
+      {/* Tenant Views */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-[#00ff41]/30">
           <Users className="h-12 w-12 mb-4 text-[#00ff41]/20" />
           <p className="text-sm">{search ? '> no tenants match your search' : '> no tenants yet.'}</p>
+        </div>
+      ) : viewMode === 'board' ? (
+        <div className="space-y-4">
+          {[{ key: 'active', title: 'Active Tenants', items: activeTenants, color: '#00ff41' }, { key: 'suspended', title: 'Suspended Tenants', items: suspendedTenants, color: '#ffb441' }].map(section => (
+            <div key={section.key} className="bg-[#0d0d0d] border border-[#00ff41]/15 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm uppercase tracking-wider font-semibold" style={{ color: section.color }}>{section.title}</h3>
+                <span className="text-xs text-[#00ff41]/35">{section.items.length} tenants</span>
+              </div>
+              {section.items.length === 0 ? (
+                <p className="text-xs text-[#00ff41]/25 py-3">No tenants in this section.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {section.items.map((t) => {
+                    const btype = BUSINESS_TYPES[t.business_type ?? 'real_estate'];
+                    return (
+                      <div key={t.id} className={`rounded-lg border p-3 ${selected.has(t.id) ? 'bg-[#00ff41]/10 border-[#00ff41]/40' : 'bg-[#0a0a0a] border-[#00ff41]/15'} ${starred.has(t.id) ? 'shadow-[0_0_0_1px_rgba(255,215,0,0.45)]' : ''}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} className="accent-[#00ff41] cursor-pointer" />
+                            <button onClick={() => toggleStar(t.id)} className="p-1 rounded hover:bg-[#ffd700]/10" title={starred.has(t.id) ? 'Unstar' : 'Star'}>
+                              <Star className={`h-3.5 w-3.5 ${starred.has(t.id) ? 'fill-[#ffd700] text-[#ffd700]' : 'text-[#00ff41]/25'}`} />
+                            </button>
+                            <span className={`px-2 py-0.5 rounded text-[10px] border ${t.status === 'active' ? 'text-[#00ff41] border-[#00ff41]/30 bg-[#00ff41]/10' : 'text-[#ffb441] border-[#ffb441]/30 bg-[#ffb441]/10'}`}>
+                              {t.status === 'active' ? 'Active' : 'Suspended'}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => toggleStatus(t)}
+                            title={t.status === 'active' ? 'Set tenant to suspended' : 'Set tenant to active'}
+                            className={`px-2 py-0.5 rounded text-[10px] border ${t.status === 'active' ? 'text-[#ffb441] border-[#ffb441]/35 bg-[#ffb441]/10 hover:bg-[#ffb441]/20' : 'text-[#00ff41] border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20'}`}>
+                            {t.status === 'active' ? 'Set Suspended' : 'Set Active'}
+                          </button>
+                        </div>
+
+                        <div className="mb-3">
+                          <Link href={`/admin/tenants/${t.id}`} className="text-[#00ff41] font-semibold hover:underline block truncate">{t.name}</Link>
+                          <div className="flex items-center gap-1 mt-1">
+                            <code className="text-[#00ff41]/45 bg-[#00ff41]/5 border border-[#00ff41]/10 px-1.5 py-0.5 rounded text-[10px]">{t.slug}</code>
+                            <button onClick={() => copyToClipboard(t.slug, `slug-${t.id}`)} className="p-0.5 text-[#00ff41]/20 hover:text-[#00ff41]/60" title="Copy slug">
+                              {copiedField === `slug-${t.id}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[10px] mb-3">
+                          <span className="px-2 py-0.5 rounded border border-[#00ff41]/20 text-[#00ff41]/60">{btype ? `${btype.icon} ${btype.label}` : (t.business_type ?? '—')}</span>
+                          <span className="px-2 py-0.5 rounded border border-[#00ff41]/20 text-[#00ff41]/40 capitalize">{t.theme ?? 'modern'}</span>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2 text-center mb-3">
+                          <div className="rounded border border-[#00ff41]/10 py-1"><p className="text-[9px] text-[#00ff41]/30">Listings</p><p className="text-[#00ff41] text-xs">{t.listingCount ?? 0}</p></div>
+                          <div className="rounded border border-[#00ff41]/10 py-1"><p className="text-[9px] text-[#00ff41]/30">Leads</p><p className="text-[#00ff41] text-xs">{t.leadCount ?? 0}</p></div>
+                          <div className="rounded border border-[#00ff41]/10 py-1"><p className="text-[9px] text-[#00ff41]/30">Agents</p><p className="text-[#00ff41] text-xs">{t.agentCount ?? 0}</p></div>
+                          <div className="rounded border border-[#00ff41]/10 py-1"><p className="text-[9px] text-[#00ff41]/30">Posts</p><p className="text-[#00ff41] text-xs">{t.postCount ?? 0}</p></div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => { setNoteModal(t.id); setNoteInput(''); }} className="p-1.5 rounded text-[#41b8ff]/40 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10" title="Notes">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                          </button>
+                          <a href={`/${t.slug}`} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10" title="View public page">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                          <Link href={`/admin/tenants/${t.id}`} className="p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10" title="Open detail">
+                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          </Link>
+                          <button onClick={() => openEdit(t)} className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10" title="Edit">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setDeleteId(t.id)} className="p-1.5 rounded text-[#ff4141]/30 hover:text-[#ff4141] hover:bg-[#ff4141]/10" title="Delete">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       ) : (
         <div className="bg-[#0d0d0d] border border-[#00ff41]/15 rounded-xl overflow-hidden">
@@ -465,7 +551,7 @@ export default function AdminTenantsPage() {
                   </th>
                   <th className="px-2 py-3 w-6"></th>
                   <th className="px-2 py-3 text-[#00ff41]/30 font-medium text-left w-8">#</th>
-                  {['Agency', 'Slug', 'Type', 'Theme', 'Color', 'Status', 'Health', 'Listings', 'Leads', 'Agents', 'Notes', 'Joined', 'Actions'].map(h => (
+                  {['Agency', 'Slug', 'Type', 'Theme', 'Listings', 'Leads', 'Agents', 'Notes', 'Joined', 'Actions'].map(h => (
                     <th key={h} className={`px-3 py-3 text-[10px] font-semibold text-[#00ff41]/40 uppercase tracking-wider whitespace-nowrap ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
@@ -481,93 +567,35 @@ export default function AdminTenantsPage() {
                       <td className="px-3 py-3">
                         <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} className="accent-[#00ff41] cursor-pointer" />
                       </td>
-                      {/* Star */}
                       <td className="px-1 py-3">
-                        <button onClick={() => toggleStar(t.id)} title={starred.has(t.id) ? 'Unstar' : 'Star'}
-                          className="p-1 rounded transition-colors hover:bg-[#ffd700]/10">
+                        <button onClick={() => toggleStar(t.id)} title={starred.has(t.id) ? 'Unstar' : 'Star'} className="p-1 rounded transition-colors hover:bg-[#ffd700]/10">
                           <Star className={`h-3.5 w-3.5 transition-colors ${starred.has(t.id) ? 'fill-[#ffd700] text-[#ffd700]' : 'text-[#00ff41]/15 hover:text-[#ffd700]/50'}`} />
                         </button>
                       </td>
                       <td className="px-2 py-3 text-[#00ff41]/25">{idx + 1}</td>
-
-                      {/* Name */}
                       <td className="px-3 py-3 min-w-[160px]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-black shrink-0"
-                            style={{ backgroundColor: t.primary_color ?? '#00ff41' }}>
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-black shrink-0" style={{ backgroundColor: t.primary_color ?? '#00ff41' }}>
                             {t.name.charAt(0).toUpperCase()}
                           </div>
-                          <Link href={`/admin/tenants/${t.id}`} className="text-[#00ff41] font-medium hover:underline truncate max-w-[140px]">
-                            {t.name}
-                          </Link>
+                          <Link href={`/admin/tenants/${t.id}`} className="text-[#00ff41] font-medium hover:underline truncate max-w-[140px]">{t.name}</Link>
                         </div>
                       </td>
-
-                      {/* Slug */}
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-1">
                           <code className="text-[#00ff41]/50 bg-[#00ff41]/5 border border-[#00ff41]/10 px-1.5 py-0.5 rounded text-[11px]">{t.slug}</code>
-                          <button onClick={() => copyToClipboard(t.slug, `slug-${t.id}`)}
-                            className="p-0.5 text-[#00ff41]/20 hover:text-[#00ff41]/60 transition-colors" title="Copy slug">
+                          <button onClick={() => copyToClipboard(t.slug, `slug-${t.id}`)} className="p-0.5 text-[#00ff41]/20 hover:text-[#00ff41]/60 transition-colors" title="Copy slug">
                             {copiedField === `slug-${t.id}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                           </button>
                         </div>
                       </td>
-
-                      {/* Type */}
-                      <td className="px-3 py-3 text-[#00ff41]/60 whitespace-nowrap">
-                        {btype ? `${btype.icon} ${btype.label}` : (t.business_type ?? '—')}
-                      </td>
-
-                      {/* Theme */}
+                      <td className="px-3 py-3 text-[#00ff41]/60 whitespace-nowrap">{btype ? `${btype.icon} ${btype.label}` : (t.business_type ?? '—')}</td>
                       <td className="px-3 py-3 text-[#00ff41]/40 capitalize">{t.theme ?? 'modern'}</td>
-
-                      {/* Color */}
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-4 h-4 rounded-full border border-white/10 shrink-0" style={{ backgroundColor: t.primary_color ?? '#3B82F6' }} />
-                          <span className="text-[#00ff41]/30 text-[10px]">{t.primary_color ?? '#3B82F6'}</span>
-                        </div>
-                      </td>
-
-                      {/* Status inline toggle */}
-                      <td className="px-3 py-3">
-                        <button onClick={() => toggleStatus(t)}
-                          title="Click to toggle status"
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium border transition-all cursor-pointer ${
-                            t.status === 'active'
-                              ? 'bg-[#00ff41]/10 text-[#00ff41] border-[#00ff41]/30 hover:bg-[#ffb441]/10 hover:text-[#ffb441] hover:border-[#ffb441]/30'
-                              : 'bg-[#ffb441]/10 text-[#ffb441] border-[#ffb441]/30 hover:bg-[#00ff41]/10 hover:text-[#00ff41] hover:border-[#00ff41]/30'
-                          }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'active' ? 'bg-[#00ff41] animate-pulse' : 'bg-[#ffb441]'}`} />
-                          {t.status === 'active' ? 'Active' : 'Suspended'}
-                        </button>
-                      </td>
-
-                      {/* Health Score */}
-                      <td className="px-3 py-3">
-                        {(() => {
-                          const score = tenantHealth(t);
-                          const color = healthColor(score);
-                          return (
-                            <div className="flex items-center gap-1.5" title={`Health score: ${score}/100`}>
-                              <div className="w-12 h-1.5 bg-[#00ff41]/10 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, backgroundColor: color }} />
-                              </div>
-                              <span className="text-[10px] font-mono" style={{ color }}>{score}</span>
-                            </div>
-                          );
-                        })()}
-                      </td>
-
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.listingCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.leadCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.agentCount ?? 0}</td>
-                      {/* Notes */}
                       <td className="px-3 py-3">
-                        <button onClick={() => { setNoteModal(t.id); setNoteInput(''); }}
-                          title="View/add notes"
-                          className="relative p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors">
+                        <button onClick={() => { setNoteModal(t.id); setNoteInput(''); }} title="View/add notes" className="relative p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors">
                           <MessageSquare className="h-3.5 w-3.5" />
                           {(tenantNotes[t.id]?.length ?? 0) > 0 && (
                             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#41b8ff] text-black text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
@@ -576,27 +604,25 @@ export default function AdminTenantsPage() {
                           )}
                         </button>
                       </td>
-                      <td className="px-3 py-3 text-[#00ff41]/35 whitespace-nowrap">
-                        {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US') : '—'}
-                      </td>
-
-                      {/* Actions */}
+                      <td className="px-3 py-3 text-[#00ff41]/35 whitespace-nowrap">{t.created_at ? new Date(t.created_at).toLocaleDateString('en-US') : '—'}</td>
                       <td className="px-3 py-3">
                         <div className="flex justify-end items-center gap-0.5">
-                          <a href={`/${t.slug}`} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10 transition-colors" title="View public page">
+                          <span className={`px-2 py-1 text-[10px] rounded border mr-1 ${t.status === 'active' ? 'text-[#00ff41] border-[#00ff41]/30 bg-[#00ff41]/10' : 'text-[#ffb441] border-[#ffb441]/30 bg-[#ffb441]/10'}`}>
+                            {t.status === 'active' ? 'Active' : 'Suspended'}
+                          </span>
+                          <button onClick={() => toggleStatus(t)} className={`px-2 py-1 text-[10px] rounded border mr-1 ${t.status === 'active' ? 'text-[#ffb441] border-[#ffb441]/30 hover:bg-[#ffb441]/10' : 'text-[#00ff41] border-[#00ff41]/30 hover:bg-[#00ff41]/10'}`} title={t.status === 'active' ? 'Set tenant to suspended' : 'Set tenant to active'}>
+                            {t.status === 'active' ? 'Set Suspended' : 'Set Active'}
+                          </button>
+                          <a href={`/${t.slug}`} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10 transition-colors" title="View public page">
                             <ExternalLink className="h-3.5 w-3.5" />
                           </a>
-                          <Link href={`/admin/tenants/${t.id}`}
-                            className="p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors" title="Open detail">
+                          <Link href={`/admin/tenants/${t.id}`} className="p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors" title="Open detail">
                             <MoreHorizontal className="h-3.5 w-3.5" />
                           </Link>
-                          <button onClick={() => openEdit(t)}
-                            className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10 transition-colors" title="Edit">
+                          <button onClick={() => openEdit(t)} className="p-1.5 rounded text-[#00ff41]/30 hover:text-[#00ff41] hover:bg-[#00ff41]/10 transition-colors" title="Edit">
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={() => setDeleteId(t.id)}
-                            className="p-1.5 rounded text-[#ff4141]/30 hover:text-[#ff4141] hover:bg-[#ff4141]/10 transition-colors" title="Delete">
+                          <button onClick={() => setDeleteId(t.id)} className="p-1.5 rounded text-[#ff4141]/30 hover:text-[#ff4141] hover:bg-[#ff4141]/10 transition-colors" title="Delete">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>

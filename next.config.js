@@ -82,21 +82,25 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config) => {
-      if (process.env.ANALYZE) {
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            reportFilename: './analyze/client.html',
-            openAnalyzer: false,
-          })
-        )
-      }
-      return config
-    },
-  }),
+  webpack: (config, { dev }) => {
+    // Dev stability on Windows/OneDrive: avoid intermittent ENOENT for .next server chunks.
+    if (dev) {
+      config.cache = false
+    }
+
+    if (process.env.ANALYZE) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: './analyze/client.html',
+          openAnalyzer: false,
+        })
+      )
+    }
+
+    return config
+  },
 }
 
 module.exports = nextConfig

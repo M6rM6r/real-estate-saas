@@ -29,11 +29,11 @@ const DEMO_METRICS = {
     { name: 'JBR Residences', slug: 'jbr-residences', postCount: 7 },
   ],
   allAgencies: [
-    { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'demo', status: 'active', postCount: 45, createdAt: '2024-08-15' },
-    { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', postCount: 32, createdAt: '2024-07-20' },
-    { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', postCount: 28, createdAt: '2024-09-05' },
-    { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', postCount: 15, createdAt: '2024-10-12' },
-    { id: 'demo-5', name: 'JBR Residences', slug: 'jbr-residences', status: 'active', postCount: 7, createdAt: '2024-05-08' },
+    { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'demo', status: 'active', postCount: 45, listingCount: 16, leadCount: 8, agentCount: 3, healthScore: 100, primaryColor: '#c9a84c', created_at: '2024-08-15' },
+    { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', postCount: 32, listingCount: 12, leadCount: 5, agentCount: 2, healthScore: 100, primaryColor: '#16a34a', created_at: '2024-07-20' },
+    { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', postCount: 28, listingCount: 9, leadCount: 4, agentCount: 4, healthScore: 100, primaryColor: '#0ea5e9', created_at: '2024-09-05' },
+    { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', postCount: 15, listingCount: 4, leadCount: 1, agentCount: 1, healthScore: 60, primaryColor: '#f59e0b', created_at: '2024-10-12' },
+    { id: 'demo-5', name: 'JBR Residences', slug: 'jbr-residences', status: 'active', postCount: 7, listingCount: 2, leadCount: 0, agentCount: 1, healthScore: 25, primaryColor: '#8b5cf6', created_at: '2024-05-08' },
   ],
 }
 
@@ -68,10 +68,12 @@ export async function GET(request: NextRequest) {
     const twelveMonthsAgo = new Date(now)
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11)
 
-    const [tenantsSnap, postsSnap, mediaSnap] = await Promise.all([
+    const [tenantsSnap, postsSnap, mediaSnap, usersSnap, leadsSnap] = await Promise.all([
       adminDb.collection('tenants').get(),
-      adminDb.collection('posts').select('tenantId', 'createdAt').get(),
+      adminDb.collection('posts').select('tenantId', 'createdAt', 'type').get(),
       adminDb.collection('media').count().get(),
+      adminDb.collection('users').select('tenantId').get(),
+      adminDb.collection('leads').select('tenantId').get(),
     ])
 
     const tenants = tenantsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Array<{
@@ -79,12 +81,16 @@ export async function GET(request: NextRequest) {
     }>
 
     const postCountByTenant = new Map<string, number>()
+    const listingCountByTenant = new Map<string, number>()
     let recentPostsCount = 0
 
     postsSnap.docs.forEach((doc) => {
       const data = doc.data() as { tenantId?: string; createdAt?: { toDate?: () => Date } | string }
       if (data.tenantId) {
         postCountByTenant.set(data.tenantId, (postCountByTenant.get(data.tenantId) ?? 0) + 1)
+        if ((data as { type?: string }).type === 'listing') {
+          listingCountByTenant.set(data.tenantId, (listingCountByTenant.get(data.tenantId) ?? 0) + 1)
+        }
       }
 
       const createdAt = typeof data.createdAt === 'string'
@@ -94,6 +100,20 @@ export async function GET(request: NextRequest) {
       if (createdAt && createdAt >= thirtyDaysAgo) {
         recentPostsCount += 1
       }
+    })
+
+    const agentCountByTenant = new Map<string, number>()
+    usersSnap.docs.forEach((doc) => {
+      const tenantId = (doc.data() as { tenantId?: string }).tenantId
+      if (!tenantId) return
+      agentCountByTenant.set(tenantId, (agentCountByTenant.get(tenantId) ?? 0) + 1)
+    })
+
+    const leadCountByTenant = new Map<string, number>()
+    leadsSnap.docs.forEach((doc) => {
+      const tenantId = (doc.data() as { tenantId?: string }).tenantId
+      if (!tenantId) return
+      leadCountByTenant.set(tenantId, (leadCountByTenant.get(tenantId) ?? 0) + 1)
     })
 
     const monthCounts: Record<string, number> = {}
@@ -111,17 +131,28 @@ export async function GET(request: NextRequest) {
     })
 
     const rankedAgencies = tenants
-      .map((tenant) => ({
-        id: tenant.id,
-        name: tenant.name,
-        slug: tenant.slug,
-        status: tenant.status ?? 'active',
-        postCount: postCountByTenant.get(tenant.id) ?? 0,
-        created_at: (() => {
-          const createdAt = typeof tenant.createdAt === 'string' ? new Date(tenant.createdAt) : tenant.createdAt?.toDate?.()
-          return createdAt ? createdAt.toISOString().slice(0, 10) : ''
-        })(),
-      }))
+      .map((tenant) => {
+        const listingCount = listingCountByTenant.get(tenant.id) ?? 0
+        const leadCount = leadCountByTenant.get(tenant.id) ?? 0
+        const agentCount = agentCountByTenant.get(tenant.id) ?? 0
+
+        return {
+          id: tenant.id,
+          name: tenant.name,
+          slug: tenant.slug,
+          status: tenant.status ?? 'active',
+          postCount: postCountByTenant.get(tenant.id) ?? 0,
+          listingCount,
+          leadCount,
+          agentCount,
+          healthScore: Math.min(100, listingCount * 10 + leadCount * 15 + agentCount * 5),
+          primaryColor: (tenant as { primary_color?: string }).primary_color,
+          created_at: (() => {
+            const createdAt = typeof tenant.createdAt === 'string' ? new Date(tenant.createdAt) : tenant.createdAt?.toDate?.()
+            return createdAt ? createdAt.toISOString().slice(0, 10) : ''
+          })(),
+        }
+      })
       .sort((a, b) => b.postCount - a.postCount)
 
     const response = NextResponse.json({

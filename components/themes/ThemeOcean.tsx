@@ -20,6 +20,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
@@ -27,6 +28,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const primary = tenant.primary_color ?? '#0891b2'
   const pageTheme = PAGE_THEMES['ocean'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -60,7 +62,11 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -88,26 +94,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         .ocn-chip-active { background: var(--ocn-primary); color: #fff; border-color: var(--ocn-primary); }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe' }}>
-
-        {/* Sticky nav */}
-        <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
-          <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {profile?.logo_url ? (
-                <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-9 h-9 rounded-full object-cover ring-2 ring-white/40" />
-              ) : (
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: primary }}>
-                  {tenant.name.charAt(0)}
-                </div>
-              )}
-              <span className="font-bold text-sm sm:text-base text-white" style={{ textShadow: scrolled ? 'none' : '0 1px 3px rgba(0,0,0,0.4)' }}>
-                {tenant.name}
-              </span>
-            </div>
-
-          </div>
-        </nav>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e0f2fe', fontFamily: headingFont }}>
 
         {/* Hero — full screen with wave */}
         {sections.hero && (
@@ -115,14 +102,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }}>
-                {isPreview && (
-                  <div className="flex flex-col items-center justify-center gap-2 text-white/50 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-                  </div>
-                )}
-              </div>
+              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(12,35,64,0.6) 0%, rgba(12,35,64,0.8) 100%)` }} />
             <div className="relative z-10 flex items-center justify-center text-center px-4 text-white pt-20" style={{ minHeight: '100vh' }}>
@@ -130,7 +110,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-6 rounded-full bg-white/10 p-2 backdrop-blur" priority />
                 )}
-                <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont }}>
+                <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont }}>
                   {tenant.name}
                 </h1>
                 {profile?.tagline && <p className="text-lg sm:text-2xl font-light mb-4" style={{ color: `${primary}dd` }}>{profile.tagline}</p>}
@@ -190,7 +170,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.news && news.length > 0 && (
           <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               {/* First 2 as large cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 {news.slice(0, 2).map(item => (
@@ -242,7 +222,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}

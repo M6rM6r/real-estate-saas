@@ -3,7 +3,7 @@
 /**
  * Desert Theme Layout
  * ─────────────────────────────────────────────────────────────
- * - Hero: full-bleed warm overlay, NO card, HUGE bold text, scroll arrow
+ * - Hero: full-bleed warm overlay, NO card, HUGE bold text
  * - Featured listing: first listing as wide horizontal card
  * - Remaining listings: 4-column compact grid
  * - About: warm card with licence badge prominent
@@ -20,6 +20,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
@@ -27,6 +28,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const primary = tenant.primary_color ?? '#d97706'
   const pageTheme = PAGE_THEMES['desert'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -60,7 +62,11 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -95,26 +101,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         .dsr-chip-active { background: var(--dsr-primary); color: #fff; border-color: var(--dsr-primary); }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#fef3c7' }}>
-
-        {/* Navbar — minimal */}
-        <nav className="fixed inset-x-0 z-40 transition-all duration-400 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
-          <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {profile?.logo_url ? (
-                <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold shrink-0" style={{ backgroundColor: primary }}>
-                  {tenant.name.charAt(0)}
-                </div>
-              )}
-              <span className="font-black text-sm sm:text-base tracking-wide text-white" style={{ textShadow: scrolled ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>
-                {tenant.name}
-              </span>
-            </div>
-
-          </div>
-        </nav>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#fef3c7', fontFamily: headingFont }}>
 
         {/* Hero — no card, HUGE text */}
         {sections.hero && (
@@ -122,14 +109,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }}>
-                {isPreview && (
-                  <div className="flex flex-col items-center justify-center gap-2 text-white/50 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-                  </div>
-                )}
-              </div>
+              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, rgba(45,26,10,0.75) 0%, rgba(217,119,6,0.45) 100%)` }} />
             <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full pt-20">
@@ -137,7 +117,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 <Image src={profile.logo_url} alt={tenant.name} width={72} height={72} className="w-16 h-16 object-contain mx-auto mb-6 opacity-90 rounded-full" priority />
               )}
               <h1 className="text-5xl sm:text-7xl md:text-9xl font-black leading-none mb-4 tracking-tight uppercase"
-                style={{ fontFamily: pageTheme.headingFont, letterSpacing: '-0.03em', textShadow: '0 4px 32px rgba(0,0,0,0.5)' }}>
+                style={{ fontFamily: headingFont, letterSpacing: '-0.03em', textShadow: '0 4px 32px rgba(0,0,0,0.5)' }}>
                 {tenant.name}
               </h1>
               {profile?.tagline && (
@@ -151,13 +131,6 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 </p>
               )}
 
-            </div>
-            {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <div className="w-6 h-9 rounded-full border-2 flex items-start justify-center pt-1.5" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
-                <div className="w-1 h-2 rounded-full bg-white/60 animate-bounce" />
-              </div>
-              <span className="text-xs tracking-widest text-white/40 uppercase">اكتشف</span>
             </div>
           </section>
         )}
@@ -207,7 +180,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 </div>
                 {/* Details on left */}
                 <div className="flex-1 p-8 md:p-10 flex flex-col justify-center">
-                  <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: pageTheme.headingFont }}>{featured.title}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-black mb-3" style={{ fontFamily: headingFont }}>{featured.title}</h3>
                   {featured.price != null && (
                     <p className="text-2xl font-black dsr-text mb-3">
                       {featured.price.toLocaleString('en-US')} {CURRENCY_SYMBOLS[currency] ?? currency}
@@ -312,7 +285,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {/* News — large horizontal cards */}
         {sections.news && news.length > 0 && (
           <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.news }}>
-            <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
+            <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
               {news.map(item => (
                 <div key={item.id} className="shrink-0 snap-start w-72 sm:w-80 overflow-hidden border" style={{ borderColor: `${primary}25`, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
@@ -334,7 +307,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+              <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }} dir="ltr"><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
@@ -352,7 +325,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
         {sections.working_hours && profile?.working_hours && (
           <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: pageTheme.headingFont, color: primary }}>{L.workingHoursHeading}</h3>
+              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: headingFont, color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-gray-900 rounded-lg p-6 text-sm text-gray-400">
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>

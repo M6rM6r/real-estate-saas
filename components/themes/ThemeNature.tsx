@@ -20,6 +20,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
@@ -27,6 +28,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
   const primary = tenant.primary_color ?? '#16a34a'
   const pageTheme = PAGE_THEMES['nature'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -60,7 +62,11 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const baseFiltered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -92,30 +98,11 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             radial-gradient(ellipse 55% 55% at 85% 65%, ${primary}1a 0%, transparent 60%),
             ${pageTheme.bg};
         }
-        @keyframes nat-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
-        .nat-card { animation: nat-float 5s ease-in-out infinite; }
         .nat-leaf-blob { position:absolute; top:-8%; left:-12%; width:65%; aspect-ratio:1; background:radial-gradient(ellipse 60% 50% at 30% 40%, ${primary}22 0%, transparent 70%); filter:blur(48px); pointer-events:none; border-radius:60% 40% 55% 45% / 50% 55% 45% 50%; }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5' }}>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#d1fae5', fontFamily: headingFont }}>
 
-
-        {/* Navbar */}
-        <nav className="fixed inset-x-0 z-40 transition-all duration-300 top-0" style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
-          <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              {profile?.logo_url ? (
-                <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-9 h-9 rounded-full object-cover" style={{ border: `2px solid ${primary}40` }} />
-              ) : (
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: primary }}>
-                  {tenant.name.charAt(0)}
-                </div>
-              )}
-              <span className="font-bold text-sm sm:text-base text-white">{tenant.name}</span>
-            </div>
-
-          </div>
-        </nav>
 
         {/* Hero */}
         {sections.hero && (
@@ -126,34 +113,18 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
                 <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
                 <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${primary}cc, ${primary}88)` }} />
               </>
-            ) : isPreview && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/50 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-              </div>
-            )}
+            ) : null}
             <div className="nat-leaf-blob" />
             <div className="relative z-10 text-center px-4 max-w-2xl mx-auto w-full">
-              <div className="nat-card border px-8 py-10 shadow-2xl mx-auto"
-                style={{ backgroundColor: 'rgba(10,26,14,0.90)', borderColor: `${primary}44`, borderRadius: '32px', backdropFilter: 'blur(16px)', boxShadow: `0 0 0 1px ${primary}28, 0 32px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)` }}>
+              <div className="px-8 py-10 mx-auto">
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full shadow-md" style={{ border: `3px solid ${primary}44` }} priority />
                 )}
-                <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 text-white leading-tight" style={{ fontFamily: pageTheme.headingFont }}>
+                <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 text-white leading-tight" style={{ fontFamily: headingFont }}>
                   {tenant.name}
                 </h1>
                 {profile?.tagline && <p className="nat-text text-lg font-semibold mb-3">{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
-                {whatsapp && (
-                  <a href={waLink} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
-                    style={{ backgroundColor: primary, boxShadow: `0 16px 40px ${primary}55` }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path d="M9.653.5a.75.75 0 01.694 0l7.5 4a.75.75 0 010 1.333L10.348 9.5a.75.75 0 01-.694 0L2.152 5.833a.75.75 0 010-1.333l7.5-4zM3.25 8.032l6.5 3.465 6.5-3.465V13.5a.75.75 0 01-.406.666l-6.5 3.5a.75.75 0 01-.69 0l-6.5-3.5A.75.75 0 013.25 13.5V8.032z" />
-                    </svg>
-                    {pageConfig.hero_cta_text || L.contactHeading}
-                  </a>
-                )}
               </div>
             </div>
           </section>
@@ -202,7 +173,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {sections.news && news.length > 0 && (
           <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {news.map(item => (
                   <div key={item.id} className="overflow-hidden border" style={{ borderColor: pageTheme.cardBorder, backgroundColor: pageTheme.cardBg, borderRadius: '24px', boxShadow: pageTheme.cardShadow }}>
@@ -254,7 +225,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
               <div className="p-8 border flex flex-col items-center text-center" style={{ borderColor: pageTheme.cardBorder, borderRadius: '28px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5 shadow-sm" style={{ backgroundColor: `${primary}18` }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6" style={{ color: primary }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg></div>
-                <h2 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
+                <h2 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
                 <p className="text-sm text-gray-400 mb-6">{L.contactSubtitle}</p>
                 <div className="flex flex-col items-center gap-3 w-full" dir="ltr">
                   {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm w-full justify-center transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}

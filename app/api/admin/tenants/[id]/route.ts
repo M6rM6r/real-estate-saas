@@ -12,6 +12,7 @@ const UpdateTenantSchema = z.object({
   business_type: z.string().optional(),
   theme: z.string().optional(),
   primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  custom_domain: z.string().optional(),
 })
 
 export async function GET(
@@ -21,7 +22,7 @@ export async function GET(
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  const [tenantDoc, profileDoc, usersSnap, postsSnap, listingsSnap, leadsSnap, mediaSnap, recentLeadsSnap, recentListingsSnap] = await Promise.all([
+  const [tenantDoc, profileDoc, usersSnap, postsSnap, listingsSnap, leadsSnap, mediaSnap, recentLeadsRawSnap, recentPostsRawSnap] = await Promise.all([
     adminDb.collection('tenants').doc(params.id).get(),
     adminDb.collection('tenants').doc(params.id).collection('profiles').doc(params.id).get(),
     adminDb.collection('users').where('tenantId', '==', params.id).get(),
@@ -29,13 +30,34 @@ export async function GET(
     adminDb.collection('posts').where('tenantId', '==', params.id).where('type', '==', 'listing').count().get(),
     adminDb.collection('leads').where('tenantId', '==', params.id).count().get(),
     adminDb.collection('tenants').doc(params.id).collection('media').count().get(),
-    adminDb.collection('leads').where('tenantId', '==', params.id).orderBy('created_at', 'desc').limit(5).get(),
-    adminDb.collection('posts').where('tenantId', '==', params.id).where('type', '==', 'listing').orderBy('createdAt', 'desc').limit(5).get(),
+    adminDb.collection('leads').where('tenantId', '==', params.id).limit(50).get(),
+    adminDb.collection('posts').where('tenantId', '==', params.id).limit(100).get(),
   ])
 
   if (!tenantDoc.exists) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
+
+  const parseDateValue = (value: unknown) => {
+    if (!value) return 0
+    if (typeof value === 'string') {
+      const ts = new Date(value).getTime()
+      return Number.isNaN(ts) ? 0 : ts
+    }
+    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as { toDate?: () => Date }).toDate === 'function') {
+      return (value as { toDate: () => Date }).toDate().getTime()
+    }
+    return 0
+  }
+
+  const recentLeads = recentLeadsRawSnap.docs
+    .sort((a, b) => parseDateValue(b.data().created_at) - parseDateValue(a.data().created_at))
+    .slice(0, 5)
+
+  const recentListings = recentPostsRawSnap.docs
+    .filter(d => d.data().type === 'listing')
+    .sort((a, b) => parseDateValue(b.data().createdAt) - parseDateValue(a.data().createdAt))
+    .slice(0, 5)
 
   return NextResponse.json({
     id: tenantDoc.id,
@@ -49,14 +71,14 @@ export async function GET(
     leadCount: leadsSnap.data().count,
     mediaCount: mediaSnap.data().count,
     users: usersSnap.docs.map(d => ({ id: d.id, email: d.data().email, role: d.data().role })),
-    recentLeads: recentLeadsSnap.docs.map(d => ({
+    recentLeads: recentLeads.map(d => ({
       id: d.id,
       name: d.data().name ?? '—',
       phone: d.data().phone ?? '—',
       status: d.data().status ?? 'new',
       created_at: d.data().created_at?.toDate?.()?.toISOString() ?? d.data().created_at ?? null,
     })),
-    recentListings: recentListingsSnap.docs.map(d => ({
+    recentListings: recentListings.map(d => ({
       id: d.id,
       title: d.data().title ?? '—',
       price: d.data().price ?? null,
@@ -88,9 +110,14 @@ export async function PATCH(
   if (body.business_type) updates.business_type = body.business_type
   if (body.theme) updates.theme = body.theme
   if (body.primary_color) updates.primary_color = body.primary_color
+  if (body.custom_domain !== undefined) updates.custom_domain = body.custom_domain
 
   await adminDb.collection('tenants').doc(id).update(updates)
-  await writeAdminLog('tenant_updated', 'super_admin', { targetId: id, targetType: 'tenant', metadata: updates })
+  try {
+    await writeAdminLog('tenant_updated', 'super_admin', { targetId: id, targetType: 'tenant', metadata: updates })
+  } catch {
+    // Logging must not block successful tenant updates
+  }
 
   return NextResponse.json({ success: true })
 }
@@ -126,7 +153,11 @@ export async function DELETE(
   if (!usersSnap.empty) await userBatch.commit()
 
   await adminDb.collection('tenants').doc(id).delete()
-  await writeAdminLog('tenant_deleted', 'super_admin', { targetId: id, targetType: 'tenant' })
+  try {
+    await writeAdminLog('tenant_deleted', 'super_admin', { targetId: id, targetType: 'tenant' })
+  } catch {
+    // Logging must not block successful tenant deletions
+  }
 
   return NextResponse.json({ success: true })
 }

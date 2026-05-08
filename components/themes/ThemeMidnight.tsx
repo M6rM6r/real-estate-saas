@@ -9,6 +9,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, PropertyCard, EmptyState, WaIcon, ListingBadges, THEME_LABELS,
 } from './shared'
 
@@ -16,6 +17,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const primary = tenant.primary_color ?? '#8b5cf6'
   const pageTheme = PAGE_THEMES['midnight'] ?? PAGE_THEMES.modern
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -28,20 +30,13 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   const [typeFilter, setTypeFilter] = useState('all')
   const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [listingSearch, setListingSearch] = useState('')
-  const [scrolled, setScrolled] = useState(false)
 
   const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
   const hasContactInfo = Boolean(whatsapp || profile?.contact_phone || profile?.contact_email)
 
-  const bannerPt = 'pt-14 sm:pt-16'
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const bannerPt = 'pt-0'
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -53,7 +48,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const filtered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -97,31 +96,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
           background-size: 42px 42px;
           mask-image: linear-gradient(to bottom, black, transparent 82%);
         }
-        .mid-panel {
-          box-shadow: 0 30px 90px rgba(0,0,0,.55), 0 0 0 1px ${primary}33, inset 0 1px 0 rgba(255,255,255,.08);
-        }
       `}</style>
 
-      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3' }}>
-
-        {/* Header */}
-        <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
-          <nav className={`transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-lg border-b' : 'bg-transparent'}`}
-            style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
-            <div className="max-w-7xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                {profile?.logo_url ? (
-                  <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-9 h-9 rounded-full object-cover" style={{ boxShadow: `0 0 0 2px ${primary}66` }} />
-                ) : (
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold shrink-0" style={{ background: `linear-gradient(135deg, ${primary}, ${primary}88)`, color: '#fff' }}>
-                    {tenant.name.charAt(0)}
-                  </div>
-                )}
-                <span className="font-bold text-sm sm:text-base text-white drop-shadow">{tenant.name}</span>
-              </div>
-            </div>
-          </nav>
-        </header>
+      <div className="min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: '#e2d9f3', fontFamily: headingFont }}>
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
@@ -163,51 +140,24 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] flex flex-col items-center justify-end pb-8 sm:pb-14 bg-cover bg-center pt-20 sm:pt-24 overflow-hidden"
+          <section data-section="hero" className="relative min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] flex flex-col items-center justify-center py-8 sm:py-12 bg-cover bg-center overflow-hidden"
             style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="mid-orb-1" />
             <div className="mid-orb-2" />
             <div className="mid-orb-3" />
             <div className="mid-grid absolute inset-0" style={{ opacity: 0.03 }} />
-            {profile?.cover_url ? (
+            {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
-            ) : isPreview && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/50 pointer-events-none z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-              </div>
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className="mid-panel border rounded-[2rem] px-5 sm:px-8 py-8 sm:py-12 mx-auto backdrop-blur-2xl"
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px ${primary}33, inset 0 1px 0 rgba(255,255,255,.08)` }}>
-                <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-bold text-white/70" style={{ backgroundColor: `${primary}1a`, borderColor: `${primary}33` }}>
-                  <span className="relative h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }}>
-                    <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: primary, opacity: 0.5 }} />
-                  </span>
-                  {L.listingsHeadingAlt}
-                </div>
+              <div className="px-5 sm:px-8 py-8 sm:py-12 mx-auto">
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}55` }} priority />}
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-3 leading-[0.95] tracking-tight text-white">{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: primary }}>{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/60 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
-                {whatsapp && (
-                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
-                    style={{ background: `linear-gradient(135deg, ${primary}, rgba(99,102,241,0.9))`, boxShadow: `0 20px 48px ${primary}55, 0 4px 12px rgba(0,0,0,0.3)` }}>
-                    {pageConfig.hero_cta_text || L.contactHeading}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
-                    </svg>
-                  </a>
-                )}
               </div>
-            </div>
-            <div className="relative z-10 mt-6 flex flex-col items-center gap-1 opacity-50">
-              <span className="text-white text-xs">استعرض</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
           </section>
         )}

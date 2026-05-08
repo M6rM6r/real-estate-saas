@@ -9,6 +9,7 @@ import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
+  getHeadingFont,
   SocialLinks, WorkingHours, PropertyCard, EmptyState, THEME_LABELS,
 } from './shared'
 
@@ -17,6 +18,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   const pageTheme = PAGE_THEMES[(tenant.theme as keyof typeof PAGE_THEMES) ?? 'modern'] ?? PAGE_THEMES.modern
   const isDark = pageTheme.dark
   const pageConfig = getPageConfig(profile)
+  const headingFont = getHeadingFont(pageConfig.headingFont, pageTheme.headingFont)
   const lang = pageConfig.page_lang ?? 'ar'
   const L = THEME_LABELS[lang]
   const sections = getPageSections(profile)
@@ -29,21 +31,13 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   const [typeFilter, setTypeFilter] = useState('all')
   const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc' | 'newest'>('none')
   const [listingSearch, setListingSearch] = useState('')
-  const [scrolled, setScrolled] = useState(false)
 
   const surfaceClass = isDark ? 'text-white' : 'text-gray-900'
   const bodyClass = isDark ? 'text-slate-300' : 'text-gray-600'
   const mutedClass = isDark ? 'text-slate-400' : 'text-gray-500'
-  const navTextClass = scrolled ? (isDark ? 'text-white' : 'text-gray-900') : 'text-white'
   const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
   const whatsapp = profile?.social_links?.whatsapp
   const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -55,7 +49,11 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   }, [listings, news])
 
   const published = listings.filter(l => l.published !== false)
-  const propertyTypes = Array.from(new Set(published.map(l => l.property_type).filter(Boolean))) as string[]
+  const propertyTypes = Array.from(new Set(
+    published
+      .map(l => (typeof l.property_type === 'string' ? l.property_type.trim() : l.property_type))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  ))
   const filtered = published
     .filter(l => offerFilter === 'all' || l.offer_type === offerFilter)
     .filter(l => typeFilter === 'all' || l.property_type === typeFilter)
@@ -68,7 +66,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
     ? sorted.filter(l => `${l.title} ${l.location ?? ''}`.toLowerCase().includes(listingSearch.toLowerCase()))
     : sorted
 
-  const bannerPt = 'pt-14 sm:pt-16'
+  const bannerPt = 'pt-0'
 
   return (
     <>
@@ -90,11 +88,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             radial-gradient(ellipse 40% 35% at 55% 15%, ${primary}18 0%, transparent 50%),
             ${pageTheme.bg};
         }
-        .hero-mesh-grid {
-          background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 48px 48px;
-        }
         .hero-orb-1 { position:absolute; top:-10%; right:5%; width:480px; height:480px; border-radius:50%; background:radial-gradient(circle,${primary}22 0%,transparent 70%); filter:blur(60px); animation:orb-drift-a 20s ease-in-out infinite; pointer-events:none; }
         .hero-orb-2 { position:absolute; bottom:5%; left:8%; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle,${primary}14 0%,transparent 70%); filter:blur(50px); animation:orb-drift-b 26s ease-in-out infinite; pointer-events:none; }
         @keyframes orb-drift-a { 0%,100%{transform:translate(0,0);} 50%{transform:translate(-40px,30px);} }
@@ -109,27 +102,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         }
       `}</style>
 
-      <div className="theme-shell min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827' }}>
-
-        {/* Header */}
-        <header className={`${isPreview ? 'sticky' : 'fixed'} top-0 inset-x-0 z-40 flex flex-col`}>
-          <nav className={`transition-all duration-300 ${scrolled ? 'backdrop-blur shadow-sm border-b' : 'bg-transparent'}`}
-            style={scrolled ? { backgroundColor: pageTheme.navBg, borderColor: pageTheme.navBorder } : undefined}>
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                {profile?.logo_url ? (
-                  <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-9 h-9 rounded-full object-cover ring-2 ring-white/20" />
-                ) : (
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold shrink-0" style={{ backgroundColor: primary }}>
-                    {tenant.name.charAt(0)}
-                  </div>
-                )}
-                <span className={`font-bold text-sm sm:text-base ${navTextClass} drop-shadow-sm`}>{tenant.name}</span>
-              </div>
-
-            </div>
-          </nav>
-        </header>
+      <div className="theme-shell min-h-screen flex flex-col" dir={lang === 'en' ? 'ltr' : 'rtl'} style={{ backgroundColor: pageTheme.bg, color: isDark ? '#f8fafc' : '#111827', fontFamily: headingFont }}>
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
@@ -148,7 +121,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             </div>
             <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 py-16" style={{ backgroundColor: pageTheme.bg }}>
               {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain rounded-full mb-6 shadow-lg" />}
-              <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+              <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
               {profile?.tagline && <p className="text-lg font-medium mb-3 text-primary">{profile.tagline}</p>}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base mb-8" style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>}
 
@@ -160,7 +133,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {sections.hero && pageConfig.hero_style === 'minimal' && (
           <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6 shadow" />}
-            <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: pageTheme.headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+            <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
             <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
             {profile?.tagline && <p className="text-xl font-medium mb-3 text-primary">{profile.tagline}</p>}
             {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto" style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>}
@@ -170,54 +143,22 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="hero-mesh relative min-h-[55vh] flex flex-col items-center justify-end pb-8 sm:pb-12 bg-cover bg-center pt-24 sm:pt-28"
+          <section data-section="hero" className="hero-mesh relative min-h-[55vh] flex flex-col items-center justify-center py-8 sm:py-12 bg-cover bg-center"
             style={{ order: sectionOrder.hero }}>
-            {profile?.cover_url ? (
+            {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
-            ) : isPreview && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/60 pointer-events-none z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-              </div>
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="hero-orb-1" aria-hidden="true" />
             <div className="hero-orb-2" aria-hidden="true" />
             <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto w-full">
-              <div className={`relative border rounded-[2rem] px-5 sm:px-10 py-8 sm:py-14 shadow-2xl mx-auto overflow-hidden${pageTheme.heroCardBlur ? ' backdrop-blur-2xl' : ''}`}
-                style={{ backgroundColor: pageTheme.heroCardBg, borderColor: pageTheme.heroCardBorder, boxShadow: `0 0 0 1px ${primary}44, 0 32px 80px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,.10)` }}>
-                <div className="absolute inset-0 hero-mesh-grid opacity-100 pointer-events-none" />
-                <div className="relative z-10">
-                  <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold text-white/80 theme-pill" style={{ borderColor: `${primary}44`, backgroundColor: `${primary}18` }}>
-                    <span className="relative h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primary }}>
-                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: primary, opacity: 0.5 }} />
-                    </span>
-                    {L.listingsHeadingAlt}
-                  </div>
-                  {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}44` }} priority />}
-                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-[0.95] tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h1>
-                  {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
-                  {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/65 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
-                  {whatsapp && (
-                    <a href={waLink} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-1 hover:opacity-95 active:scale-95"
-                      style={{ backgroundColor: primary, boxShadow: `0 20px 48px ${primary}55, 0 4px 12px rgba(0,0,0,0.3)` }}>
-                      {pageConfig.hero_cta_text || L.contactHeading}
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
-                      </svg>
-                    </a>
-                  )}
-                </div>
+              <div className="relative px-5 sm:px-10 py-8 sm:py-14 mx-auto">
+                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}44` }} priority />}
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-[0.95] tracking-tight" style={{ fontFamily: headingFont }}>{tenant.name}</h1>
+                {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/65 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
               </div>
-            </div>
-            {/* Scroll indicator */}
-            <div className="relative z-10 mt-6 flex flex-col items-center gap-1 opacity-60">
-              <span className="text-white text-xs">استعرض</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
           </section>
         )}
@@ -277,7 +218,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {sections.news && news.length > 0 && (
           <section data-section="news" className="reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: pageTheme.headingFont }}>{L.newsHeading}</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
                 {news.map(item => (
                   <div key={item.id} className={`overflow-hidden shrink-0 snap-start w-[80vw] sm:w-80 border ${surfaceClass}`} style={cardStyle}>
@@ -303,8 +244,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                   className="w-16 h-16 mx-auto rounded-2xl object-contain mb-6 shadow-xl"
                   style={{ boxShadow: `0 8px 32px ${primary}44` }} />
               )}
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: primary }}>{L.about}</p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 tracking-tight" style={{ fontFamily: pageTheme.headingFont }}>{tenant.name}</h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 tracking-tight" style={{ fontFamily: headingFont }}>{tenant.name}</h2>
               {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg max-w-2xl mx-auto ${bodyClass}`}>{profile.bio}</p>}
               {(profile?.licence_numbers && profile.licence_numbers.length > 0) ? (
                 <div className="mt-6 flex flex-wrap gap-2 justify-center">
@@ -327,7 +267,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
           <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-3xl mx-auto rounded-[2rem] border p-6 sm:p-9 text-center" style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, boxShadow: pageTheme.cardShadow }}>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: pageTheme.headingFont }}>{L.contactHeading}</h2>
               <p className={`text-sm mb-8 ${mutedClass}`}>{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg> واتساب: {waDisplay}</a>}
