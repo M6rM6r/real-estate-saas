@@ -658,9 +658,9 @@ export function WorkingHours({ hours, textClass = 'text-gray-400', lang = 'ar' }
         const h = hours[day]
         if (!h) return null
         return (
-          <div key={day} className={`flex justify-between text-xs ${h.enabled ? textClass : ''}`} style={h.enabled ? undefined : { borderInlineStart: '2px solid rgba(248,113,113,0.5)', paddingInlineStart: '6px' }}>
-            <span style={h.enabled ? undefined : { textDecoration: 'line-through', color: 'rgba(248,113,113,0.6)' }}>{dayLabels[day] ?? day}</span>
-            <span style={h.enabled ? undefined : { color: 'rgba(248,113,113,0.6)' }}>{h.enabled ? `${h.open} – ${h.close}` : closedLabel}</span>
+          <div key={day} className={`flex justify-between text-xs ${textClass}`} style={h.enabled ? undefined : { opacity: 0.4 }}>
+            <span style={h.enabled ? undefined : { textDecoration: 'line-through' }}>{dayLabels[day] ?? day}</span>
+            <span>{h.enabled ? `${h.open} – ${h.close}` : closedLabel}</span>
           </div>
         )
       })}
