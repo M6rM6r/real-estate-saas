@@ -1405,7 +1405,7 @@ export default function PageBuilderPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="wa9l-tab-trigger flex items-center justify-center gap-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-600 data-[state=active]:via-violet-600 data-[state=active]:to-fuchsia-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/40 data-[state=active]:scale-[1.02] text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-xl py-2.5 px-3 transition-all duration-200"
+                  className="wa9l-tab-trigger flex items-center justify-center gap-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-600 data-[state=active]:via-emerald-600 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-green-500/40 data-[state=active]:scale-[1.02] text-slate-400 hover:text-white hover:bg-white/[0.04] rounded-xl py-2.5 px-3 transition-all duration-200"
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{label}</span>
@@ -2289,7 +2289,7 @@ export default function PageBuilderPage() {
             <Button
               onClick={handleSave}
               disabled={saveStatus === 'saving'}
-              className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:from-indigo-500 hover:via-violet-500 hover:to-purple-500 text-white px-7 gap-2 disabled:opacity-50 shadow-lg shadow-indigo-500/30 font-semibold rounded-xl transition-all"
+              className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 text-white px-7 gap-2 disabled:opacity-50 shadow-lg shadow-green-500/30 font-semibold rounded-xl transition-all"
             >
               {saveStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
               {saveStatus === 'saving' ? t.saving : t.saveNow}
@@ -2346,7 +2346,7 @@ export default function PageBuilderPage() {
                   onClick={() => setPreviewDevice('mobile')}
                   title={lang === 'ar' ? 'معاينة الجوال' : 'Mobile preview'}
                   aria-pressed={previewDevice === 'mobile'}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'mobile' ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'mobile' ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' : 'text-slate-400 hover:text-white'}`}
                 >
                   <Smartphone className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{lang === 'ar' ? 'جوال' : 'Mobile'}</span>
@@ -2356,7 +2356,7 @@ export default function PageBuilderPage() {
                   onClick={() => setPreviewDevice('desktop')}
                   title={lang === 'ar' ? 'معاينة سطح المكتب' : 'Desktop preview'}
                   aria-pressed={previewDevice === 'desktop'}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'desktop' ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${previewDevice === 'desktop' ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-md shadow-green-500/30' : 'text-slate-400 hover:text-white'}`}
                 >
                   <Monitor className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{lang === 'ar' ? 'سطح المكتب' : 'Desktop'}</span>
@@ -2463,7 +2463,7 @@ export default function PageBuilderPage() {
       {dirty && (
         <div className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-white/[0.08] bg-slate-900/95 backdrop-blur px-4 py-3 flex items-center justify-between">
           <span className="text-xs text-amber-300">{lang === 'ar' ? 'تغييرات غير محفوظة' : 'Unsaved changes'}</span>
-          <Button onClick={handleSave} disabled={saveStatus === 'saving'} size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 rounded-xl">
+          <Button onClick={handleSave} disabled={saveStatus === 'saving'} size="sm" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 rounded-xl">
             {saveStatus === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : (lang === 'ar' ? 'حفظ' : 'Save')}
           </Button>
         </div>
