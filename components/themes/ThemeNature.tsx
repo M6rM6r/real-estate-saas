@@ -162,7 +162,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
         {/* Listings */}
         {sections.listings && (
           <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
-            {/* Filters */
+            {/* Filters */}
             {propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
