@@ -792,20 +792,9 @@ export function PropertyCard({
         {/* Bottom gradient for price overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
 
-        {/* Top badges row — offer type + status */}
-        <div className="absolute top-3 inset-x-3 flex items-start justify-between pointer-events-none">
-          {listing.offer_type && (
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm leading-5"
-              style={{
-                backgroundColor: listing.offer_type === 'rent' ? 'rgba(16,185,129,0.85)' : 'rgba(37,99,235,0.85)',
-                color: '#fff',
-              }}
-            >
-              {lang === 'en' ? (listing.offer_type === 'rent' ? 'RENT' : 'SALE') : (listing.offer_type === 'rent' ? 'إيجار' : 'بيع')}
-            </span>
-          )}
-          {!listing.offer_type && <span />}
+        {/* Top badges row — status only */}
+        <div className="absolute top-3 inset-x-3 flex items-start justify-end pointer-events-none">
+          <span />
           {listing.listing_status && listing.listing_status !== 'available' && (
             <span
               className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm leading-5"
