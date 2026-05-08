@@ -748,7 +748,7 @@ export function PropertyCard({
             alt={listing.title}
             width={400}
             height={256}
-            className={`w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out ${imageHeight}`}
+            className={`w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${imageHeight}`}
             onError={() => setImgError(true)}
           />
         ) : (
@@ -764,34 +764,72 @@ export function PropertyCard({
         )}
 
         {/* Bottom gradient for price overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
 
+        {/* Top badges row — offer type + status */}
+        <div className="absolute top-3 inset-x-3 flex items-start justify-between pointer-events-none">
+          {listing.offer_type && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm leading-5"
+              style={{
+                backgroundColor: listing.offer_type === 'rent' ? 'rgba(16,185,129,0.85)' : 'rgba(37,99,235,0.85)',
+                color: '#fff',
+              }}
+            >
+              {lang === 'en' ? (listing.offer_type === 'rent' ? 'RENT' : 'SALE') : (listing.offer_type === 'rent' ? 'إيجار' : 'بيع')}
+            </span>
+          )}
+          {!listing.offer_type && <span />}
+          {listing.listing_status && listing.listing_status !== 'available' && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm leading-5"
+              style={{
+                backgroundColor: listing.listing_status === 'sold' ? 'rgba(239,68,68,0.85)' : 'rgba(245,158,11,0.85)',
+                color: '#fff',
+              }}
+            >
+              {(statusLabels ?? STATUS_LABELS)[listing.listing_status] ?? listing.listing_status}
+            </span>
+          )}
+        </div>
+
+        {/* Image count badge */}
+        {listing.images.length > 1 && (
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-medium bg-black/55 backdrop-blur-sm text-white/80 px-2 py-0.5 rounded-full leading-5 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v7a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+            </svg>
+            {listing.images.length}
+          </span>
+        )}
 
         {/* Price overlay — bottom of image */}
         {listing.price != null && (
           <div className="absolute bottom-0 inset-x-0 px-3 pb-3 flex items-end justify-between">
             <p className="text-white font-bold text-base sm:text-lg leading-none drop-shadow-sm flex items-baseline gap-1">
-              <span className="text-xs font-medium opacity-80">{CURRENCY_SYMBOLS[currency] ?? currency}</span>
+              <span className="text-xs font-medium opacity-70">{CURRENCY_SYMBOLS[currency] ?? currency}</span>
               {listing.price.toLocaleString('en-US')}
             </p>
-            {listing.property_type && (
-              <span className="text-white/85 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
+            {listing.property_type && !listing.offer_type && (
+              <span className="text-white/80 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                 {listing.property_type}
               </span>
             )}
           </div>
         )}
 
-        {/* Tap hint overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-300 pointer-events-none" />
-        <div className="absolute inset-x-3 top-3 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `linear-gradient(90deg, transparent, ${primary}, transparent)` }} />
+        {/* Hover shimmer */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
       </div>
 
       {/* Card body */}
       <div className="p-4 sm:p-5">
-        <div className="mb-2 flex items-start justify-between gap-3">
+        <div className="mb-2 flex items-start justify-between gap-2">
           <h3 className="font-bold text-sm sm:text-base line-clamp-2 leading-snug">{listing.title}</h3>
-          <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" style={{ backgroundColor: `${primary}22`, color: primary }}>
+          <span
+            className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100"
+            style={{ backgroundColor: `${primary}22`, color: primary }}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
               <path fillRule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.69L10.22 7.03a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H5.75A.75.75 0 015 10z" clipRule="evenodd" />
             </svg>
@@ -889,9 +927,14 @@ export function EmptyState({
     : { listings: 'لا توجد عروض متاحة', news: 'لا توجد أخبار', gallery: 'لا توجد صور' }
 
   return (
-    <div className="col-span-full flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/10 bg-white/[0.03] py-16 text-center">
-      <div className="rounded-3xl p-5" style={{ color: accent ?? '#94a3b8', backgroundColor: `${accent ?? '#94a3b8'}14` }}>{icons[icon]}</div>
-      <p className="text-sm font-medium" style={{ color: accent ?? '#94a3b8' }}>
+    <div className="col-span-full flex flex-col items-center justify-center gap-4 rounded-3xl border border-white/10 bg-white/[0.025] py-16 text-center">
+      <div
+        className="rounded-3xl p-5 transition-transform duration-300 hover:scale-110"
+        style={{ color: accent ?? '#94a3b8', backgroundColor: `${accent ?? '#94a3b8'}14` }}
+      >
+        {icons[icon]}
+      </div>
+      <p className="text-sm font-medium opacity-70" style={{ color: accent ?? '#94a3b8' }}>
         {label ?? defaultLabels[icon]}
       </p>
     </div>
