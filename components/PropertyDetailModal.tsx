@@ -434,22 +434,20 @@ export function PropertyDetailModal({
                 style={{ borderInlineStart: '1px solid rgba(255,255,255,0.06)' }}>
 
                 {/* Price card */}
+                {property.price != null && (
                 <div className="rounded-2xl p-5" style={{
                   background: `linear-gradient(135deg, ${accentColor}1c 0%, ${accentColor}09 100%)`,
                   border: `1px solid ${accentColor}35`,
                 }}>
                   <p className="text-gray-500 text-[11px] uppercase tracking-widest mb-2">{L.price}</p>
-                  {property.price != null ? (
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-gray-400 text-sm font-medium">{property.currency ?? 'SAR'}</span>
-                      <span className="text-white font-black text-3xl tabular-nums leading-none">
-                        {property.price.toLocaleString('en-US')}
-                      </span>
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-base font-medium">{L.priceUnset}</p>
-                  )}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-gray-400 text-sm font-medium">{property.currency ?? 'SAR'}</span>
+                    <span className="text-white font-black text-3xl tabular-nums leading-none">
+                      {property.price.toLocaleString('en-US')}
+                    </span>
+                  </div>
                 </div>
+                )}
 
                 {/* Features */}
                 {property.features && property.features.length > 0 && (
