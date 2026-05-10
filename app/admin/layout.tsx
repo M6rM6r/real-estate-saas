@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#00ff41] flex font-mono">
+    <div dir="ltr" lang="en" className="min-h-screen w-full bg-[#0a0a0a] text-[#00ff41] flex font-mono">
       {/* Sidebar overlay on mobile */}
       {sidebarOpen && (
         <div
@@ -112,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-sm text-[#00ff41]">
               {navItems.find(n => n.href === pathname)?.label ?? 'terminal'}
             </span>
-            <span className="animate-pulse text-[#00ff41]">&block;</span>
+            <span className="animate-pulse text-[#00ff41]">█</span>
           </div>
         </header>
 

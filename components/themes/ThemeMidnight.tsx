@@ -102,11 +102,11 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-[44vh] sm:min-h-[48vh] lg:min-h-[55vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className="relative flex-1 min-h-[20vh] sm:min-h-[24vh] lg:min-h-[55vh]">
+          <section data-section="hero" className={`${isPreview ? 'min-h-[14vh] sm:min-h-[15vh] lg:min-h-[16vh]' : 'min-h-[44vh] sm:min-h-[48vh] lg:min-h-[55vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className={`relative flex-1 ${isPreview ? 'min-h-[7vh] sm:min-h-[8vh] lg:min-h-[16vh]' : 'min-h-[20vh] sm:min-h-[24vh] lg:min-h-[55vh]'}`}>
               {profile?.cover_url
-                ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
-                : <div className="w-full h-full min-h-[40vh] relative flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }}>
+                ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
+                : <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[18vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }}>
                     {isPreview && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/60 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -117,10 +117,10 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               }
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, rgba(13,10,30,0.85) 0%, transparent 60%)' }} />
             </div>
-            <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-12 py-10 sm:py-12 lg:py-16" style={{ backgroundColor: pageTheme.bg }}>
+            <div className={`flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-12 ${isPreview ? 'py-2 sm:py-3 lg:py-4' : 'py-10 sm:py-12 lg:py-16'}`} style={{ backgroundColor: pageTheme.bg }}>
               {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain rounded-full mb-6" />}
               <div className="w-12 h-1 rounded-full mb-5" style={{ backgroundColor: primary }} />
-              <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
+              <h1 className={`${isPreview ? 'text-xl sm:text-2xl mb-1' : 'text-3xl sm:text-5xl mb-4'} font-bold leading-tight text-white`}>{tenant.name}</h1>
               {profile?.tagline && <p className="text-lg font-medium mb-3" style={{ color: primary }}>{profile.tagline}</p>}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base mb-8 text-slate-400">{pageConfig.hero_headline}</p>}
             </div>
@@ -129,9 +129,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className="pb-12 sm:pb-14 px-4 text-center pt-24 sm:pt-28" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
+          <section data-section="hero" className={`${isPreview ? 'pb-3 sm:pb-4 pt-7 sm:pt-8' : 'pb-12 sm:pb-14 pt-24 sm:pt-28'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
-            <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight text-white">{tenant.name}</h1>
+            <h1 className={`${isPreview ? 'text-2xl sm:text-3xl mb-1' : 'text-4xl sm:text-6xl mb-4'} font-bold leading-tight text-white`}>{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
             {profile?.tagline && <p className="text-xl font-medium mb-3" style={{ color: primary }}>{profile.tagline}</p>}
             {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto text-slate-400">{pageConfig.hero_headline}</p>}
@@ -140,7 +140,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="relative min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] flex flex-col items-center justify-center py-8 sm:py-12 bg-cover bg-center overflow-hidden"
+          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[14vh] sm:min-h-[15vh] lg:min-h-[16vh] py-1 sm:py-2' : 'min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] py-8 sm:py-12'} flex flex-col items-center justify-center bg-cover bg-center overflow-hidden`}
             style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="mid-orb-1" />
             <div className="mid-orb-2" />
@@ -152,9 +152,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
             )}
             <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className="px-5 sm:px-8 py-8 sm:py-12 mx-auto">
+              <div className={`px-5 sm:px-8 mx-auto ${isPreview ? 'py-2 sm:py-3' : 'py-8 sm:py-12'}`}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}55` }} priority />}
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-3 leading-[0.95] tracking-tight text-white">{tenant.name}</h1>
+                <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-5xl md:text-7xl mb-3'} font-black leading-[0.95] tracking-tight text-white`}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: primary }}>{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/60 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
               </div>
@@ -164,7 +164,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Listings */}
         {sections.listings && (
-          <section data-section="listings" className="mid-reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+          <section data-section="listings" className={`mid-reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.listings }}>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
@@ -214,7 +214,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="mid-reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
+          <section data-section="news" className={`mid-reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'}`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
@@ -238,7 +238,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* About + Contact (combined layout) */}
         {(sections.about || (sections.contact && hasContactInfo)) && (
-          <section data-section="about" className="mid-reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
+          <section data-section="about" className={`mid-reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
               {sections.about && (
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
@@ -256,10 +256,6 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
               {sections.contact && hasContactInfo && (
                 <div data-section="contact" className="border rounded-2xl p-6 sm:p-8 text-center" style={cardStyle}>
-                  <div className="flex items-center gap-3 mb-6 justify-center">
-                    <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">{L.contactHeading}</h2>
-                  </div>
                   <p className="text-sm mb-8 text-slate-400">{L.contactSubtitle}</p>
                   <div className="flex flex-col items-center gap-3" dir="ltr">
                     {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: '#25D366' }}>
@@ -280,9 +276,8 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="mid-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
+          <section data-section="working-hours" className={`mid-reveal ${isPreview ? 'py-6' : 'py-12'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="rounded-2xl p-6 text-sm text-slate-300 border" style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, boxShadow: pageTheme.cardShadow }}>
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
@@ -292,10 +287,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="py-10 sm:py-12 px-4 md:px-8 pb-28 sm:pb-12 safe-pb" style={{ backgroundColor: '#080612', borderTop: `1px solid ${pageTheme.navBorder}`, order: sectionOrder.footer }}>
+          <footer className={`${isPreview ? 'py-5 sm:py-6 pb-6 sm:pb-6' : 'py-10 sm:py-12 pb-28 sm:pb-12'} px-4 md:px-8 safe-pb`} style={{ backgroundColor: '#080612', borderTop: `1px solid ${pageTheme.navBorder}`, order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={64} height={64} className="w-16 h-16 object-contain mb-3 rounded" />}
                 <h3 className="text-xl font-bold text-white">{tenant.name}</h3>
                 {profile?.bio && <p className="text-slate-500 text-sm mt-2 line-clamp-3">{profile.bio}</p>}
                 {profile?.contact_address && <p className="text-slate-500 text-sm mt-3">{profile.contact_address}</p>}

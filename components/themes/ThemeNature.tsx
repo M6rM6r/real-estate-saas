@@ -106,7 +106,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Hero */}
         {sections.hero && (
-          <section data-section="hero" className="nat-hero-mesh relative flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-10"
+          <section data-section="hero" className={`nat-hero-mesh relative flex items-center justify-center overflow-hidden ${isPreview ? 'pt-4 sm:pt-5 pb-2 min-h-[14vh]' : 'pt-16 sm:pt-20 pb-10'}`}
             style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <>
@@ -116,15 +116,15 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             ) : null}
             <div className="nat-leaf-blob" />
             <div className="relative z-10 text-center px-4 max-w-2xl mx-auto w-full">
-              <div className="px-8 py-10 mx-auto">
+              <div className={`px-8 mx-auto ${isPreview ? 'py-1' : 'py-10'}`}>
                 {profile?.logo_url && (
-                  <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full shadow-md" style={{ border: `3px solid ${primary}44` }} priority />
+                  <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className={`${isPreview ? 'w-10 h-10 mb-2' : 'w-20 h-20 mb-5'} object-contain mx-auto rounded-full shadow-md`} style={{ border: `3px solid ${primary}44` }} priority />
                 )}
-                <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 text-white leading-tight" style={{ fontFamily: headingFont }}>
+                <h1 className={`${isPreview ? 'text-2xl sm:text-3xl mb-1' : 'text-4xl sm:text-5xl mb-3'} font-extrabold text-white leading-tight`} style={{ fontFamily: headingFont }}>
                   {tenant.name}
                 </h1>
-                {profile?.tagline && <p className="nat-text text-lg font-semibold mb-3">{profile.tagline}</p>}
-                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-gray-400 text-sm sm:text-base mb-7 max-w-sm mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
+                {profile?.tagline && <p className={`nat-text ${isPreview ? 'text-xs sm:text-sm mb-1' : 'text-lg mb-3'} font-semibold`}>{profile.tagline}</p>}
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className={`text-gray-400 ${isPreview ? 'text-[11px] sm:text-xs mb-1' : 'text-sm sm:text-base mb-7'} max-w-sm mx-auto leading-relaxed`}>{pageConfig.hero_headline}</p>}
               </div>
             </div>
           </section>
@@ -132,7 +132,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && (
-          <section data-section="listings" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+          <section data-section="listings" className={`nat-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.listings }}>
             {/* Filters */}
             {propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
@@ -171,7 +171,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* News — 3 column grid */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="nat-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
+          <section data-section="news" className={`nat-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-white" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* About + Contact — side by side */}
         {(sections.about || (sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email))) && (
-        <section data-section="about" className="nat-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.about }}>
+        <section data-section="about" className={`nat-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.about }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* About */}
             {sections.about && (
@@ -225,7 +225,6 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
             {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
               <div className="p-8 border flex flex-col items-center text-center" style={{ borderColor: pageTheme.cardBorder, borderRadius: '28px', backgroundColor: pageTheme.cardBg, boxShadow: pageTheme.cardShadow }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5 shadow-sm" style={{ backgroundColor: `${primary}18` }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6" style={{ color: primary }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.12 1.529 5.856L0 24l6.302-1.508A11.947 11.947 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.798 9.798 0 01-5.021-1.378l-.36-.213-3.741.895.929-3.631-.234-.375A9.788 9.788 0 012.182 12C2.182 6.565 6.565 2.182 12 2.182S21.818 6.565 21.818 12 17.435 21.818 12 21.818z"/></svg></div>
-                <h2 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
                 <p className="text-sm text-gray-400 mb-6">{L.contactSubtitle}</p>
                 <div className="flex flex-col items-center gap-3 w-full" dir="ltr">
                   {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm w-full justify-center transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
@@ -243,9 +242,8 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="nat-reveal py-10 px-6" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.working_hours }}>
+          <section data-section="working-hours" className={`nat-reveal ${isPreview ? 'py-5' : 'py-10'} px-6`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.working_hours }}>
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-white/5 rounded-lg p-6 text-sm text-gray-300 border border-white/10">
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
@@ -255,10 +253,9 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: primary, order: sectionOrder.footer }}>
+          <footer className={`${isPreview ? 'py-5 pb-6 sm:pb-6' : 'py-10 pb-24 sm:pb-10'} px-6`} style={{ backgroundColor: primary, order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={40} height={40} className="w-10 h-10 rounded-full object-contain bg-white p-1" />}
                 <span className="font-bold text-white text-lg">{tenant.name}</span>
               </div>
               <p className="text-white/70 text-sm">{L.footerCopyright} © {new Date().getFullYear()}</p>

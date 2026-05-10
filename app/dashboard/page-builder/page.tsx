@@ -446,7 +446,7 @@ function ImageUploader({
               {uploading ? (
                 <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
               ) : value ? (
-                <Image src={value} alt="preview" fill className="object-cover" />
+                <Image src={value} alt="preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 360px" />
               ) : (
                 <ImageIcon className="h-6 w-6 text-slate-600" />
               )}
@@ -481,7 +481,7 @@ function ImageUploader({
         >
           {value ? (
             <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
-              <Image src={value} alt="cover preview" fill className="object-cover" />
+              <Image src={value} alt="cover preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 640px" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> {t.changeImage}</>}
               </div>
@@ -1346,6 +1346,12 @@ export default function PageBuilderPage() {
           box-shadow: 0 0 0 3px rgba(14,165,233,0.15) !important;
           outline: none;
         }
+        /* Builder panel readability bump (does NOT affect built/public page preview) */
+        .builder-panel .text-xs { font-size: 0.84rem; line-height: 1.25rem; }
+        .builder-panel .text-[10px] { font-size: 0.74rem; line-height: 1.1rem; }
+        .builder-panel .text-[11px] { font-size: 0.78rem; line-height: 1.15rem; }
+        .builder-panel .wa9l-field { font-size: 0.95rem; line-height: 1.45rem; }
+        .builder-panel .wa9l-tab-trigger { font-size: 0.92rem; }
         /* thin scrollbar for editor panel */
         .pb-scroll { scrollbar-width: thin; scrollbar-color: rgba(71,85,105,0.5) transparent; }
         .pb-scroll::-webkit-scrollbar { width: 3px; }
@@ -1470,7 +1476,7 @@ export default function PageBuilderPage() {
         <div className="grid h-full xl:grid-cols-[minmax(500px,1fr)_minmax(620px,1.2fr)] gap-4 lg:gap-5 items-stretch">
 
         {/* Editor panel */}
-        <div className="space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-2 pb-scroll">
+        <div className="builder-panel space-y-5 min-w-0 relative z-20 xl:col-start-1 xl:row-start-1 xl:h-full xl:overflow-y-auto xl:pr-2 pb-scroll">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <TabsList className="sticky top-0 z-30 w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 wa9l-glass-strong rounded-2xl p-1.5 h-auto gap-1">
               {([
@@ -1915,7 +1921,7 @@ export default function PageBuilderPage() {
                   <div className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-slate-700 text-right">
                     {profile.cover_url && (
                       <div className="relative w-full h-24">
-                        <Image src={profile.cover_url} alt="OG preview" fill className="object-cover" />
+                        <Image src={profile.cover_url} alt="OG preview" fill className="object-cover" sizes="400px" />
                       </div>
                     )}
                     <div className="p-3">
@@ -2098,7 +2104,7 @@ export default function PageBuilderPage() {
                       <div key={listing.id} className={`bg-slate-800 rounded-lg p-3 border border-slate-700 flex gap-3 items-center transition-opacity ${listing.published === false ? 'opacity-60' : ''}`}>
                         {listing.images?.[0] && (
                           <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image src={listing.images[0]} alt="" fill className="object-cover" />
+                            <Image src={listing.images[0]} alt="" fill className="object-cover" sizes="200px" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
@@ -2410,40 +2416,6 @@ export default function PageBuilderPage() {
         {/* Live Preview */}
         <div className="min-w-0 relative z-0 xl:col-start-2 xl:row-start-1 xl:h-full">
           <div className="wa9l-card rounded-2xl overflow-hidden h-full flex flex-col">
-
-            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02] shrink-0">
-              <div className="flex items-center gap-2.5">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-green-500/10 text-green-300 ring-1 ring-green-400/20 shrink-0">
-                  <Globe className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="text-xs font-bold text-slate-200 uppercase tracking-wider">{t.livePreview}</p>
-                  <p className="max-w-[180px] sm:max-w-[260px] truncate font-mono text-[10px] text-slate-500 leading-tight">{publicPath}</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-2.5 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                {t.live}
-              </span>
-            </div>
-
-            <div className="px-3 py-2.5 flex items-center justify-between gap-2" style={{ backgroundColor: 'rgba(6,6,20,0.55)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-              </div>
-              <button
-                type="button"
-                onClick={() => updatePageConfig({ page_lang: pageConfig.page_lang === 'ar' ? 'en' : 'ar' })}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.10] bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-slate-300 hover:text-blue-200 hover:border-blue-400/30 hover:bg-blue-500/10 transition-all"
-                aria-label={lang === 'ar' ? 'تبديل لغة الصفحة' : 'Toggle page language'}
-              >
-                <Globe className="h-3 w-3" />
-                <span>{(pageConfig.page_lang ?? 'ar') === 'ar' ? 'AR → EN' : 'EN → AR'}</span>
-              </button>
-            </div>
-
             {/* Live inline preview — renders theme component directly, no save needed */}
             <div className="relative overflow-hidden bg-black flex-1 min-h-[540px] xl:min-h-0">
               {/* onClick capture blocks link navigation; scroll still works */}

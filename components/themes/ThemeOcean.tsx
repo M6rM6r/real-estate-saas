@@ -36,6 +36,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
+  const heroMinHeight = isPreview ? '16vh' : '100vh'
+  const heroWaveHeight = isPreview ? '32px' : '80px'
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [offerFilter, setOfferFilter] = useState('all')
@@ -98,29 +100,29 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Hero — full screen with wave */}
         {sections.hero && (
-          <section data-section="hero" className="relative" style={{ order: sectionOrder.hero, minHeight: '100vh' }}>
+          <section data-section="hero" className="relative" style={{ order: sectionOrder.hero, minHeight: heroMinHeight }}>
             {profile?.cover_url ? (
-              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
+              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
             ) : (
               <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(12,35,64,0.6) 0%, rgba(12,35,64,0.8) 100%)` }} />
-            <div className="relative z-10 flex items-center justify-center text-center px-4 text-white pt-20" style={{ minHeight: '100vh' }}>
+            <div className={`relative z-10 flex ${isPreview ? 'items-start' : 'items-center'} justify-center text-center px-4 text-white ${isPreview ? 'pt-3 pb-1' : 'pt-20'}`} style={{ minHeight: heroMinHeight }}>
               <div className="max-w-2xl">
                 {profile?.logo_url && (
-                  <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-6 rounded-full bg-white/10 p-2 backdrop-blur" priority />
+                  <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className={`${isPreview ? 'w-10 h-10 mb-2 p-1' : 'w-20 h-20 mb-6 p-2'} object-contain mx-auto rounded-full bg-white/10 backdrop-blur`} priority />
                 )}
-                <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont }}>
+                <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-6xl md:text-7xl mb-4'} font-bold leading-tight`} style={{ fontFamily: headingFont }}>
                   {tenant.name}
                 </h1>
-                {profile?.tagline && <p className="text-lg sm:text-2xl font-light mb-4" style={{ color: `${primary}dd` }}>{profile.tagline}</p>}
-                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-white/70 text-base sm:text-lg mb-8 max-w-lg mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
+                {profile?.tagline && <p className={`${isPreview ? 'text-xs sm:text-sm mb-1' : 'text-lg sm:text-2xl mb-4'} font-light`} style={{ color: `${primary}dd` }}>{profile.tagline}</p>}
+                {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className={`text-white/70 ${isPreview ? 'text-[11px] sm:text-xs mb-1' : 'text-base sm:text-lg mb-8'} max-w-lg mx-auto leading-relaxed`}>{pageConfig.hero_headline}</p>}
 
               </div>
             </div>
             {/* Wave SVG */}
             <div className="absolute bottom-0 inset-x-0 z-10">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full" style={{ display: 'block', height: '80px' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full" style={{ display: 'block', height: heroWaveHeight }}>
                 <path fill={pageTheme.bg} fillOpacity="1" d="M0,64L60,58.7C120,53,240,43,360,48C480,53,600,75,720,80C840,85,960,75,1080,64C1200,53,1320,43,1380,37.3L1440,32L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z" />
               </svg>
             </div>
@@ -129,7 +131,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Listings */}
         {sections.listings && (
-          <section data-section="listings" className="ocn-reveal py-12 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+          <section data-section="listings" className={`ocn-reveal ${isPreview ? 'py-6' : 'py-12'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.listings }}>
             {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
@@ -168,7 +170,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* News — 2 large side by side */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="ocn-reveal py-14 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
+          <section data-section="news" className={`ocn-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               {/* First 2 as large cards */}
@@ -206,7 +208,7 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* About */}
         {sections.about && (
-          <section data-section="about" className="ocn-reveal py-14 px-4 max-w-3xl mx-auto text-center" style={{ order: sectionOrder.about }}>
+          <section data-section="about" className={`ocn-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 max-w-3xl mx-auto text-center`} style={{ order: sectionOrder.about }}>
 
             {profile?.bio && <p className="text-gray-400 leading-relaxed text-base sm:text-lg">{profile.bio}</p>}
             {(profile?.licence_numbers && profile.licence_numbers.length > 0)
@@ -220,9 +222,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="ocn-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
+          <section data-section="contact" className={`ocn-reveal ${isPreview ? 'py-6' : 'py-14'} px-4`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }}><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
@@ -238,9 +239,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="ocn-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
+          <section data-section="working-hours" className={`ocn-reveal ${isPreview ? 'py-6' : 'py-12'} px-4`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-bold text-center mb-6 text-white">{L.workingHoursHeading}</h3>
               <div className="bg-blue-950/30 rounded-lg p-6 text-sm text-gray-300 border border-blue-900/50">
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
@@ -254,10 +254,9 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" preserveAspectRatio="none" className="w-full" style={{ display: 'block', height: '40px' }}>
               <path fill={pageTheme.sectionAlt} fillOpacity="1" d="M0,32L80,26.7C160,21,320,11,480,16C640,21,800,43,960,48C1120,53,1280,43,1360,37.3L1440,32L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z" />
             </svg>
-            <div className="px-6 py-10 pb-24 sm:pb-10">
+            <div className={`px-6 ${isPreview ? 'py-5 pb-6 sm:pb-6' : 'py-10 pb-24 sm:pb-10'}`}>
               <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-gray-400">
                 <div>
-                  {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={56} height={56} className="w-14 h-14 object-contain rounded-full bg-white/10 mb-3 p-1" />}
                   <h3 className="text-white font-bold text-lg mb-1">{tenant.name}</h3>
                   {profile?.bio && <p className="text-xs leading-relaxed line-clamp-3">{profile.bio}</p>}
                 </div>

@@ -114,28 +114,28 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — full bleed, no card */}
         {sections.hero && (
-          <section data-section="hero" className="relative min-h-[55vh] flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
+          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[14vh]' : 'min-h-[55vh]'} flex items-center justify-center overflow-hidden`} style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
-              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" priority />
+              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover scale-105" sizes="(max-width: 768px) 100vw, 70vw" priority />
             ) : (
               <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #0a0a0a 0%, #1a1209 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.88) 100%)' }} />
-            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pt-24 pb-16">
+            <div className={`relative z-10 text-center px-6 max-w-5xl mx-auto ${isPreview ? 'pt-1 pb-1' : 'pt-24 pb-16'}`}>
               {profile?.logo_url && (
-                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-14 h-14 object-contain mx-auto mb-10 opacity-85" priority />
+                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className={`${isPreview ? 'w-9 h-9 mb-2' : 'w-14 h-14 mb-10'} object-contain mx-auto opacity-85`} priority />
               )}
-              <h1 className="lux-underline text-6xl sm:text-8xl md:text-9xl font-bold leading-none mb-0 text-white" style={{ fontFamily: headingFont, letterSpacing: '-0.03em', fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
+              <h1 className={`lux-underline ${isPreview ? 'text-2xl sm:text-3xl' : 'text-5xl sm:text-7xl md:text-8xl'} font-bold leading-none mb-0 text-white`} style={{ fontFamily: headingFont, letterSpacing: '-0.03em', fontSize: isPreview ? 'clamp(1.75rem, 4vw, 2.5rem)' : 'clamp(2.6rem, 8vw, 6rem)' }}>
                 {tenant.name}
               </h1>
               <div className="w-20 h-px mx-auto my-7" style={{ backgroundColor: primary }} />
               {profile?.tagline && (
-                <p className="text-base sm:text-xl font-light italic tracking-wide mb-6" style={{ color: primary, fontFamily: headingFont }}>
+                <p className={`${isPreview ? 'text-xs sm:text-sm mb-1 tracking-normal' : 'text-base sm:text-xl mb-6 tracking-wide'} font-light italic`} style={{ color: primary, fontFamily: headingFont }}>
                   {profile.tagline}
                 </p>
               )}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && (
-                <p className="text-sm sm:text-base text-white/60 mb-10 max-w-xl mx-auto font-light leading-relaxed">
+                <p className={`text-white/60 ${isPreview ? 'text-[11px] sm:text-xs mb-1 max-w-md' : 'text-sm sm:text-base mb-10 max-w-xl'} mx-auto font-light leading-relaxed`}>
                   {pageConfig.hero_headline}
                 </p>
               )}
@@ -144,7 +144,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
         )}
 
         {/* Gold divider + tagline strip */}
-        <div className="py-10 px-6 text-center" style={{ backgroundColor: '#0d0d0d' }}>
+        <div className={`${isPreview ? 'py-4' : 'py-10'} px-6 text-center`} style={{ backgroundColor: '#0d0d0d' }}>
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 h-px" style={{ backgroundColor: `${primary}40` }} />
@@ -159,7 +159,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && published.length > 0 && (
-          <section data-section="listings" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.listings }}>
+          <section data-section="listings" className={`lux-reveal ${isPreview ? 'py-6' : 'py-16'} px-6 md:px-12`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.listings }}>
             <div className="max-w-6xl mx-auto">
               {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
                 <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
@@ -195,7 +195,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                   <div className="flex flex-col lg:flex-row">
                     <div className="relative lg:w-1/2 h-64 lg:h-80">
                       {featured.images[0] ? (
-                        <Image src={featured.images[0]} alt={featured.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <Image src={featured.images[0]} alt={featured.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
                       ) : (
                         <div className="w-full h-full" style={{ backgroundColor: '#141414' }} />
                       )}
@@ -247,7 +247,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
                       onClick={() => setActiveListing(l)}>
                       <div className="relative h-52">
                         {l.images[0] ? (
-                          <Image src={l.images[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Image src={l.images[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                         ) : (
                           <div className="w-full h-full" style={{ backgroundColor: '#1a1a1a' }} />
                         )}
@@ -284,7 +284,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* News — typography list */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="lux-reveal py-16 px-6 md:px-12" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.news }}>
+          <section data-section="news" className={`lux-reveal ${isPreview ? 'py-6' : 'py-16'} px-6 md:px-12`} style={{ backgroundColor: '#0d0d0d', order: sectionOrder.news }}>
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-10">
                 <div className="flex-1 h-px" style={{ backgroundColor: `${primary}30` }} />
@@ -313,7 +313,7 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* About — quote style */}
         {sections.about && profile?.bio && (
-          <section data-section="about" className="lux-reveal py-20 px-6 text-center" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.about }}>
+          <section data-section="about" className={`lux-reveal ${isPreview ? 'py-7' : 'py-20'} px-6 text-center`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.about }}>
             <div className="max-w-2xl mx-auto">
               <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: primary }} />
               <p className="text-xl sm:text-2xl font-light italic leading-relaxed text-gray-300" style={{ fontFamily: headingFont }}>
@@ -338,11 +338,8 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Contact — minimal */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email || profile?.contact_address) && (
-        <section data-section="contact" className="lux-reveal py-16 px-6" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.contact }}>
+        <section data-section="contact" className={`lux-reveal ${isPreview ? 'py-6' : 'py-16'} px-6`} style={{ backgroundColor: '#0d0d0d', order: sectionOrder.contact }}>
           <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl font-bold tracking-widest uppercase mb-2" style={{ fontFamily: headingFont, color: primary }}>
-              {L.contactHeading}
-            </h2>
             <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: `${primary}60` }} />
             <div className="space-y-3" dir="ltr">
               {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" dir="ltr" className="flex items-center justify-center gap-3 text-sm text-gray-400 hover:text-white transition-colors"><WaIcon className="w-4 h-4 shrink-0" /> {waDisplay}</a>}
@@ -359,9 +356,8 @@ export default function ThemeLuxury({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="lux-reveal py-12 px-6" style={{ backgroundColor: '#0d0d0d', order: sectionOrder.working_hours }}>
+          <section data-section="working-hours" className={`lux-reveal ${isPreview ? 'py-6' : 'py-12'} px-6`} style={{ backgroundColor: '#0d0d0d', order: sectionOrder.working_hours }}>
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold tracking-widest uppercase text-center mb-6" style={{ color: primary }}>{L.workingHoursHeading}</h3>
               <div style={{ backgroundColor: '#111', padding: '16px', borderRadius: '8px', border: `1px solid ${primary}30` }}>
                 <WorkingHours hours={profile.working_hours} textClass="text-gray-400 text-xs" lang={lang} />
               </div>

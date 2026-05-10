@@ -106,7 +106,7 @@ function SortableImage({ url, index, onRemove }: { url: string; index: number; o
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style} className="relative group w-16 h-16">
-      <Image src={url} alt={`Image ${index + 1}`} fill className="rounded object-cover border border-gray-700" />
+      <Image src={url} alt={`Image ${index + 1}`} fill className="rounded object-cover border border-gray-700" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
       <button
         {...attributes}
         {...listeners}

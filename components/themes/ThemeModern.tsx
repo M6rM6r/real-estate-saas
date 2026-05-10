@@ -106,10 +106,10 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`min-h-[55vh] flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className="relative flex-1 min-h-[30vh] lg:min-h-[55vh]">
-              {profile?.cover_url ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority /> : (
-                <div className="w-full h-full min-h-[40vh] relative flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }}>
+          <section data-section="hero" className={`${isPreview ? 'min-h-[14vh]' : 'min-h-[55vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className={`relative flex-1 ${isPreview ? 'min-h-[7vh] lg:min-h-[14vh]' : 'min-h-[30vh] lg:min-h-[55vh]'}`}>
+              {profile?.cover_url ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority /> : (
+                <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[18vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }}>
                   {isPreview && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/70 pointer-events-none">
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -119,9 +119,9 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                 </div>
               )}
             </div>
-            <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 py-16" style={{ backgroundColor: pageTheme.bg }}>
+            <div className={`flex-1 flex flex-col justify-center px-8 sm:px-12 ${isPreview ? 'py-2' : 'py-16'}`} style={{ backgroundColor: pageTheme.bg }}>
               {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain rounded-full mb-6 shadow-lg" />}
-              <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+              <h1 className={`${isPreview ? 'text-xl sm:text-2xl mb-1' : 'text-3xl sm:text-5xl mb-4'} font-bold leading-tight`} style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
               {profile?.tagline && <p className="text-lg font-medium mb-3 text-primary">{profile.tagline}</p>}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base mb-8" style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>}
 
@@ -131,9 +131,9 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className="pb-16 px-4 text-center pt-28 sm:pt-32" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
+          <section data-section="hero" className={`${isPreview ? 'pb-3 pt-7 sm:pt-8' : 'pb-16 pt-28 sm:pt-32'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6 shadow" />}
-            <h1 className="text-4xl sm:text-6xl font-bold mb-4 leading-tight" style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
+            <h1 className={`${isPreview ? 'text-2xl sm:text-3xl mb-1' : 'text-4xl sm:text-6xl mb-4'} font-bold leading-tight`} style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
             <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
             {profile?.tagline && <p className="text-xl font-medium mb-3 text-primary">{profile.tagline}</p>}
             {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto" style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>{pageConfig.hero_headline}</p>}
@@ -143,7 +143,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className="hero-mesh relative min-h-[55vh] flex flex-col items-center justify-center py-8 sm:py-12 bg-cover bg-center"
+          <section data-section="hero" className={`hero-mesh relative ${isPreview ? 'min-h-[14vh] py-1 sm:py-2' : 'min-h-[55vh] py-8 sm:py-12'} flex flex-col items-center justify-center bg-cover bg-center`}
             style={{ order: sectionOrder.hero }}>
             {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -153,9 +153,9 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
             <div className="hero-orb-1" aria-hidden="true" />
             <div className="hero-orb-2" aria-hidden="true" />
             <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto w-full">
-              <div className="relative px-5 sm:px-10 py-8 sm:py-14 mx-auto">
+              <div className={`relative px-5 sm:px-10 mx-auto ${isPreview ? 'py-2 sm:py-3' : 'py-8 sm:py-14'}`}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}44` }} priority />}
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 leading-[0.95] tracking-tight" style={{ fontFamily: headingFont }}>{tenant.name}</h1>
+                <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-5xl md:text-7xl mb-4'} font-black leading-[0.95] tracking-tight`} style={{ fontFamily: headingFont }}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
                 {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && <p className="text-sm sm:text-base text-white/65 mb-8 max-w-md mx-auto leading-relaxed">{pageConfig.hero_headline}</p>}
               </div>
@@ -165,7 +165,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Listings */}
         {sections.listings && (
-          <section data-section="listings" className="reveal py-12 sm:py-16 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+          <section data-section="listings" className={`reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.listings }}>
             {pageConfig.show_listing_search && (
               <div className="mb-4">
                 <input value={listingSearch} onChange={e => setListingSearch(e.target.value)}
@@ -216,7 +216,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* News */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="reveal py-12 sm:py-16" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
+          <section data-section="news" className={`reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'}`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.news }}>
             <div className="px-4 md:px-8 max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -237,13 +237,8 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* About */}
         {sections.about && (
-          <section data-section="about" className="reveal py-16 sm:py-20 px-4 md:px-8" style={{ order: sectionOrder.about }}>
+          <section data-section="about" className={`reveal ${isPreview ? 'py-6 sm:py-7' : 'py-16 sm:py-20'} px-4 md:px-8`} style={{ order: sectionOrder.about }}>
             <div className="max-w-3xl mx-auto text-center">
-              {profile?.logo_url && (
-                <Image src={profile.logo_url} alt={tenant.name} width={80} height={80}
-                  className="w-16 h-16 mx-auto rounded-2xl object-contain mb-6 shadow-xl"
-                  style={{ boxShadow: `0 8px 32px ${primary}44` }} />
-              )}
               <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 tracking-tight" style={{ fontFamily: headingFont }}>{tenant.name}</h2>
               {profile?.bio && <p className={`leading-relaxed text-base sm:text-lg max-w-2xl mx-auto ${bodyClass}`}>{profile.bio}</p>}
               {(profile?.licence_numbers && profile.licence_numbers.length > 0) ? (
@@ -265,7 +260,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="reveal py-12 sm:py-16 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
+          <section data-section="contact" className={`reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-3xl mx-auto rounded-[2rem] border p-6 sm:p-9 text-center" style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, boxShadow: pageTheme.cardShadow }}>
               <p className={`text-sm mb-8 ${mutedClass}`}>{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
@@ -279,9 +274,9 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Footer */}
         {sections.footer && (
-          <footer className="text-white pb-28 sm:pb-0 safe-pb" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.footer }}>
+          <footer className={`text-white ${isPreview ? 'pb-4 sm:pb-0' : 'pb-28 sm:pb-0'} safe-pb`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.footer }}>
             <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${primary}55, transparent)` }} />
-            <div className="max-w-7xl mx-auto px-4 md:px-8 pt-12 pb-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className={`max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-3 ${isPreview ? 'pt-5 pb-4 gap-4' : 'pt-12 pb-10 gap-10'}`}>
               {/* Brand */}
               <div>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={56} height={56} className="w-12 h-12 object-contain mb-4 rounded-xl" />}
@@ -322,7 +317,6 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
                 <SocialLinks profile={profile} waLink={waLink} />
                 {sections.working_hours && profile?.working_hours && (
                   <div className="mt-6 pt-5 border-t" style={{ borderColor: pageTheme.cardBorder }}>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] mb-3" style={{ color: primary }}>{L.workingHoursHeading}</p>
                     <WorkingHours hours={profile.working_hours} lang={lang} textClass="text-slate-400" />
                   </div>
                 )}

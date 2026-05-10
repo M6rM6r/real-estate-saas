@@ -105,28 +105,28 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — no card, HUGE text */}
         {sections.hero && (
-          <section data-section="hero" className="relative min-h-[55vh] flex items-center justify-center overflow-hidden" style={{ order: sectionOrder.hero }}>
+          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[14vh]' : 'min-h-[55vh]'} flex items-center justify-center overflow-hidden`} style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
-              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
+              <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
             ) : (
               <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }} />
             )}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, rgba(45,26,10,0.75) 0%, rgba(217,119,6,0.45) 100%)` }} />
-            <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full pt-20">
+            <div className={`relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full ${isPreview ? 'pt-1 pb-0' : 'pt-20'}`}>
               {profile?.logo_url && (
-                <Image src={profile.logo_url} alt={tenant.name} width={72} height={72} className="w-16 h-16 object-contain mx-auto mb-6 opacity-90 rounded-full" priority />
+                <Image src={profile.logo_url} alt={tenant.name} width={72} height={72} className={`${isPreview ? 'w-9 h-9 mb-2' : 'w-16 h-16 mb-6'} object-contain mx-auto opacity-90 rounded-full`} priority />
               )}
-              <h1 className="text-5xl sm:text-7xl md:text-9xl font-black leading-none mb-4 tracking-tight uppercase"
+              <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-6xl md:text-7xl mb-4'} font-black leading-none tracking-tight uppercase`}
                 style={{ fontFamily: headingFont, letterSpacing: '-0.03em', textShadow: '0 4px 32px rgba(0,0,0,0.5)' }}>
                 {tenant.name}
               </h1>
               {profile?.tagline && (
-                <p className="text-xl sm:text-2xl font-semibold mb-4 tracking-widest" style={{ color: `${primary}ee` }}>
+                <p className={`${isPreview ? 'text-xs sm:text-sm mb-1 tracking-normal' : 'text-xl sm:text-2xl mb-4 tracking-widest'} font-semibold`} style={{ color: `${primary}ee` }}>
                   {profile.tagline}
                 </p>
               )}
               {pageConfig.hero_headline && pageConfig.hero_headline !== profile?.tagline && (
-                <p className="text-white/70 text-base sm:text-xl mb-10 max-w-2xl mx-auto font-light">
+                <p className={`text-white/70 ${isPreview ? 'text-[11px] sm:text-xs mb-1 max-w-md' : 'text-base sm:text-xl mb-10 max-w-2xl'} mx-auto font-light`}>
                   {pageConfig.hero_headline}
                 </p>
               )}
@@ -137,7 +137,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Featured listing — wide horizontal */}
         {sections.listings && (
-          <section data-section="listings" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.listings }}>
+          <section data-section="listings" className={`dsr-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.listings }}>
             {pageConfig.show_listing_filters && propertyTypes.length > 0 && (
               <div className="flex gap-2 overflow-x-auto pb-1 mb-3 -mx-4 px-4 sm:mx-0 sm:px-0" style={{scrollbarWidth:'none'}}>
                 {(['all', ...propertyTypes]).map(f => (
@@ -172,7 +172,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                 {/* Image on right for RTL */}
                 <div className="relative h-60 md:h-80 md:w-1/2 order-last md:order-last">
                   {featured.images[0] ? (
-                    <Image src={featured.images[0]} alt={featured.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <Image src={featured.images[0]} alt={featured.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
                   ) : (
                     <div className="w-full h-full" style={{ backgroundColor: pageTheme.cardBorder }} />
                   )}
@@ -219,7 +219,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     onClick={() => setActiveListing(l)}>
                     <div className="relative h-36">
                       {l.images[0] ? (
-                        <Image src={l.images[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <Image src={l.images[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                       ) : (
                         <div className="w-full h-full" style={{ backgroundColor: '#f5e6c8' }} />
                       )}
@@ -239,7 +239,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* About — warm card */}
         {sections.about && (
-          <section data-section="about" className="dsr-reveal py-12 px-4 md:px-8" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
+          <section data-section="about" className={`dsr-reveal ${isPreview ? 'py-6' : 'py-12'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
             <div className="max-w-5xl mx-auto">
               <div className="border p-8 sm:p-10" style={{ borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}>
                 <div className="flex flex-col sm:flex-row items-start gap-8">
@@ -284,7 +284,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* News — large horizontal cards */}
         {sections.news && news.length > 0 && (
-          <section data-section="news" className="dsr-reveal py-14 px-4 md:px-8 max-w-7xl mx-auto" style={{ order: sectionOrder.news }}>
+          <section data-section="news" className={`dsr-reveal ${isPreview ? 'py-6' : 'py-14'} px-4 md:px-8 max-w-7xl mx-auto`} style={{ order: sectionOrder.news }}>
             <h2 className="text-2xl sm:text-3xl font-black mb-8" style={{ fontFamily: headingFont }}>{L.newsHeading}</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
               {news.map(item => (
@@ -305,9 +305,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Contact */}
         {sections.contact && (whatsapp || profile?.contact_phone || profile?.contact_email) && (
-          <section data-section="contact" className="dsr-reveal py-14 px-4" style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
+          <section data-section="contact" className={`dsr-reveal ${isPreview ? 'py-6' : 'py-14'} px-4`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.contact }}>
             <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl sm:text-3xl font-black mb-2" style={{ fontFamily: headingFont }}>{L.contactHeading}</h2>
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
                 {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }} dir="ltr"><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
@@ -323,9 +322,8 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Working Hours */}
         {sections.working_hours && profile?.working_hours && (
-          <section data-section="working-hours" className="dsr-reveal py-12 px-4" style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
+          <section data-section="working-hours" className={`dsr-reveal ${isPreview ? 'py-6' : 'py-12'} px-4`} style={{ backgroundColor: pageTheme.bg, order: sectionOrder.working_hours }}>
             <div className="max-w-xl mx-auto">
-              <h3 className="text-2xl font-black text-center mb-6" style={{ fontFamily: headingFont, color: primary }}>{L.workingHoursHeading}</h3>
               <div className="bg-gray-900 rounded-lg p-6 text-sm text-gray-400">
                 <WorkingHours hours={profile.working_hours} lang={lang} />
               </div>
@@ -335,10 +333,9 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Footer — warm dark */}
         {sections.footer && (
-          <footer className="py-10 px-6 pb-24 sm:pb-10" style={{ backgroundColor: '#1c0d02', order: sectionOrder.footer }}>
+          <footer className={`${isPreview ? 'py-5 pb-6 sm:pb-6' : 'py-10 pb-24 sm:pb-10'} px-6`} style={{ backgroundColor: '#1c0d02', order: sectionOrder.footer }}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-gray-500">
               <div>
-                {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={56} height={56} className="w-14 h-14 object-contain rounded-full mb-3 opacity-80" />}
                 <h3 className="text-white font-black text-lg mb-1">{tenant.name}</h3>
                 {profile?.bio && <p className="text-xs leading-relaxed line-clamp-3">{profile.bio}</p>}
               </div>

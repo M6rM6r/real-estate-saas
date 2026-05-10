@@ -4,6 +4,9 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { BedDouble, Bath, Ruler, CalendarDays, Gauge, Tag } from 'lucide-react'
 import { buildWhatsAppLink } from '@/lib/whatsapp'
+import { getHeadingFont } from '@/lib/fonts'
+
+export { getHeadingFont }
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -292,12 +295,6 @@ export function getBtnRadius(buttonShape: string, themeRadius: string) {
   if (buttonShape === 'pill') return '9999px'
   if (buttonShape === 'sharp') return '0px'
   return themeRadius
-}
-
-export function getHeadingFont(selectedFont?: string, fallbackFont?: string) {
-  if (selectedFont && selectedFont !== 'inherit') return selectedFont
-  if (fallbackFont) return fallbackFont
-  return 'inherit'
 }
 
 // ─── Icons ──────────────────────────────────────────────────────────────────
