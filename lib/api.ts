@@ -1,4 +1,6 @@
 const API_BASE = '';
+const SESSION_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+let lastSessionRefreshAt = 0;
 
 async function getToken(): Promise<string | null> {
   try {
@@ -11,11 +13,33 @@ async function getToken(): Promise<string | null> {
   }
 }
 
+async function refreshSessionCookieIfNeeded(token: string | null) {
+  if (!token || typeof window === 'undefined') return;
+  const now = Date.now();
+  if (now - lastSessionRefreshAt < SESSION_REFRESH_INTERVAL_MS) return;
+  lastSessionRefreshAt = now;
+
+  try {
+    await fetch(`${API_BASE}/api/auth/session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+      credentials: 'same-origin',
+    });
+  } catch {
+    // best-effort refresh only
+  }
+}
+
 export async function authFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
   const token = await getToken();
+  void refreshSessionCookieIfNeeded(token);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),

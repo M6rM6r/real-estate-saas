@@ -79,6 +79,8 @@ export type Profile = {
   } | null
 } | null
 
+export type ListingStatus = 'available' | 'sold' | 'rented'
+
 export type Post = {
   id: string
   title: string
@@ -90,7 +92,7 @@ export type Post = {
   bedrooms: number | null
   bathrooms: number | null
   area_sqm: number | null
-  listing_status: string | null
+  listing_status: ListingStatus | null
   offer_type?: string | null
   property_type?: string | null
   card_style?: string | null
@@ -100,8 +102,10 @@ export type Post = {
 
 export type Media = {
   id: string
+  tenant_id: string
   url: string
-  label: string | null
+  filename?: string
+  label?: string
   sort_order: number
 }
 
@@ -790,10 +794,7 @@ export function PropertyCard({
             className={`w-full flex flex-col items-center justify-center gap-2 ${imageHeight}`}
             style={{ background: `linear-gradient(135deg, ${sectionAlt} 0%, rgba(0,0,0,0.3) 100%)` }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 22V12h6v10" />
-            </svg>
+            <EmptyCoverPlaceholder compact />
           </div>
         )}
 
@@ -879,10 +880,10 @@ export function PropertyCard({
             }}
           >
             {specs.map((spec, i) => (
-              <div key={i} className={`flex flex-col items-center gap-0.5 py-1 px-1 text-center ${i > 0 ? 'border-l border-white/[0.06]' : ''}`}>
+              <div key={i} className={`min-w-0 flex flex-col items-center gap-0.5 py-1 px-1 text-center ${i > 0 ? 'border-l border-white/[0.06]' : ''}`}>
                 <span style={{ color: primary }}>{spec.icon}</span>
-                <span className="text-xs font-bold leading-none mt-0.5" style={{ color: primary }}>{spec.value}</span>
-                <span className="text-[9px] leading-none mt-0.5" style={{ color: 'rgba(148,163,184,0.6)' }}>{spec.label}</span>
+                <span className="text-xs font-bold leading-none mt-0.5 whitespace-nowrap" style={{ color: primary }}>{spec.value}</span>
+                <span className="text-[9px] leading-none mt-0.5 whitespace-nowrap" style={{ color: 'rgba(148,163,184,0.6)' }}>{spec.label}</span>
               </div>
             ))}
           </div>
@@ -890,6 +891,15 @@ export function PropertyCard({
       </div>
     </button>
   )
+}
+
+export function EmptyCoverPlaceholder({
+  compact = false,
+}: {
+  compact?: boolean
+}) {
+  void compact
+  return null
 }
 
 // ─── EmptyState ──────────────────────────────────────────────────────────────

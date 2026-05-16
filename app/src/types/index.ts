@@ -3,6 +3,7 @@ export type Tenant = {
   slug: string
   name: string
   status: 'active' | 'suspended'
+  paid?: boolean
   created_at: string
   features?: Record<string, boolean>
   primary_color?: string

@@ -55,6 +55,7 @@ function mockFirestoreSuccess(pageViewDocs: object[] = []) {
   const countResult = { data: () => ({ count: pageViewDocs.length }) }
   adminDb.collection.mockImplementation(() => ({
     where: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
     get: jest.fn().mockResolvedValue({ docs: pageViewDocs.map((d) => ({ data: () => d })) }),
     count: jest.fn().mockReturnValue({ get: jest.fn().mockResolvedValue(countResult) }),
   }))
@@ -134,8 +135,11 @@ describe('GET /api/dashboard/analytics', () => {
     const { adminDb } = require('@/lib/firebase-admin')
     adminDb.collection.mockImplementation(() => ({
       where: jest.fn().mockReturnThis(),
-      get: jest.fn().mockRejectedValue(new Error('Firestore down')),
-      count: jest.fn().mockReturnValue({ get: jest.fn().mockRejectedValue(new Error('Firestore down')) }),
+      select: jest.fn().mockReturnThis(),
+      get: jest.fn().mockImplementation(() => Promise.reject(new Error('Firestore down'))),
+      count: jest.fn().mockReturnValue({
+        get: jest.fn().mockResolvedValue({ data: () => ({ count: 0 }) }),
+      }),
     }))
 
     const { GET } = await import('@/app/api/dashboard/analytics/route')

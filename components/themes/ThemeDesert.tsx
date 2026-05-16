@@ -21,7 +21,7 @@ import {
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyCoverPlaceholder, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeDesert({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -105,14 +105,18 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — no card, HUGE text */}
         {sections.hero && (
-          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[14vh]' : 'min-h-[55vh]'} flex items-center justify-center overflow-hidden`} style={{ order: sectionOrder.hero }}>
+          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[40vh]' : 'min-h-[46vh]'} flex items-center justify-center overflow-hidden`} style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
             ) : (
-              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }} />
+              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #3d1f04 0%, #7c3a0c 60%, ${primary} 100%)` }}>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <EmptyCoverPlaceholder />
+                </div>
+              </div>
             )}
-            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, rgba(45,26,10,0.75) 0%, rgba(217,119,6,0.45) 100%)` }} />
-            <div className={`relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full ${isPreview ? 'pt-1 pb-0' : 'pt-20'}`}>
+            <div className="absolute inset-0" style={{ background: isPreview ? `linear-gradient(to bottom right, rgba(45,26,10,0.38) 0%, rgba(217,119,6,0.20) 100%)` : `linear-gradient(to bottom right, rgba(45,26,10,0.75) 0%, rgba(217,119,6,0.45) 100%)` }} />
+            <div className={`relative z-10 text-center text-white px-6 max-w-5xl mx-auto w-full ${isPreview ? 'pt-10 pb-6' : 'pt-20'}`}>
               {profile?.logo_url && (
                 <Image src={profile.logo_url} alt={tenant.name} width={72} height={72} className={`${isPreview ? 'w-9 h-9 mb-2' : 'w-16 h-16 mb-6'} object-contain mx-auto opacity-90 rounded-full`} priority />
               )}
@@ -187,7 +191,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     </p>
                   )}
                   {featured.location && <p className="text-sm text-gray-400 mb-4 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {featured.location}</p>}
-                  <div className="flex gap-4 text-sm text-gray-400 mb-5">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-5">
                     {tenant.business_type === 'car_dealer' ? (
                       <>
                         {featured.bedrooms != null && <span className="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path d="M6.5 3.75a.75.75 0 00-1.5 0v10.5a.75.75 0 001.5 0V3.75z"/></svg> {featured.bedrooms}</span>}
@@ -214,23 +218,22 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
             {compact.length > 0 && (
               <div className={`grid grid-cols-1 ${colsClass} gap-4`}>
                 {compact.map(l => (
-                  <button key={l.id} className="text-right border overflow-hidden group block hover:shadow-md transition-all"
-                    style={{ borderColor: `${primary}30`, borderRadius: pageTheme.radius, backgroundColor: pageTheme.cardBg }}
-                    onClick={() => setActiveListing(l)}>
-                    <div className="relative h-36">
-                      {l.images[0] ? (
-                        <Image src={l.images[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-                      ) : (
-                        <div className="w-full h-full" style={{ backgroundColor: '#f5e6c8' }} />
-                      )}
-                      <ListingBadges listing={l} primary={primary} lang={lang} statusLabels={THEME_LABELS[lang].statusLabels} />
-                    </div>
-                    <div className="p-3">
-                      <h3 className="text-sm font-bold mb-1 line-clamp-1 text-gray-100">{l.title}</h3>
-                      {l.price != null && <p className="text-sm font-black dsr-text">{l.price.toLocaleString('en-US')}</p>}
-                      {l.location && <p className="text-xs text-gray-400 mt-1 line-clamp-1 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 shrink-0"><path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd"/></svg> {l.location}</p>}
-                    </div>
-                  </button>
+                  <PropertyCard
+                    key={l.id}
+                    listing={l}
+                    onClick={() => setActiveListing(l)}
+                    cardStyle={cardStyle}
+                    surfaceClass="text-gray-100"
+                    mutedClass="text-gray-400"
+                    primary={primary}
+                    sectionAlt={pageTheme.sectionAlt}
+                    currency={currency}
+                    showRealEstateFields={!tenant.business_type || tenant.business_type === 'real_estate'}
+                    businessType={tenant.business_type}
+                    lang={lang}
+                    statusLabels={THEME_LABELS[lang].statusLabels}
+                    imageHeight="h-36"
+                  />
                 ))}
               </div>
             )}

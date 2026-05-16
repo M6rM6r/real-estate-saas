@@ -1,67 +1,67 @@
 export const PAGE_THEMES = {
   modern: {
     id: 'modern', label: 'Modern', labelEn: 'Modern', emoji: '✨', description: 'Clean & Professional',
-    bg: '#0a0d16', card: '#121620', accent: '#5a7fb8', dark: true,
+    bg: '#0a0d16', card: '#121620', accent: '#6a829f', dark: true,
     navBg: 'rgba(10,13,22,0.97)', navBorder: '#1a2030',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.85))',
-    heroCardBg: 'rgba(10,13,22,0.75)', heroCardBorder: 'rgba(90,127,184,0.18)', heroCardBlur: true,
+    heroCardBg: 'rgba(10,13,22,0.75)', heroCardBorder: 'rgba(106,130,159,0.16)', heroCardBlur: true,
     radius: '16px', cardBg: '#121620', cardBorder: '#1a2030',
-    cardShadow: '0 2px 16px rgba(90,127,184,0.08), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 16px rgba(106,130,159,0.06), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#0e1119',
     headingFont: 'inherit', buttonShape: 'soft' as const,
   },
   luxury: {
     id: 'luxury', label: 'Luxury', labelEn: 'Luxury', emoji: '👑', description: 'Elegant & Timeless',
-    bg: '#0a0905', card: '#12110d', accent: '#8b7d5f', dark: true,
-    navBg: 'rgba(10,9,5,0.98)', navBorder: 'rgba(139,125,95,0.15)',
+    bg: '#0a0905', card: '#12110d', accent: '#8a7a65', dark: true,
+    navBg: 'rgba(10,9,5,0.98)', navBorder: 'rgba(138,122,101,0.15)',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.28), rgba(0,0,0,0.93))',
-    heroCardBg: 'rgba(10,9,5,0.88)', heroCardBorder: 'rgba(139,125,95,0.25)', heroCardBlur: false,
-    radius: '4px', cardBg: '#12110d', cardBorder: 'rgba(139,125,95,0.12)',
-    cardShadow: '0 2px 12px rgba(139,125,95,0.05), 0 1px 3px rgba(0,0,0,0.6)',
+    heroCardBg: 'rgba(10,9,5,0.88)', heroCardBorder: 'rgba(138,122,101,0.22)', heroCardBlur: false,
+    radius: '4px', cardBg: '#12110d', cardBorder: 'rgba(138,122,101,0.12)',
+    cardShadow: '0 2px 12px rgba(138,122,101,0.04), 0 1px 3px rgba(0,0,0,0.6)',
     sectionAlt: '#0d0c0a',
     headingFont: "Georgia, 'Times New Roman', serif", buttonShape: 'sharp' as const,
   },
   nature: {
     id: 'nature', label: 'Nature', labelEn: 'Nature', emoji: '🌿', description: 'Organic & Calm',
-    bg: '#08110d', card: '#0f1814', accent: '#6b9966', dark: true,
+    bg: '#08110d', card: '#0f1814', accent: '#78906f', dark: true,
     navBg: 'rgba(8,17,13,0.97)', navBorder: '#1a2a20',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,20,5,0.22), rgba(0,20,5,0.86))',
-    heroCardBg: 'rgba(8,17,13,0.88)', heroCardBorder: 'rgba(107,153,102,0.22)', heroCardBlur: true,
+    heroCardBg: 'rgba(8,17,13,0.88)', heroCardBorder: 'rgba(120,144,111,0.20)', heroCardBlur: true,
     radius: '28px', cardBg: '#0f1814', cardBorder: '#1a2a20',
-    cardShadow: '0 2px 16px rgba(107,153,102,0.08), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 16px rgba(120,144,111,0.06), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#0b1510',
     headingFont: 'inherit', buttonShape: 'pill' as const,
   },
   ocean: {
     id: 'ocean', label: 'Ocean', labelEn: 'Ocean', emoji: '🌊', description: 'Fluid & Dynamic',
-    bg: '#05090f', card: '#0b141f', accent: '#5a8fa3', dark: true,
+    bg: '#05090f', card: '#0b141f', accent: '#6f8d98', dark: true,
     navBg: 'rgba(5,9,15,0.98)', navBorder: '#14232f',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,10,25,0.12), rgba(0,10,25,0.85))',
-    heroCardBg: 'rgba(5,9,15,0.85)', heroCardBorder: 'rgba(90,143,163,0.20)', heroCardBlur: true,
+    heroCardBg: 'rgba(5,9,15,0.85)', heroCardBorder: 'rgba(111,141,152,0.18)', heroCardBlur: true,
     radius: '20px', cardBg: '#0b141f', cardBorder: '#14232f',
-    cardShadow: '0 2px 16px rgba(90,143,163,0.08), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 16px rgba(111,141,152,0.06), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#081218',
     headingFont: 'inherit', buttonShape: 'soft' as const,
   },
   desert: {
     id: 'desert', label: 'Desert', labelEn: 'Desert', emoji: '🏜️', description: 'Warm & Bold',
-    bg: '#120f0a', card: '#1a1410', accent: '#9d7050', dark: true,
+    bg: '#120f0a', card: '#1a1410', accent: '#8f735d', dark: true,
     navBg: 'rgba(18,15,10,0.98)', navBorder: '#2a1f14',
     heroOverlay: 'linear-gradient(to bottom, rgba(40,15,0,0.15), rgba(40,15,0,0.85))',
-    heroCardBg: 'rgba(18,15,10,0.82)', heroCardBorder: 'rgba(157,112,80,0.20)', heroCardBlur: true,
+    heroCardBg: 'rgba(18,15,10,0.82)', heroCardBorder: 'rgba(143,115,93,0.18)', heroCardBlur: true,
     radius: '10px', cardBg: '#1a1410', cardBorder: '#2a1f14',
-    cardShadow: '0 2px 16px rgba(157,112,80,0.08), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 16px rgba(143,115,93,0.06), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#140f0a',
     headingFont: 'inherit', buttonShape: 'soft' as const,
   },
   midnight: {
     id: 'midnight', label: 'Midnight', labelEn: 'Midnight', emoji: '🌙', description: 'Bold & Mysterious',
-    bg: '#0a0910', card: '#131128', accent: '#6b5b8f', dark: true,
+    bg: '#0a0910', card: '#131128', accent: '#766d91', dark: true,
     navBg: 'rgba(10,9,16,0.98)', navBorder: '#1f1a35',
     heroOverlay: 'linear-gradient(to bottom, rgba(8,4,18,0.12), rgba(8,4,18,0.86))',
-    heroCardBg: 'rgba(10,9,16,0.80)', heroCardBorder: 'rgba(107,91,143,0.22)', heroCardBlur: true,
+    heroCardBg: 'rgba(10,9,16,0.80)', heroCardBorder: 'rgba(118,109,145,0.20)', heroCardBlur: true,
     radius: '18px', cardBg: '#131128', cardBorder: '#1f1a35',
-    cardShadow: '0 2px 18px rgba(107,91,143,0.10), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 18px rgba(118,109,145,0.08), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#0f0d1a',
     headingFont: 'inherit', buttonShape: 'soft' as const,
   },
@@ -78,49 +78,64 @@ export const PAGE_THEMES = {
   },
   vintage: {
     id: 'vintage', label: 'Vintage', labelEn: 'Vintage', emoji: '📼', description: 'Retro & Nostalgic',
-    bg: '#1a1815', card: '#28211c', accent: '#c4956f', dark: true,
+    bg: '#1a1815', card: '#28211c', accent: '#ac8d75', dark: true,
     navBg: 'rgba(26,24,21,0.98)', navBorder: '#3d3530',
     heroOverlay: 'linear-gradient(to bottom, rgba(50,30,10,0.20), rgba(50,30,10,0.88))',
-    heroCardBg: 'rgba(26,24,21,0.85)', heroCardBorder: 'rgba(196,149,111,0.25)', heroCardBlur: true,
+    heroCardBg: 'rgba(26,24,21,0.85)', heroCardBorder: 'rgba(172,141,117,0.22)', heroCardBlur: true,
     radius: '12px', cardBg: '#28211c', cardBorder: '#3d3530',
-    cardShadow: '0 2px 14px rgba(196,149,111,0.08), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 14px rgba(172,141,117,0.06), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#1e1a16',
     headingFont: "'Courier New', monospace", buttonShape: 'soft' as const,
   },
   neon: {
     id: 'neon', label: 'Neon', labelEn: 'Neon', emoji: '⚡', description: 'Electric & Vibrant',
-    bg: '#0a0a0f', card: '#12121a', accent: '#00ff88', dark: true,
+    bg: '#0a0a0f', card: '#12121a', accent: '#67c4a2', dark: true,
     navBg: 'rgba(10,10,15,0.98)', navBorder: '#1a1a28',
     heroOverlay: 'linear-gradient(to bottom, rgba(0,50,30,0.15), rgba(0,50,30,0.85))',
-    heroCardBg: 'rgba(10,10,15,0.80)', heroCardBorder: 'rgba(0,255,136,0.25)', heroCardBlur: true,
+    heroCardBg: 'rgba(10,10,15,0.80)', heroCardBorder: 'rgba(103,196,162,0.22)', heroCardBlur: true,
     radius: '14px', cardBg: '#12121a', cardBorder: '#1a1a28',
-    cardShadow: '0 2px 20px rgba(0,255,136,0.12), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 2px 20px rgba(103,196,162,0.08), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#0f0f16',
     headingFont: 'inherit', buttonShape: 'pill' as const,
   },
   cosmic: {
     id: 'cosmic', label: 'Cosmic', labelEn: 'Cosmic', emoji: '🌌', description: 'Futuristic & Dreamy',
-    bg: '#0d0615', card: '#150f22', accent: '#b366ff', dark: true,
+    bg: '#0d0615', card: '#150f22', accent: '#9c7cc4', dark: true,
     navBg: 'rgba(13,6,21,0.98)', navBorder: '#241a3a',
     heroOverlay: 'linear-gradient(135deg, rgba(50,0,100,0.15), rgba(0,0,50,0.85))',
-    heroCardBg: 'rgba(13,6,21,0.82)', heroCardBorder: 'rgba(179,102,255,0.25)', heroCardBlur: true,
+    heroCardBg: 'rgba(13,6,21,0.82)', heroCardBorder: 'rgba(156,124,196,0.22)', heroCardBlur: true,
     radius: '22px', cardBg: '#150f22', cardBorder: '#241a3a',
-    cardShadow: '0 3px 18px rgba(179,102,255,0.10), 0 1px 3px rgba(0,0,0,0.5)',
+    cardShadow: '0 3px 18px rgba(156,124,196,0.08), 0 1px 3px rgba(0,0,0,0.5)',
     sectionAlt: '#12091d',
     headingFont: 'inherit', buttonShape: 'soft' as const,
   },
 } as const;
 export type ThemeId = keyof typeof PAGE_THEMES;
 
+export type TenantBillingStatus = 'unpaid' | 'pending' | 'paid' | 'failed'
+export type TenantSubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled'
+
 export type Tenant = {
   id: string;
   slug: string;
   name: string;
   status: 'active' | 'suspended';
+  paid?: boolean;
   primary_color?: string;
   theme?: string;
   business_type?: string;
   custom_domain?: string;
+  billing_status?: TenantBillingStatus;
+  billing_provider?: 'paytabs' | string;
+  billing_payment_ref?: string;
+  billing_activation_source?: string;
+  billing_last_paid_at?: string;
+  billing_last_attempt_at?: string;
+  billing_attempt_id?: string;
+  billing_plan?: 'starter' | string;
+  subscription_status?: TenantSubscriptionStatus;
+  trial_started_at?: string;
+  trial_expires_at?: string;
   created_at: string;
   features?: Record<string, boolean>;
 };

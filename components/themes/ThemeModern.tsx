@@ -1,16 +1,16 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import Image from 'next/image'
 import { PAGE_THEMES } from '@/lib/types'
-import { PropertyDetailModal } from '@/components/PropertyDetailModal'
+const PropertyDetailModal = lazy(() => import('@/components/PropertyDetailModal').then(mod => ({ default: mod.PropertyDetailModal })))
 import { FloatContactButtons } from '@/components/FloatContactButtons'
 import {
   ThemePageProps, Post,
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, PropertyCard, EmptyState, THEME_LABELS,
+  SocialLinks, WorkingHours, PropertyCard, EmptyCoverPlaceholder, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeModern({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -37,7 +37,20 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
   const mutedClass = isDark ? 'text-slate-400' : 'text-gray-500'
   const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
   const whatsapp = profile?.social_links?.whatsapp
-  const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
+  const normalizePhoneForCompare = (value?: string | null) => {
+    if (!value) return ''
+    const digits = value.replace(/\D/g, '')
+    if (digits.startsWith('00966') && digits.length >= 13) return `0${digits.slice(5)}`
+    if (digits.startsWith('966') && digits.length >= 12) return `0${digits.slice(3)}`
+    return digits
+  }
+  const waDigits = normalizePhoneForCompare(whatsapp)
+  const phoneDigits = normalizePhoneForCompare(profile?.contact_phone)
+  const waDisplay = whatsapp
+    ? (waDigits && phoneDigits && waDigits === phoneDigits && profile?.contact_phone
+        ? profile.contact_phone
+        : `+${whatsapp.replace(/\D/g, '')}`)
+    : ''
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -106,16 +119,13 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`${isPreview ? 'min-h-[14vh]' : 'min-h-[55vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className={`relative flex-1 ${isPreview ? 'min-h-[7vh] lg:min-h-[14vh]' : 'min-h-[30vh] lg:min-h-[55vh]'}`}>
+          <section data-section="hero" className={`${isPreview ? 'min-h-[40vh]' : 'min-h-[46vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className={`relative flex-1 ${isPreview ? 'min-h-[28vh] lg:min-h-[40vh]' : 'min-h-[26vh] lg:min-h-[46vh]'}`}>
               {profile?.cover_url ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority /> : (
-                <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[18vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }}>
-                  {isPreview && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/70 pointer-events-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-                    </div>
-                  )}
+                <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[34vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}cc, ${primary}44)` }}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <EmptyCoverPlaceholder />
+                  </div>
                 </div>
               )}
             </div>
@@ -131,7 +141,7 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className={`${isPreview ? 'pb-3 pt-7 sm:pt-8' : 'pb-16 pt-28 sm:pt-32'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
+          <section data-section="hero" className={`${isPreview ? 'min-h-[36vh] pb-8 pt-14 sm:pt-16' : 'min-h-[42vh] pb-10 pt-16 sm:pt-20'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6 shadow" />}
             <h1 className={`${isPreview ? 'text-2xl sm:text-3xl mb-1' : 'text-4xl sm:text-6xl mb-4'} font-bold leading-tight`} style={{ fontFamily: headingFont, color: isDark ? '#f8fafc' : '#111827' }}>{tenant.name}</h1>
             <div className="w-16 h-1.5 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -143,17 +153,17 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className={`hero-mesh relative ${isPreview ? 'min-h-[14vh] py-1 sm:py-2' : 'min-h-[55vh] py-8 sm:py-12'} flex flex-col items-center justify-center bg-cover bg-center`}
+          <section data-section="hero" className={`hero-mesh relative ${isPreview ? 'min-h-[42vh] py-8 sm:py-10' : 'min-h-[46vh] py-8 sm:py-10'} flex flex-col items-center justify-center bg-cover bg-center`}
             style={{ order: sectionOrder.hero }}>
             {profile?.cover_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
             )}
-            <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
+            <div className="absolute inset-0" style={{ background: isPreview ? 'linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.52) 100%)' : pageTheme.heroOverlay }} />
             <div className="hero-orb-1" aria-hidden="true" />
             <div className="hero-orb-2" aria-hidden="true" />
             <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto w-full">
-              <div className={`relative px-5 sm:px-10 mx-auto ${isPreview ? 'py-2 sm:py-3' : 'py-8 sm:py-14'}`}>
+              <div className={`relative px-5 sm:px-10 mx-auto ${isPreview ? 'py-5 sm:py-6' : 'py-8 sm:py-14'}`}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-5 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}44` }} priority />}
                 <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-5xl md:text-7xl mb-4'} font-black leading-[0.95] tracking-tight`} style={{ fontFamily: headingFont }}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: '#93c5fd' }}>{profile.tagline}</p>}
@@ -330,15 +340,17 @@ export default function ThemeModern({ tenant, profile, listings, news, gallery: 
 
         {!isPreview && sections.contact && <FloatContactButtons whatsapp={profile?.social_links?.whatsapp} accentColor={primary} />}
         {activeListing && (
-          <PropertyDetailModal
-            property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}
-            onClose={() => setActiveListing(null)}
-            slug={tenant.slug}
-            tenantId={tenant.id}
-            accentColor={primary}
-            lang={lang}
-            businessType={tenant.business_type}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <PropertyDetailModal
+              property={activeListing as Parameters<typeof PropertyDetailModal>[0]['property']}
+              onClose={() => setActiveListing(null)}
+              slug={tenant.slug}
+              tenantId={tenant.id}
+              accentColor={primary}
+              lang={lang}
+              businessType={tenant.business_type}
+            />
+          </Suspense>
         )}
       </div>
     </>

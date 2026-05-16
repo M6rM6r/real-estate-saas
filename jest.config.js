@@ -30,10 +30,10 @@ const customJestConfig = {
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/e2e/', '<rootDir>/__tests__/firestore-rules.test.ts'],
   coverageThreshold: {
     global: {
-      branches: 55,
-      functions: 60,
-      lines: 65,
-      statements: 65,
+      branches: 70,
+      functions: 75,
+      lines: 75,
+      statements: 75,
     },
   },
 }

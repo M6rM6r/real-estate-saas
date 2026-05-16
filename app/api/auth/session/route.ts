@@ -2,9 +2,17 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
+function getBearerToken(request: NextRequest): string {
+  const header = request.headers.get('authorization') || request.headers.get('Authorization') || ''
+  const match = header.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || ''
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { token } = await request.json()
+    const body = await request.json().catch(() => ({})) as { token?: unknown }
+    const tokenFromBody = typeof body?.token === 'string' ? body.token.trim() : ''
+    const token = tokenFromBody || getBearerToken(request)
     if (!token || typeof token !== 'string') {
       return NextResponse.json({ error: 'Token required' }, { status: 400 })
     }

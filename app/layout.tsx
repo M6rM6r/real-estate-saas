@@ -3,6 +3,7 @@ import 'photoswipe/style.css';
 import type { Metadata, Viewport } from 'next';
 import { Cairo, Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -59,7 +60,9 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className={`${inter.variable} ${cairo.variable} font-sans`}>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <Toaster />
       </body>
     </html>

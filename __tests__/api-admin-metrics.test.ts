@@ -29,6 +29,8 @@ jest.mock('@/lib/firebase-admin', () => ({
     collection: jest.fn((col: string) => {
       if (col === 'tenants') return { get: mockGet }
       if (col === 'posts') return { select: jest.fn().mockReturnValue({ get: mockSelectGet }) }
+      if (col === 'users') return { select: jest.fn().mockReturnValue({ get: mockSelectGet }) }
+      if (col === 'leads') return { select: jest.fn().mockReturnValue({ get: mockSelectGet }) }
       if (col === 'media') return { count: jest.fn().mockReturnValue({ get: mockCountGet }) }
       return { get: mockGet }
     }),
@@ -114,9 +116,9 @@ describe('GET /api/admin/metrics', () => {
     process.env.FIREBASE_CLIENT_EMAIL = 'test@test.iam.gserviceaccount.com'
     process.env.FIREBASE_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n-----END RSA PRIVATE KEY-----'
 
-    mockGet.mockRejectedValue(new Error('Firestore unavailable'))
-    mockSelectGet.mockRejectedValue(new Error('Firestore unavailable'))
-    mockCountGet.mockRejectedValue(new Error('Firestore unavailable'))
+    mockGet.mockImplementation(() => Promise.reject(new Error('Firestore unavailable')))
+    mockSelectGet.mockResolvedValue({ docs: [] })
+    mockCountGet.mockResolvedValue({ data: () => ({ count: 0 }) })
 
     const res = await GET(makeRequest())
     expect(res.status).toBe(500)

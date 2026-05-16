@@ -16,6 +16,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const adminAccent = '#8fd1aa';
+  const adminAccentSoft = '#b8f0ca';
+  const adminAccentMuted = 'rgba(143, 209, 170, 0.12)';
 
   if (pathname === '/admin/login') return <>{children}</>;
 
@@ -25,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div dir="ltr" lang="en" className="min-h-screen w-full bg-[#0a0a0a] text-[#00ff41] flex font-mono">
+    <div dir="ltr" lang="en" className="min-h-screen w-full flex font-mono text-slate-100" style={{ backgroundColor: '#08110d' }}>
       {/* Sidebar overlay on mobile */}
       {sidebarOpen && (
         <div
@@ -37,23 +40,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed md:static inset-y-0 left-0 z-30 w-64 bg-[#0d0d0d] border-r border-[#00ff41]/20 flex flex-col transition-transform duration-200',
+          'fixed md:static inset-y-0 left-0 z-30 w-64 flex flex-col border-r transition-transform duration-200 backdrop-blur-xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
+        style={{ backgroundColor: 'rgba(8, 17, 13, 0.94)', borderColor: 'rgba(143, 209, 170, 0.18)' }}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-[#00ff41]/20">
-          <div className="w-8 h-8 rounded-lg bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center">
-            <Terminal className="h-4 w-4 text-[#00ff41]" />
+        <div className="h-16 flex items-center gap-3 px-6 border-b" style={{ borderColor: 'rgba(143, 209, 170, 0.16)' }}>
+          <div className="w-8 h-8 rounded-lg border flex items-center justify-center" style={{ backgroundColor: adminAccentMuted, borderColor: 'rgba(143, 209, 170, 0.28)' }}>
+            <Terminal className="h-4 w-4" style={{ color: adminAccent }} />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#00ff41]">Admin Terminal</p>
-            <p className="text-xs text-[#00ff41]/40">{process.env.NEXT_PUBLIC_APP_NAME ?? 'لوحة التحكم'}</p>
+            <p className="text-sm font-semibold" style={{ color: adminAccentSoft }}>Admin Terminal</p>
+            <p className="text-xs text-slate-500">{process.env.NEXT_PUBLIC_APP_NAME ?? 'لوحة التحكم'}</p>
           </div>
           <button
             type="button"
             aria-label="إغلاق القائمة الجانبية"
-            className="ml-auto md:hidden text-[#00ff41]/50 hover:text-[#00ff41] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff41]/50 rounded"
+            className="ml-auto md:hidden rounded focus-visible:outline-none focus-visible:ring-2"
+            style={{ color: 'rgba(184, 240, 202, 0.65)' }}
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -68,13 +73,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               type="button"
               onClick={() => { router.push(item.href); setSidebarOpen(false); }}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors',
                 pathname === item.href
-                  ? 'bg-[#00ff41]/15 text-[#00ff41] border border-[#00ff41]/40'
-                  : 'text-[#00ff41]/50 hover:text-[#00ff41] hover:bg-[#00ff41]/5 border border-transparent'
+                  ? 'text-slate-50'
+                  : 'text-slate-400 hover:text-slate-100'
               )}
+              style={pathname === item.href
+                ? { backgroundColor: 'rgba(143, 209, 170, 0.14)', borderColor: 'rgba(143, 209, 170, 0.28)', boxShadow: '0 10px 30px -20px rgba(143,209,170,0.45)' }
+                : { backgroundColor: 'transparent', borderColor: 'transparent' }}
             >
-              <span className="text-[#00ff41]/60">&gt;</span>
+              <span style={{ color: pathname === item.href ? adminAccentSoft : 'rgba(143, 209, 170, 0.45)' }}>&gt;</span>
               <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
             </button>
@@ -82,12 +90,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Footer */}
-        <div className="px-3 py-4 border-t border-[#00ff41]/20">
+        <div className="px-3 py-4 border-t" style={{ borderColor: 'rgba(143, 209, 170, 0.16)' }}>
           <button
             type="button"
             onClick={handleLogout}
             aria-label="تسجيل الخروج"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#ff4141]/60 hover:text-[#ff4141] hover:bg-[#ff4141]/10 border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff4141]/50"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-300/80 hover:text-rose-100 hover:bg-rose-500/10 border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             Sign out
@@ -98,25 +106,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-16 bg-[#0d0d0d] border-b border-[#00ff41]/20 flex items-center px-4 md:px-6 gap-4 shrink-0">
+        <header className="h-16 flex items-center gap-4 border-b px-4 md:px-6 shrink-0 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.86)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
           <button
             type="button"
             aria-label="فتح القائمة الجانبية"
-            className="md:hidden text-[#00ff41]/50 hover:text-[#00ff41] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff41]/50 rounded"
+            className="md:hidden rounded focus-visible:outline-none focus-visible:ring-2"
+            style={{ color: 'rgba(184, 240, 202, 0.7)' }}
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2 text-[#00ff41]/60">
-            <span className="text-[#00ff41]/40">~/admin/</span>
-            <span className="text-sm text-[#00ff41]">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500">~/admin/</span>
+            <span className="text-sm font-medium" style={{ color: adminAccentSoft }}>
               {navItems.find(n => n.href === pathname)?.label ?? 'terminal'}
             </span>
-            <span className="animate-pulse text-[#00ff41]">█</span>
+            <span className="animate-pulse" style={{ color: adminAccent }}>█</span>
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 overflow-auto bg-[#0a0a0a]">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8" style={{ background: 'radial-gradient(circle at top, rgba(143,209,170,0.06), transparent 30%), #08110d' }}>{children}</main>
       </div>
     </div>
   );

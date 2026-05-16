@@ -5,6 +5,7 @@ import { getFirebaseSession } from '@/lib/auth-helpers'
 import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp'
+import { getTenantTrialState } from '@/lib/billing/subscription'
 import { z } from 'zod'
 
 const emptyToNull = (v: unknown) => {
@@ -122,7 +123,9 @@ export async function GET(request: NextRequest) {
     ? { id: profileDoc.id, ...profileDoc.data() }
     : null
 
-  return NextResponse.json({ tenant, profile })
+  const trial = tenant ? getTenantTrialState(tenant as any) : null
+
+  return NextResponse.json({ tenant, profile, trial })
 }
 
 export async function PATCH(request: NextRequest) {

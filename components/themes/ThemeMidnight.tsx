@@ -10,7 +10,7 @@ import {
   STATUS_LABELS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, PropertyCard, EmptyState, WaIcon, ListingBadges, THEME_LABELS,
+  SocialLinks, WorkingHours, PropertyCard, EmptyCoverPlaceholder, EmptyState, WaIcon, ListingBadges, THEME_LABELS,
 } from './shared'
 
 export default function ThemeMidnight({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -33,8 +33,22 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
   const cardStyle = { backgroundColor: pageTheme.cardBg, borderColor: pageTheme.cardBorder, borderRadius: pageTheme.radius, boxShadow: pageTheme.cardShadow }
   const whatsapp = profile?.social_links?.whatsapp
-  const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
+  const normalizePhoneForCompare = (value?: string | null) => {
+    if (!value) return ''
+    const digits = value.replace(/\D/g, '')
+    if (digits.startsWith('00966') && digits.length >= 13) return `0${digits.slice(5)}`
+    if (digits.startsWith('966') && digits.length >= 12) return `0${digits.slice(3)}`
+    return digits
+  }
+  const waDigits = normalizePhoneForCompare(whatsapp)
+  const phoneDigits = normalizePhoneForCompare(profile?.contact_phone)
+  const waDisplay = whatsapp
+    ? (waDigits && phoneDigits && waDigits === phoneDigits && profile?.contact_phone
+        ? profile.contact_phone
+        : `+${whatsapp.replace(/\D/g, '')}`)
+    : ''
   const hasContactInfo = Boolean(whatsapp || profile?.contact_phone || profile?.contact_email)
+  const hasAboutContent = Boolean(profile?.bio || profile?.licence_no || (profile?.licence_numbers?.length ?? 0) > 0)
 
   const bannerPt = 'pt-0'
 
@@ -102,20 +116,17 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — split */}
         {sections.hero && pageConfig.hero_style === 'split' && (
-          <section data-section="hero" className={`${isPreview ? 'min-h-[14vh] sm:min-h-[15vh] lg:min-h-[16vh]' : 'min-h-[44vh] sm:min-h-[48vh] lg:min-h-[55vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
-            <div className={`relative flex-1 ${isPreview ? 'min-h-[7vh] sm:min-h-[8vh] lg:min-h-[16vh]' : 'min-h-[20vh] sm:min-h-[24vh] lg:min-h-[55vh]'}`}>
+          <section data-section="hero" className={`${isPreview ? 'min-h-[40vh] sm:min-h-[42vh] lg:min-h-[44vh]' : 'min-h-[38vh] sm:min-h-[42vh] lg:min-h-[46vh]'} flex flex-col lg:flex-row items-stretch ${bannerPt}`} style={{ order: sectionOrder.hero }}>
+            <div className={`relative flex-1 ${isPreview ? 'min-h-[28vh] sm:min-h-[30vh] lg:min-h-[44vh]' : 'min-h-[20vh] sm:min-h-[24vh] lg:min-h-[55vh]'}`}>
               {profile?.cover_url
                 ? <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
-                : <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[18vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }}>
-                    {isPreview && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/60 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 opacity-60 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <p className="text-xs font-medium text-center px-4">{lang === 'en' ? 'Add a cover photo to enhance your page' : 'أضف صورة غلاف لتحسين مظهر صفحتك'}</p>
-                      </div>
-                    )}
+                : <div className={`w-full h-full relative flex items-center justify-center ${isPreview ? 'min-h-[34vh]' : 'min-h-[40vh]'}`} style={{ background: `linear-gradient(135deg, ${primary}aa 0%, #0d0a1e 100%)` }}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <EmptyCoverPlaceholder />
+                    </div>
                   </div>
               }
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, rgba(13,10,30,0.85) 0%, transparent 60%)' }} />
+              <div className="absolute inset-0" style={{ background: isPreview ? 'linear-gradient(to left, rgba(13,10,30,0.45) 0%, transparent 70%)' : 'linear-gradient(to left, rgba(13,10,30,0.85) 0%, transparent 60%)' }} />
             </div>
             <div className={`flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-12 ${isPreview ? 'py-2 sm:py-3 lg:py-4' : 'py-10 sm:py-12 lg:py-16'}`} style={{ backgroundColor: pageTheme.bg }}>
               {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={80} height={80} className="w-16 h-16 object-contain rounded-full mb-6" />}
@@ -129,7 +140,7 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — minimal */}
         {sections.hero && pageConfig.hero_style === 'minimal' && (
-          <section data-section="hero" className={`${isPreview ? 'pb-3 sm:pb-4 pt-7 sm:pt-8' : 'pb-12 sm:pb-14 pt-24 sm:pt-28'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
+          <section data-section="hero" className={`${isPreview ? 'min-h-[36vh] pb-8 sm:pb-9 pt-14 sm:pt-16' : 'min-h-[42vh] pb-10 sm:pb-12 pt-16 sm:pt-20'} px-4 text-center`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.hero }}>
             {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 mx-auto rounded-full object-contain mb-6" />}
             <h1 className={`${isPreview ? 'text-2xl sm:text-3xl mb-1' : 'text-4xl sm:text-6xl mb-4'} font-bold leading-tight text-white`}>{tenant.name}</h1>
             <div className="w-16 h-1 mx-auto mb-5 rounded-full" style={{ backgroundColor: primary }} />
@@ -140,8 +151,8 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
 
         {/* Hero — centered (default) */}
         {sections.hero && (!pageConfig.hero_style || pageConfig.hero_style === 'centered') && (
-          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[14vh] sm:min-h-[15vh] lg:min-h-[16vh] py-1 sm:py-2' : 'min-h-[54vh] sm:min-h-[58vh] lg:min-h-[66vh] py-8 sm:py-12'} flex flex-col items-center justify-center bg-cover bg-center overflow-hidden`}
-            style={{ order: sectionOrder.hero, background: `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
+          <section data-section="hero" className={`relative ${isPreview ? 'min-h-[42vh] sm:min-h-[44vh] lg:min-h-[46vh] py-8 sm:py-10' : 'min-h-[46vh] sm:min-h-[50vh] lg:min-h-[56vh] py-8 sm:py-10'} flex flex-col items-center justify-center bg-cover bg-center overflow-hidden`}
+            style={{ order: sectionOrder.hero, background: isPreview ? `linear-gradient(135deg, rgba(10,9,16,0.65) 0%, ${pageTheme.bg} 60%, rgba(10,9,16,0.50) 100%)` : `linear-gradient(135deg, ${primary}55 0%, ${pageTheme.bg} 55%, ${primary}33 100%)` }}>
             <div className="mid-orb-1" />
             <div className="mid-orb-2" />
             <div className="mid-orb-3" />
@@ -150,9 +161,9 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
               // eslint-disable-next-line @next/next/no-img-element
               <img src={profile.cover_url} alt={tenant.name} className="absolute inset-0 w-full h-full object-cover" />
             )}
-            <div className="absolute inset-0" style={{ background: pageTheme.heroOverlay }} />
+            <div className="absolute inset-0" style={{ background: isPreview ? 'linear-gradient(to bottom, rgba(8,4,18,0.24) 0%, rgba(8,4,18,0.52) 100%)' : pageTheme.heroOverlay }} />
             <div className="relative z-10 text-center text-white px-4 max-w-2xl mx-auto w-full">
-              <div className={`px-5 sm:px-8 mx-auto ${isPreview ? 'py-2 sm:py-3' : 'py-8 sm:py-12'}`}>
+              <div className={`px-5 sm:px-8 mx-auto ${isPreview ? 'py-5 sm:py-6' : 'py-8 sm:py-12'}`}>
                 {profile?.logo_url && <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className="w-20 h-20 object-contain mx-auto mb-4 rounded-full bg-white/10 p-1 shadow-2xl" style={{ boxShadow: `0 0 0 2px ${primary}55` }} priority />}
                 <h1 className={`${isPreview ? 'text-2xl sm:text-3xl md:text-4xl mb-1' : 'text-4xl sm:text-5xl md:text-7xl mb-3'} font-black leading-[0.95] tracking-tight text-white`}>{tenant.name}</h1>
                 {profile?.tagline && <p className="text-base sm:text-xl font-semibold mb-3" style={{ color: primary }}>{profile.tagline}</p>}
@@ -237,14 +248,14 @@ export default function ThemeMidnight({ tenant, profile, listings, news, gallery
         )}
 
         {/* About + Contact (combined layout) */}
-        {(sections.about || (sections.contact && hasContactInfo)) && (
+        {((sections.about && hasAboutContent) || (sections.contact && hasContactInfo)) && (
           <section data-section="about" className={`mid-reveal ${isPreview ? 'py-6 sm:py-7' : 'py-12 sm:py-16'} px-4 md:px-8`} style={{ backgroundColor: pageTheme.sectionAlt, order: sectionOrder.about }}>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sections.about && (
+              {sections.about && hasAboutContent && (
                 <div className="border rounded-2xl p-6 sm:p-8 text-center lg:text-right" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-6 justify-center lg:justify-start">
                     <div className="w-1 h-8 rounded-full" style={{ backgroundColor: primary }} />
-
+                    <h3 className="text-lg sm:text-xl font-semibold text-white">{L.about}</h3>
                   </div>
                   {profile?.bio && <p className="leading-relaxed text-base sm:text-lg text-slate-300">{profile.bio}</p>}
                   {(profile?.licence_numbers && profile.licence_numbers.length > 0)

@@ -21,7 +21,7 @@ import {
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyCoverPlaceholder, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeNature({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -106,17 +106,21 @@ export default function ThemeNature({ tenant, profile, listings, news, gallery: 
 
         {/* Hero */}
         {sections.hero && (
-          <section data-section="hero" className={`nat-hero-mesh relative flex items-center justify-center overflow-hidden ${isPreview ? 'pt-4 sm:pt-5 pb-2 min-h-[14vh]' : 'pt-16 sm:pt-20 pb-10'}`}
+          <section data-section="hero" className={`nat-hero-mesh relative flex items-center justify-center overflow-hidden ${isPreview ? 'pt-14 sm:pt-16 pb-8 min-h-[40vh]' : 'pt-16 sm:pt-20 pb-10'}`}
             style={{ order: sectionOrder.hero }}>
             {profile?.cover_url ? (
               <>
                 <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" priority />
-                <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${primary}cc, ${primary}88)` }} />
+                <div className="absolute inset-0" style={{ background: isPreview ? `linear-gradient(to bottom, ${primary}55, ${primary}22)` : `linear-gradient(to bottom, ${primary}cc, ${primary}88)` }} />
               </>
-            ) : null}
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <EmptyCoverPlaceholder />
+              </div>
+            )}
             <div className="nat-leaf-blob" />
             <div className="relative z-10 text-center px-4 max-w-2xl mx-auto w-full">
-              <div className={`px-8 mx-auto ${isPreview ? 'py-1' : 'py-10'}`}>
+              <div className={`px-8 mx-auto ${isPreview ? 'py-4' : 'py-10'}`}>
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={88} height={88} className={`${isPreview ? 'w-10 h-10 mb-2' : 'w-20 h-20 mb-5'} object-contain mx-auto rounded-full shadow-md`} style={{ border: `3px solid ${primary}44` }} priority />
                 )}

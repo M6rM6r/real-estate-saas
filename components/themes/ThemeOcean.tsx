@@ -21,7 +21,7 @@ import {
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyState, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyCoverPlaceholder, EmptyState, THEME_LABELS,
 } from './shared'
 
 export default function ThemeOcean({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -36,8 +36,8 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
   const waLink = buildWaLink(tenant, profile, lang)
   const btnRadius = getBtnRadius(pageConfig.button_shape, pageTheme.radius)
   const currency = pageConfig.currency ?? 'SAR'
-  const heroMinHeight = isPreview ? '16vh' : '100vh'
-  const heroWaveHeight = isPreview ? '32px' : '80px'
+  const heroMinHeight = isPreview ? '42vh' : '62vh'
+  const heroWaveHeight = isPreview ? '40px' : '80px'
 
   const [activeListing, setActiveListing] = useState<Post | null>(null)
   const [offerFilter, setOfferFilter] = useState('all')
@@ -104,10 +104,14 @@ export default function ThemeOcean({ tenant, profile, listings, news, gallery: _
             {profile?.cover_url ? (
               <Image src={profile.cover_url} alt={tenant.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 70vw" priority />
             ) : (
-              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }} />
+              <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, #0c2340 0%, ${primary} 100%)` }}>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <EmptyCoverPlaceholder />
+                </div>
+              </div>
             )}
-            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(12,35,64,0.6) 0%, rgba(12,35,64,0.8) 100%)` }} />
-            <div className={`relative z-10 flex ${isPreview ? 'items-start' : 'items-center'} justify-center text-center px-4 text-white ${isPreview ? 'pt-3 pb-1' : 'pt-20'}`} style={{ minHeight: heroMinHeight }}>
+            <div className="absolute inset-0" style={{ background: isPreview ? `linear-gradient(to bottom, rgba(12,35,64,0.28) 0%, rgba(12,35,64,0.48) 100%)` : `linear-gradient(to bottom, rgba(12,35,64,0.6) 0%, rgba(12,35,64,0.8) 100%)` }} />
+            <div className={`relative z-10 flex ${isPreview ? 'items-start' : 'items-center'} justify-center text-center px-4 text-white ${isPreview ? 'pt-12 pb-8' : 'pt-20'}`} style={{ minHeight: heroMinHeight }}>
               <div className="max-w-2xl">
                 {profile?.logo_url && (
                   <Image src={profile.logo_url} alt={tenant.name} width={96} height={96} className={`${isPreview ? 'w-10 h-10 mb-2 p-1' : 'w-20 h-20 mb-6 p-2'} object-contain mx-auto rounded-full bg-white/10 backdrop-blur`} priority />

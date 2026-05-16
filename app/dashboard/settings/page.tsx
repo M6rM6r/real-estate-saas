@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { authFetch } from '@/lib/api';
 import type { Profile, Tenant } from '@/lib/types';
+import { isBillingPaid } from '@/lib/billing/paytabs';
+import { getTenantTrialState } from '@/lib/billing/subscription';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +45,14 @@ const SETTINGS_T = {
 type ProfileResponse = {
   profile: Profile;
   tenant: Tenant & { primary_color: string };
+  trial?: {
+    isTrialConfigured: boolean;
+    isTrialActive: boolean;
+    isTrialExpired: boolean;
+    daysLeft: number;
+    expiresAt: string | null;
+    subscriptionStatus: string;
+  };
 };
 
 export default function SettingsPage() {
@@ -53,6 +63,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [origin, setOrigin] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -63,6 +74,22 @@ export default function SettingsPage() {
   const [pwdSaving, setPwdSaving] = useState(false);
   const [hasUnsaved, setHasUnsaved] = useState(false);
   const isDemo = typeof window !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+  const isPaymentLockEnabled = process.env.NEXT_PUBLIC_ENABLE_PAYMENT_LOCK === 'true'
+
+  const refreshTenantBillingState = useCallback(async () => {
+    const res = await authFetch<ProfileResponse>('/api/dashboard/profile')
+    setData((prev) => {
+      if (!prev) return res
+      return {
+        ...prev,
+        tenant: {
+          ...(prev.tenant ?? {}),
+          ...(res.tenant ?? {}),
+        } as ProfileResponse['tenant'],
+      }
+    })
+    return res
+  }, [])
 
   const isValidUrl = (value: string) => {
     try {
@@ -98,6 +125,36 @@ export default function SettingsPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (isDemo) return
+
+    const billingStatus = data?.tenant?.billing_status
+    if (billingStatus !== 'pending') return
+
+    let attempts = 0
+    const maxAttempts = 8
+    const interval = setInterval(() => {
+      attempts += 1
+      void refreshTenantBillingState()
+        .then((res) => {
+          if (isBillingPaid(res.tenant?.billing_status)) {
+            toast({
+              title: lang === 'ar' ? 'تم تفعيل الرابط' : 'URL unlocked',
+              description: lang === 'ar' ? 'اكتملت عملية الدفع بنجاح.' : 'Payment completed successfully.',
+            })
+            clearInterval(interval)
+          }
+        })
+        .catch(() => {})
+
+      if (attempts >= maxAttempts) {
+        clearInterval(interval)
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [data?.tenant?.billing_status, isDemo, lang, refreshTenantBillingState]);
 
   useEffect(() => {
     setOrigin('https://wa9l.website');
@@ -181,12 +238,46 @@ export default function SettingsPage() {
 
   const slug = data?.tenant?.slug;
   const publicUrl = slug && origin ? `${origin}/${slug}` : null;
+  const trialState = data?.trial ?? getTenantTrialState(data?.tenant ?? {} as any);
+  const isTenantPaid = isBillingPaid(data?.tenant?.billing_status) || Boolean((data?.tenant as any)?.paid)
+  const isUrlUnlocked = !isPaymentLockEnabled || isDemo || isTenantPaid || trialState.isTrialActive;
 
   const handleCopy = () => {
     if (!publicUrl) return;
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleUnlockUrls = async () => {
+    setPaying(true);
+    try {
+      const res = await authFetch<{ checkoutUrl?: string; alreadyPaid?: boolean }>('/api/billing/paytabs/create-session', {
+        method: 'POST',
+      });
+
+      if (res.alreadyPaid) {
+        toast({
+          title: lang === 'ar' ? 'الرابط مفعل بالفعل' : 'URL already unlocked',
+          description: lang === 'ar' ? 'تم تفعيل صفحتك العامة.' : 'Your public page is already unlocked.',
+        });
+        return;
+      }
+
+      if (!res.checkoutUrl) {
+        throw new Error(lang === 'ar' ? 'تعذر إنشاء رابط الدفع' : 'Unable to create payment link')
+      }
+
+      window.location.assign(res.checkoutUrl);
+    } catch (error) {
+      toast({
+        title: lang === 'ar' ? 'تعذر بدء عملية الدفع' : 'Could not start payment',
+        description: error instanceof Error ? error.message : undefined,
+        variant: 'destructive',
+      });
+    } finally {
+      setPaying(false);
+    }
   };
 
   const handleChangePassword = async () => {
@@ -237,7 +328,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {publicUrl && (
+      {publicUrl && isUrlUnlocked && (
         <Card className="bg-[#12121a] border-gray-800">
           <CardHeader>
             <CardTitle className="text-lg">{t.publicPageTitle}</CardTitle>
@@ -255,6 +346,66 @@ export default function SettingsPage() {
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isDemo && trialState.isTrialActive && (
+        <Card className="bg-[#12121a] border-blue-500/40">
+          <CardHeader>
+            <CardTitle className="text-lg text-blue-200">
+              {lang === 'ar' ? 'فترة تجريبية فعّالة' : 'Trial is active'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-blue-100/80">
+              {lang === 'ar'
+                ? `يتبقى ${trialState.daysLeft} يوم على انتهاء الفترة التجريبية.`
+                : `${trialState.daysLeft} day(s) left in your trial.`}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isDemo && isPaymentLockEnabled && trialState.isTrialExpired && !isTenantPaid && (
+        <Card className="bg-[#12121a] border-rose-500/40">
+          <CardHeader>
+            <CardTitle className="text-lg text-rose-200">
+              {lang === 'ar' ? 'انتهت الفترة التجريبية' : 'Trial expired'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-rose-100/80">
+              {lang === 'ar'
+                ? 'للاستمرار ومشاركة رابط صفحتك العامة، أكمل الدفع الآن.'
+                : 'To keep sharing your public page URL, complete payment now.'}
+            </p>
+            <Button onClick={handleUnlockUrls} disabled={paying} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              {paying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {lang === 'ar' ? 'ادفع الآن' : 'Pay now'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {publicUrl && !isUrlUnlocked && (
+        <Card className="bg-[#12121a] border-amber-600/40">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2 text-amber-200">
+              <Lock className="h-5 w-5" />
+              {lang === 'ar' ? 'رابط صفحتك العامة مخفي' : 'Your public page URL is hidden'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-amber-100/80">
+              {lang === 'ar'
+                ? 'ادفع مرة واحدة عبر PayTabs لإظهار الرابط وأزرار النسخ/الفتح.'
+                : 'Complete a one-time PayTabs payment to reveal your URL and enable copy/open actions.'}
+            </p>
+            <Button onClick={handleUnlockUrls} disabled={paying} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              {paying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {lang === 'ar' ? 'ادفع الآن' : 'Pay now'}
+            </Button>
           </CardContent>
         </Card>
       )}

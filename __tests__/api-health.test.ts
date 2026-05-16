@@ -55,7 +55,7 @@ describe('/api/health', () => {
     const mockAdminDb = require('@/lib/firebase-admin').adminDb
     mockAdminDb.collection.mockReturnValue({
       limit: jest.fn().mockReturnValue({
-        get: jest.fn().mockRejectedValue(new Error('Database error')),
+        get: jest.fn().mockImplementation(() => Promise.reject(new Error('Database error'))),
       }),
     })
 

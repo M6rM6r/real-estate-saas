@@ -25,6 +25,7 @@ type Tenant = {
   name: string;
   slug: string;
   status: 'active' | 'suspended';
+  paid?: boolean;
   business_type?: string;
   theme?: string;
   primary_color?: string;
@@ -88,6 +89,7 @@ export default function AdminTenantsPage() {
   // Filters
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
@@ -190,6 +192,8 @@ export default function AdminTenantsPage() {
       const q = search.toLowerCase();
       if (q && !t.name.toLowerCase().includes(q) && !t.slug.toLowerCase().includes(q)) return false;
       if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (paymentFilter === 'paid' && !Boolean(t.paid)) return false;
+      if (paymentFilter === 'unpaid' && Boolean(t.paid)) return false;
       if (typeFilter !== 'all' && (t.business_type ?? 'real_estate') !== typeFilter) return false;
       if (starredFilter && !starred.has(t.id)) return false;
       return true;
@@ -203,7 +207,7 @@ export default function AdminTenantsPage() {
       default:         list = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     return list;
-  }, [tenants, search, statusFilter, typeFilter, sortBy, starredFilter, starred]);
+  }, [tenants, search, statusFilter, paymentFilter, typeFilter, sortBy, starredFilter, starred]);
 
   const allSelected = filtered.length > 0 && filtered.every(t => selected.has(t.id));
 
@@ -235,6 +239,16 @@ export default function AdminTenantsPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: next }),
+    }).catch(() => fetchData());
+  };
+
+  const togglePaid = async (t: Tenant) => {
+    const next = !Boolean(t.paid);
+    setTenants(prev => prev.map(x => x.id === t.id ? { ...x, paid: next } : x));
+    await fetch(`/api/admin/tenants/${t.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paid: next }),
     }).catch(() => fetchData());
   };
 
@@ -394,6 +408,17 @@ export default function AdminTenantsPage() {
           </SelectContent>
         </Select>
 
+        <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as typeof paymentFilter)}>
+          <SelectTrigger className="h-8 w-[140px] text-xs bg-[#0d0d0d] border-[#00ff41]/20 text-[#00ff41]/70 font-mono">
+            <SelectValue placeholder="Payment" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#0d0d0d] border-[#00ff41]/20 text-[#00ff41] font-mono text-xs">
+            <SelectItem value="all">All Payment</SelectItem>
+            <SelectItem value="paid">Paid</SelectItem>
+            <SelectItem value="unpaid">Unpaid</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Select value={sortBy} onValueChange={setSortBy}>
           <SelectTrigger className="h-8 w-[150px] text-xs bg-[#0d0d0d] border-[#00ff41]/20 text-[#00ff41]/70 font-mono">
             <ArrowUpDown className="h-3 w-3 mr-1" /><SelectValue placeholder="Sort" />
@@ -485,12 +510,20 @@ export default function AdminTenantsPage() {
                               {t.status === 'active' ? 'Active' : 'Suspended'}
                             </span>
                           </div>
-                          <button
-                            onClick={() => toggleStatus(t)}
-                            title={t.status === 'active' ? 'Set tenant to suspended' : 'Set tenant to active'}
-                            className={`px-2 py-0.5 rounded text-[10px] border ${t.status === 'active' ? 'text-[#ffb441] border-[#ffb441]/35 bg-[#ffb441]/10 hover:bg-[#ffb441]/20' : 'text-[#00ff41] border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20'}`}>
-                            {t.status === 'active' ? 'Set Suspended' : 'Set Active'}
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => togglePaid(t)}
+                              title={Boolean(t.paid) ? 'Mark tenant as unpaid' : 'Mark tenant as paid'}
+                              className={`px-2 py-0.5 rounded text-[10px] border ${Boolean(t.paid) ? 'text-[#00ff41] border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20' : 'text-[#ff6b6b] border-[#ff6b6b]/35 bg-[#ff6b6b]/10 hover:bg-[#ff6b6b]/20'}`}>
+                              {Boolean(t.paid) ? 'Paid' : 'Unpaid'}
+                            </button>
+                            <button
+                              onClick={() => toggleStatus(t)}
+                              title={t.status === 'active' ? 'Set tenant to suspended' : 'Set tenant to active'}
+                              className={`px-2 py-0.5 rounded text-[10px] border ${t.status === 'active' ? 'text-[#ffb441] border-[#ffb441]/35 bg-[#ffb441]/10 hover:bg-[#ffb441]/20' : 'text-[#00ff41] border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20'}`}>
+                              {t.status === 'active' ? 'Set Suspended' : 'Set Active'}
+                            </button>
+                          </div>
                         </div>
 
                         <div className="mb-3">
@@ -551,7 +584,7 @@ export default function AdminTenantsPage() {
                   </th>
                   <th className="px-2 py-3 w-6"></th>
                   <th className="px-2 py-3 text-[#00ff41]/30 font-medium text-left w-8">#</th>
-                  {['Agency', 'Slug', 'Type', 'Theme', 'Listings', 'Leads', 'Agents', 'Notes', 'Joined', 'Actions'].map(h => (
+                  {['Agency', 'Slug', 'Type', 'Theme', 'Listings', 'Leads', 'Agents', 'Payment', 'Notes', 'Joined', 'Actions'].map(h => (
                     <th key={h} className={`px-3 py-3 text-[10px] font-semibold text-[#00ff41]/40 uppercase tracking-wider whitespace-nowrap ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                       {h}
                     </th>
@@ -594,6 +627,15 @@ export default function AdminTenantsPage() {
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.listingCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.leadCount ?? 0}</td>
                       <td className="px-3 py-3 text-[#00ff41]/60 text-center">{t.agentCount ?? 0}</td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <button
+                          onClick={() => togglePaid(t)}
+                          className={`px-2 py-1 text-[10px] rounded border ${Boolean(t.paid) ? 'text-[#00ff41] border-[#00ff41]/30 bg-[#00ff41]/10 hover:bg-[#00ff41]/20' : 'text-[#ff6b6b] border-[#ff6b6b]/30 bg-[#ff6b6b]/10 hover:bg-[#ff6b6b]/20'}`}
+                          title={Boolean(t.paid) ? 'Mark tenant as unpaid' : 'Mark tenant as paid'}
+                        >
+                          {Boolean(t.paid) ? 'Paid' : 'Unpaid'}
+                        </button>
+                      </td>
                       <td className="px-3 py-3">
                         <button onClick={() => { setNoteModal(t.id); setNoteInput(''); }} title="View/add notes" className="relative p-1.5 rounded text-[#41b8ff]/30 hover:text-[#41b8ff] hover:bg-[#41b8ff]/10 transition-colors">
                           <MessageSquare className="h-3.5 w-3.5" />

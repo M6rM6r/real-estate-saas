@@ -7,11 +7,11 @@ import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
 const DEMO_TENANTS = [
-  { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'demo', status: 'active', agentCount: 3, postCount: 45, createdAt: new Date('2024-08-15').toISOString() },
-  { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', agentCount: 2, postCount: 32, createdAt: new Date('2024-07-20').toISOString() },
-  { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', agentCount: 4, postCount: 28, createdAt: new Date('2024-09-05').toISOString() },
-  { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', agentCount: 1, postCount: 15, createdAt: new Date('2024-10-12').toISOString() },
-  { id: 'demo-5', name: 'JBR Residences', slug: 'jbr-residences', status: 'active', agentCount: 2, postCount: 7, createdAt: new Date('2024-05-08').toISOString() },
+  { id: 'demo-1', name: 'Luxury Homes Dubai', slug: 'demo', status: 'active', paid: true, agentCount: 3, postCount: 45, createdAt: new Date('2024-08-15').toISOString() },
+  { id: 'demo-2', name: 'Palm Realty', slug: 'palm-realty', status: 'active', paid: true, agentCount: 2, postCount: 32, createdAt: new Date('2024-07-20').toISOString() },
+  { id: 'demo-3', name: 'Marina Estates', slug: 'marina-estates', status: 'active', paid: false, agentCount: 4, postCount: 28, createdAt: new Date('2024-09-05').toISOString() },
+  { id: 'demo-4', name: 'Downtown Properties', slug: 'downtown-properties', status: 'suspended', paid: false, agentCount: 1, postCount: 15, createdAt: new Date('2024-10-12').toISOString() },
+  { id: 'demo-5', name: 'JBR Residences', slug: 'jbr-residences', status: 'active', paid: true, agentCount: 2, postCount: 7, createdAt: new Date('2024-05-08').toISOString() },
 ]
 
 export async function GET(request: NextRequest) {
@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
       name: body.name,
       slug: body.slug,
       status: 'active',
+      paid: false,
       message: 'Demo mode: Tenant not actually created'
     })
     response.headers.set('x-request-id', getRequestId(request))
@@ -157,6 +158,7 @@ export async function POST(request: NextRequest) {
       name,
       slug,
       status: 'active',
+      paid: false,
       primary_color,
       business_type,
       theme,
@@ -181,7 +183,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     })
 
-    const response = NextResponse.json({ id: tenantId, name, slug, status: 'active', primary_color }, { status: 201 })
+    const response = NextResponse.json({ id: tenantId, name, slug, status: 'active', paid: false, primary_color }, { status: 201 })
     response.headers.set('x-request-id', getRequestId(request))
     logRouteInfo(request, 'POST /api/admin/tenants', {
       message: 'Admin tenant created',

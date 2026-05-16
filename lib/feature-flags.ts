@@ -3,6 +3,7 @@ export const FEATURE_FLAGS = {
   PHP_WEBHOOK_GATEWAY: 'PHP_WEBHOOK_GATEWAY',
   ADVANCED_OBSERVABILITY: 'ADVANCED_OBSERVABILITY',
   REPOSITORY_ADAPTERS: 'REPOSITORY_ADAPTERS',
+  PAYMENT_URL_LOCK: 'PAYMENT_URL_LOCK',
 } as const
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS
@@ -12,6 +13,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   PHP_WEBHOOK_GATEWAY: false,
   ADVANCED_OBSERVABILITY: true,
   REPOSITORY_ADAPTERS: true,
+  PAYMENT_URL_LOCK: false,
 }
 
 export function isFeatureEnabled(flag: FeatureFlag): boolean {

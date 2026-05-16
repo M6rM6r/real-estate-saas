@@ -9,6 +9,7 @@ const UpdateTenantSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens').optional(),
   status: z.enum(['active', 'suspended']).optional(),
+  paid: z.boolean().optional(),
   business_type: z.string().optional(),
   theme: z.string().optional(),
   primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
@@ -103,10 +104,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const updates: Record<string, string> = { updatedAt: new Date().toISOString() }
+  const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() }
   if (body.name) updates.name = body.name
   if (body.slug) updates.slug = body.slug
   if (body.status) updates.status = body.status
+  if (body.paid !== undefined) updates.paid = body.paid
   if (body.business_type) updates.business_type = body.business_type
   if (body.theme) updates.theme = body.theme
   if (body.primary_color) updates.primary_color = body.primary_color

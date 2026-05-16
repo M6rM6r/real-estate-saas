@@ -19,7 +19,7 @@ import {
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal, LogOut,
-  Sparkles, Eye, Wand2, Zap,
+  Sparkles, Eye, Wand2, Zap, Lock,
 } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -27,6 +27,9 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import 'react-image-crop/dist/ReactCrop.css';
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp';
+import { isBillingPaid } from '@/lib/billing/paytabs';
+import { getTenantTrialState } from '@/lib/billing/subscription';
+import { buildDomainOptions, pickSelectedDomainUrl } from './utils';
 import { useLanguage } from '@/app/dashboard/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -54,16 +57,15 @@ const PB_T = {
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
     pageSettingsTitle: '🎛️ إعدادات الصفحة', heroHeadlineLabel: 'العنوان الرئيسي للصفحة',
     heroHeadlinePlaceholder: 'اكتشف أفضل العروض لديك', pageLangLabel: 'لغة الصفحة',
-    fontFamilyLabel: 'نوع الخط', fontFamilyHint: 'اختر الخط الذي يظهر في العناوين الرئيسية بصفحتك',
     showListingSortLabel: 'عرض أزرار الترتيب في العروض', showListingSortHint: 'يسمح للزوار بترتيب العروض حسب السعر أو الأحدث',
-    chooseDesign: 'اختر تصميم صفحتك', chooseDesignSub: 'سيُطبَّق التصميم فوراً على المعاينة وعلى صفحتك بعد الحفظ',
+    chooseDesign: 'اختر تصميم صفحتك', chooseDesignSub: '',
     brandColor: '🎨 لون العلامة التجارية', brandColorHint: 'يُستخدم كلون رئيسي في صفحتك',
     logoLabel: '🖼️ الشعار (Logo)', logoUploadLabel: 'شعار المكتب — اضغط لرفع صورة',
-    coverLabel: '🖼️ صورة الغلاف', coverHint: 'مقترح: 1200×400 بكسل أو أوسع',
-    businessNameLabel: '🏢 اسم المنشأة', businessNamePlaceholder: 'مثال: مطعم الواحة، مكتب الأفق، صالون نور...',
-    businessTypeLabel: '💼 نوع النشاط التجاري', businessTypeSub: 'يحدد الحقول المتاحة في نماذج العروض',
-    btRealEstate: '🏠 عقارات', btRestaurant: '🍽️ مطعم / كافيه', btSalon: '✂️ صالون / سبا',
-    btRetail: '🛍️ متجر / بيع بالتجزئة', btServices: '⚙️ خدمات', btCarDealer: '🚗 معرض سيارات', btOther: '📋 أخرى',
+    coverLabel: 'صورة الغلاف', coverHint: 'مقترح: 1200×400 بكسل أو أوسع',
+    businessNameLabel: 'اسم المنشأة', businessNamePlaceholder: 'مثال: مطعم الواحة، مكتب الأفق، صالون نور...',
+    businessTypeLabel: 'نوع النشاط التجاري', businessTypeSub: 'يحدد الحقول المتاحة في نماذج العروض',
+    btRealEstate: 'عقارات', btRestaurant: 'مطعم / كافيه', btSalon: 'صالون / سبا',
+    btRetail: 'متجر / بيع بالتجزئة', btServices: 'خدمات', btCarDealer: 'معرض سيارات', btOther: 'أخرى',
     pageContentLabel: '✍️ محتوى الصفحة', taglineLabel: 'الشعار النصي',
     taglinePlaceholder: 'مثال: شريكك الموثوق، جودة لا تُضاهى...',
     bioLabel: 'نبذة عنا', bioPlaceholder: 'أخبر الزوار عن منشأتك — خبرتك، قيمك، وما يميزك...',
@@ -125,16 +127,15 @@ const PB_T = {
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
     pageSettingsTitle: '🎛️ Page Settings', heroHeadlineLabel: 'Main Page Headline',
     heroHeadlinePlaceholder: 'Discover the best listings', pageLangLabel: 'Page Language',
-    fontFamilyLabel: 'Font Family', fontFamilyHint: 'Choose the font used for key headings on your page',
     showListingSortLabel: 'Show Sort Buttons on Listings', showListingSortHint: 'Lets visitors sort listings by price or newest',
     chooseDesign: 'Choose Your Page Design', chooseDesignSub: 'The design will be applied instantly to the preview and saved to your page',
     brandColor: '🎨 Brand Color', brandColorHint: 'Used as the primary color in your page',
     logoLabel: '🖼️ Logo', logoUploadLabel: 'Agency logo — click to upload',
-    coverLabel: '🖼️ Cover Image', coverHint: 'Recommended: 1200×400 px or wider',
-    businessNameLabel: '🏢 Business Name', businessNamePlaceholder: 'e.g. Oasis Restaurant, Horizon Office, Noor Salon...',
-    businessTypeLabel: '💼 Business Type', businessTypeSub: 'Determines available fields in listing forms',
-    btRealEstate: '🏠 Real Estate', btRestaurant: '🍽️ Restaurant / Café', btSalon: '✂️ Salon / Spa',
-    btRetail: '🛍️ Store / Retail', btServices: '⚙️ Services', btCarDealer: '🚗 Car Dealer', btOther: '📋 Other',
+    coverLabel: 'Cover Image', coverHint: 'Recommended: 1200×400 px or wider',
+    businessNameLabel: 'Business Name', businessNamePlaceholder: 'e.g. Oasis Restaurant, Horizon Office, Noor Salon...',
+    businessTypeLabel: 'Business Type', businessTypeSub: 'Determines available fields in listing forms',
+    btRealEstate: 'Real Estate', btRestaurant: 'Restaurant / Café', btSalon: 'Salon / Spa',
+    btRetail: 'Store / Retail', btServices: 'Services', btCarDealer: 'Car Dealer', btOther: 'Other',
     pageContentLabel: '✍️ Page Content', taglineLabel: 'Tagline',
     taglinePlaceholder: 'e.g. Your trusted partner, unmatched quality...',
     bioLabel: 'About Us', bioPlaceholder: 'Tell visitors about your business — your experience, values, and what sets you apart...',
@@ -189,6 +190,14 @@ const SECTION_LABEL_KEY: Record<SectionOrderKey, keyof PBTranslations> = {
 type ProfileResponse = {
   profile: Profile | null;
   tenant: (Tenant & { primary_color?: string; theme?: string }) | null;
+  trial?: {
+    isTrialConfigured: boolean;
+    isTrialActive: boolean;
+    isTrialExpired: boolean;
+    daysLeft: number;
+    expiresAt: string | null;
+    subscriptionStatus: string;
+  };
 };
 
 /* ── helpers for crop ── */
@@ -197,12 +206,26 @@ function centerAspectCrop(imgW: number, imgH: number, aspect: number): CropType 
   return centerCrop(makeAspectCrop({ unit: '%', width: preferredWidth }, aspect, imgW, imgH), imgW, imgH);
 }
 
+function getInitialCrop(imgW: number, imgH: number, aspect?: number): CropType {
+  if (aspect) return centerAspectCrop(imgW, imgH, aspect);
+  return { unit: '%', x: 5, y: 5, width: 90, height: 90 };
+}
+
+function normalizeCropMimeType(mimeType?: string): 'image/jpeg' | 'image/png' | 'image/webp' {
+  const normalized = (mimeType || '').toLowerCase();
+  if (normalized.includes('png')) return 'image/png';
+  if (normalized.includes('webp')) return 'image/webp';
+  return 'image/jpeg';
+}
+
 async function getCroppedBlob(imgEl: HTMLImageElement, pixelCrop: PixelCrop, mimeType = 'image/jpeg'): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const scaleX = imgEl.naturalWidth / imgEl.width;
   const scaleY = imgEl.naturalHeight / imgEl.height;
-  canvas.width = Math.max(1, Math.round(pixelCrop.width));
-  canvas.height = Math.max(1, Math.round(pixelCrop.height));
+  const srcW = Math.max(1, Math.round(pixelCrop.width * scaleX));
+  const srcH = Math.max(1, Math.round(pixelCrop.height * scaleY));
+  canvas.width = srcW;
+  canvas.height = srcH;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas is empty');
   ctx.imageSmoothingEnabled = true;
@@ -211,15 +234,19 @@ async function getCroppedBlob(imgEl: HTMLImageElement, pixelCrop: PixelCrop, mim
     imgEl,
     pixelCrop.x * scaleX,
     pixelCrop.y * scaleY,
-    pixelCrop.width * scaleX,
-    pixelCrop.height * scaleY,
+    srcW,
+    srcH,
     0,
     0,
-    canvas.width,
-    canvas.height,
+    srcW,
+    srcH,
   );
+
+  const outputMime = normalizeCropMimeType(mimeType);
+  const quality = outputMime === 'image/png' ? undefined : 0.98;
+
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas is empty')), mimeType, 0.92);
+    canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas is empty')), outputMime, quality);
   });
 }
 
@@ -227,38 +254,56 @@ async function getCroppedBlob(imgEl: HTMLImageElement, pixelCrop: PixelCrop, mim
 function CropModal({
   src,
   aspectRatio,
+  sourceMimeType,
+  allowAspectChange = true,
   onConfirm,
   onCancel,
 }: {
   src: string;
-  aspectRatio: number;
+  aspectRatio?: number;
+  sourceMimeType?: string;
+  allowAspectChange?: boolean;
   onConfirm: (blob: Blob) => void;
   onCancel: () => void;
 }) {
   const [crop, setCrop] = useState<CropType>();
+  const [aspect, setAspect] = useState<number | undefined>(aspectRatio);
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const { lang } = useLanguage();
   const t = PB_T[lang as keyof typeof PB_T];
 
+  useEffect(() => {
+    setAspect(aspectRatio);
+  }, [aspectRatio]);
+
   const resetCrop = useCallback(() => {
     const img = imgRef.current;
     if (!img) return;
-    setCrop(centerAspectCrop(img.naturalWidth, img.naturalHeight, aspectRatio));
-  }, [aspectRatio]);
+    setCrop(getInitialCrop(img.naturalWidth, img.naturalHeight, aspect));
+    setCompletedCrop(undefined);
+  }, [aspect]);
+
+  const applyAspect = useCallback((nextAspect?: number) => {
+    setAspect(nextAspect);
+    const img = imgRef.current;
+    if (!img) return;
+    setCrop(getInitialCrop(img.naturalWidth, img.naturalHeight, nextAspect));
+    setCompletedCrop(undefined);
+  }, []);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
-    const nextCrop = centerAspectCrop(naturalWidth, naturalHeight, aspectRatio);
+    const nextCrop = getInitialCrop(naturalWidth, naturalHeight, aspect);
     setCrop(nextCrop);
-  }, [aspectRatio]);
+  }, [aspect]);
 
   const handleConfirm = async () => {
     if (!completedCrop || !imgRef.current || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const blob = await getCroppedBlob(imgRef.current, completedCrop);
+      const blob = await getCroppedBlob(imgRef.current, completedCrop, sourceMimeType);
       onConfirm(blob);
     } catch {
       onCancel();
@@ -279,7 +324,7 @@ function CropModal({
             crop={crop}
             onChange={(nextCrop) => setCrop(nextCrop)}
             onComplete={(nextCrop) => setCompletedCrop(nextCrop)}
-            aspect={aspectRatio}
+            aspect={aspect}
             keepSelection
             ruleOfThirds
             minWidth={80}
@@ -296,8 +341,30 @@ function CropModal({
           </ReactCrop>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <div className="text-xs text-slate-500">
-            {aspectRatio === 1 ? '1:1' : '16:9'}
+          <div className="flex items-center gap-2 flex-wrap">
+            {allowAspectChange && (
+              <>
+                <span className="text-[11px] text-slate-500">{lang === 'ar' ? 'النسبة' : 'Aspect'}</span>
+                {[
+                  { label: lang === 'ar' ? 'حر' : 'Free', value: undefined as number | undefined },
+                  { label: '16:9', value: 16 / 9 },
+                  { label: '4:3', value: 4 / 3 },
+                  { label: '1:1', value: 1 },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => applyAspect(item.value)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${aspect === item.value ? 'text-white border-blue-500 bg-blue-500/20' : 'text-slate-400 border-slate-700 hover:border-slate-500'}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </>
+            )}
+            {!allowAspectChange && (
+              <span className="text-xs text-slate-500">{aspectRatio === 1 ? '1:1' : '16:9'}</span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -355,6 +422,7 @@ function ImageUploader({
   const t = PB_T[lang as keyof typeof PB_T];
 
   const aspectRatio = aspect === 'square' ? 1 : 16 / 9;
+  const allowAspectChange = aspect !== 'square';
 
   useEffect(() => {
     return () => {
@@ -429,6 +497,8 @@ function ImageUploader({
         <CropModal
           src={cropSrc}
           aspectRatio={aspectRatio}
+          sourceMimeType={pendingFile?.type}
+          allowAspectChange={allowAspectChange}
           onConfirm={handleCropConfirm}
           onCancel={handleCropCancel}
         />
@@ -480,7 +550,7 @@ function ImageUploader({
           className="w-full cursor-pointer group"
         >
           {value ? (
-            <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-700">
+            <div className="relative w-full h-40 rounded-xl overflow-hidden border border-slate-700">
               <Image src={value} alt="cover preview" fill className="object-cover" sizes="(max-width: 768px) 100vw, 640px" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-sm font-medium">
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> {t.changeImage}</>}
@@ -500,7 +570,7 @@ function ImageUploader({
               )}
             </div>
           ) : (
-            <div className="w-full h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
+            <div className="w-full h-40 rounded-xl border-2 border-dashed border-slate-700 bg-slate-800 hover:border-blue-500 transition-colors flex flex-col items-center justify-center gap-2">
               {uploading ? (
                 <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
               ) : (
@@ -678,45 +748,6 @@ const CURRENCY_OPTIONS = [
   { code: 'GBP', symbol: '£', nameAr: 'جنيه إسترليني' },
 ] as const;
 
-const FONT_OPTIONS = [
-  {
-    id: 'inherit',
-    labelAr: 'افتراضي حسب القالب',
-    labelEn: 'Theme Default',
-    css: 'inherit',
-  },
-  {
-    id: 'tajawal',
-    labelAr: 'تجوال (واضح وحديث)',
-    labelEn: 'Tajawal (Clean Modern)',
-    css: "'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif",
-  },
-  {
-    id: 'cairo',
-    labelAr: 'القاهرة (متوازن)',
-    labelEn: 'Cairo (Balanced)',
-    css: "'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif",
-  },
-  {
-    id: 'almarai',
-    labelAr: 'المراعي (سلس)',
-    labelEn: 'Almarai (Smooth)',
-    css: "'Almarai', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif",
-  },
-  {
-    id: 'system',
-    labelAr: 'خط النظام (سريع)',
-    labelEn: 'System UI (Fast)',
-    css: "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
-  },
-  {
-    id: 'serif',
-    labelAr: 'كلاسيكي (Serif)',
-    labelEn: 'Classic Serif',
-    css: "'Noto Naskh Arabic', 'Amiri', Georgia, 'Times New Roman', serif",
-  },
-] as const;
-
 const demoListings = [
   { id: 'l1', title: 'قصر ملكي في حي الملقا', body: 'قصر فاخر بتشطيبات كلاسيكية راقية، مجالس فسيحة وحدائق خاصة في أرقى أحياء الرياض.', price: 18500000, location: 'حي الملقا، الرياض', bedrooms: 7, bathrooms: 8, area_sqm: 1100, listing_status: 'available' as const, offer_type: 'sale', property_type: 'قصر', images: ['https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
   { id: 'l2', title: 'فيلا فاخرة في حي النرجس', body: 'فيلا حديثة بتصميم عربي أصيل، مسبح خاص ومجلس رجال مستقل في موقع متميز.', price: 6800000, location: 'حي النرجس، الرياض', bedrooms: 5, bathrooms: 6, area_sqm: 580, listing_status: 'available' as const, offer_type: 'sale', property_type: 'فيلا', images: ['https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800'], published: true, created_at: new Date().toISOString() },
@@ -757,6 +788,23 @@ const DAY_AR: Record<(typeof DAY_ORDER)[number], string> = {
   sat: 'السبت',
 };
 
+const BUILDER_THEME_IDS = ['modern', 'luxury', 'nature', 'ocean', 'desert', 'midnight'] as const;
+type BuilderThemeId = (typeof BUILDER_THEME_IDS)[number];
+
+function normalizeBuilderThemeId(theme?: string): BuilderThemeId {
+  if (!theme) return 'modern';
+  if (BUILDER_THEME_IDS.includes(theme as BuilderThemeId)) return theme as BuilderThemeId;
+
+  const aliases: Record<string, BuilderThemeId> = {
+    minimal: 'modern',
+    vintage: 'luxury',
+    neon: 'ocean',
+    cosmic: 'midnight',
+  };
+
+  return aliases[theme] ?? 'modern';
+}
+
 const WORKING_HOURS_DEFAULT: NonNullable<Profile['working_hours']> = {
   sun: { enabled: true, open: '09:00', close: '17:00' },
   mon: { enabled: true, open: '09:00', close: '17:00' },
@@ -796,7 +844,7 @@ export default function PageBuilderPage() {
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
   const [agencyName, setAgencyName] = useState('');
-  const [selectedTheme, setSelectedTheme] = useState<string>('modern');
+  const [selectedTheme, setSelectedTheme] = useState<BuilderThemeId>('modern');
   const [businessType, setBusinessType] = useState<string>('real_estate');
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -817,11 +865,29 @@ export default function PageBuilderPage() {
   const [listingPublished, setListingPublished] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [selectedDomainUrl, setSelectedDomainUrl] = useState('');
   const [activeTab, setActiveTab] = useState('design');
   const [showChecklist, setShowChecklist] = useState(false);
+  const isPaymentLockEnabled = process.env.NEXT_PUBLIC_ENABLE_PAYMENT_LOCK === 'true';
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const isCarDealer = businessType === 'car_dealer';
   const usesRealEstateFields = !businessType || businessType === 'real_estate';
+
+  const refreshTenantBillingState = useCallback(async () => {
+    const res = await authFetch<ProfileResponse>('/api/dashboard/profile')
+    setData((prev) => {
+      if (!prev) return res
+      return {
+        ...prev,
+        tenant: {
+          ...(prev.tenant ?? {}),
+          ...(res.tenant ?? {}),
+        } as ProfileResponse['tenant'],
+      }
+    })
+    return res
+  }, [])
 
   const profileCompletionItems = [
     { key: 'name',      label: t.businessNameLabel,    done: Boolean(agencyName),                tab: 'identity' },
@@ -905,7 +971,7 @@ export default function PageBuilderPage() {
       });
       setPrimaryColor(d.tenant.primary_color);
       setAgencyName(d.tenant.name);
-      setSelectedTheme(d.tenant.theme);
+      setSelectedTheme(normalizeBuilderThemeId(d.tenant.theme));
       setBusinessType((d.tenant as any).business_type || 'real_estate');
       setListings(demoListings);
       setNewsItems(demoNews);
@@ -932,7 +998,7 @@ export default function PageBuilderPage() {
         }
         setPrimaryColor(profileRes.tenant?.primary_color || '#2563eb');
         setAgencyName(profileRes.tenant?.name || '');
-        setSelectedTheme(profileRes.tenant?.theme || 'modern');
+        setSelectedTheme(normalizeBuilderThemeId(profileRes.tenant?.theme));
         setBusinessType((profileRes.tenant as any)?.business_type || 'real_estate');
         setListings(listingsRes.data ?? []);
         setNewsItems(Array.isArray(newsRes) ? newsRes : []);
@@ -942,6 +1008,34 @@ export default function PageBuilderPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (isDemoSession) return
+    if ((data?.tenant as any)?.billing_status !== 'pending') return
+
+    let attempts = 0
+    const maxAttempts = 8
+    const interval = setInterval(() => {
+      attempts += 1
+      void refreshTenantBillingState()
+        .then((res) => {
+          if (isBillingPaid((res.tenant as any)?.billing_status)) {
+            toast({
+              title: lang === 'ar' ? 'تم تفعيل الرابط' : 'URL unlocked',
+              description: lang === 'ar' ? 'اكتملت عملية الدفع بنجاح.' : 'Payment completed successfully.',
+            })
+            clearInterval(interval)
+          }
+        })
+        .catch(() => {})
+
+      if (attempts >= maxAttempts) {
+        clearInterval(interval)
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [data?.tenant, isDemoSession, lang, refreshTenantBillingState, toast]);
 
   const markDirty = () => {
     setDirty(true);
@@ -1221,9 +1315,40 @@ export default function PageBuilderPage() {
   }, [profile.logo_url, profile.cover_url]);
 
   const copyLink = () => {
-    navigator.clipboard.writeText(publicUrl);
+    navigator.clipboard.writeText(selectedPublicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleUnlockUrls = async () => {
+    setPaying(true);
+    try {
+      const res = await authFetch<{ checkoutUrl?: string; alreadyPaid?: boolean }>('/api/billing/paytabs/create-session', {
+        method: 'POST',
+      });
+
+      if (res.alreadyPaid) {
+        toast({
+          title: lang === 'ar' ? 'الرابط مفعل بالفعل' : 'URL already unlocked',
+          description: lang === 'ar' ? 'يمكنك الآن مشاركة رابط صفحتك.' : 'You can now share your public page URL.',
+        });
+        return;
+      }
+
+      if (!res.checkoutUrl) {
+        throw new Error(lang === 'ar' ? 'تعذر إنشاء رابط الدفع' : 'Unable to create payment link')
+      }
+
+      window.location.assign(res.checkoutUrl);
+    } catch (error) {
+      toast({
+        title: lang === 'ar' ? 'تعذر بدء عملية الدفع' : 'Could not start payment',
+        description: error instanceof Error ? error.message : undefined,
+        variant: 'destructive',
+      });
+    } finally {
+      setPaying(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -1246,17 +1371,6 @@ export default function PageBuilderPage() {
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-72">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">{t.loadingPage}</p>
-        </div>
-      </div>
-    );
-  }
-
   const slug = data?.tenant?.slug || '';
   const customDomain = data?.tenant?.custom_domain || '';
   const configuredBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim().replace(/\/+$/, '');
@@ -1272,16 +1386,55 @@ export default function PageBuilderPage() {
     }
   }
 
-  const baseUrl = customDomain ? `https://${customDomain}` : 'https://wa9l.website';
-  const publicUrl = customDomain ? `https://${customDomain}` : (slug ? `https://wa9l.website/${slug}` : 'https://wa9l.website');
-  const displayUrl = publicUrl.replace(/^https?:\/\//, '');
-  const publicPath = customDomain ? '/' : (slug ? `/${slug}` : '/');
+  const hostedUrl = slug ? `https://wa9l.website/${slug}` : 'https://wa9l.website';
+
+  const tenantAny = data?.tenant as any;
+  const extraRawDomains = [
+    ...(Array.isArray(tenantAny?.domains) ? tenantAny.domains : []),
+    ...(Array.isArray(tenantAny?.custom_domains) ? tenantAny.custom_domains : []),
+    ...(Array.isArray(tenantAny?.domain_aliases) ? tenantAny.domain_aliases : []),
+  ];
+
+  const domainOptions = buildDomainOptions({
+    customDomain,
+    extraDomains: customDomain ? extraRawDomains : [],
+    hostedUrl,
+    runtimeOrigin,
+    slug,
+  });
+
+  const selectedPublicUrl = pickSelectedDomainUrl(selectedDomainUrl, domainOptions, hostedUrl);
+  const selectedDisplayUrl = selectedPublicUrl.replace(/^https?:\/\//, '');
+  const billingStatus = (data?.tenant as any)?.billing_status;
+  const trialState = data?.trial ?? getTenantTrialState((data?.tenant as any) ?? {});
+  const isTenantPaid = isBillingPaid(billingStatus) || Boolean((data?.tenant as any)?.paid);
+  const isUrlUnlocked = !isPaymentLockEnabled || isDemoSession || isTenantPaid || trialState.isTrialActive;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-72">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">{t.loadingPage}</p>
+        </div>
+      </div>
+    );
+  }
+
   const shouldShowInvalidUrlWarning = Boolean(configuredBaseUrl) && !isConfiguredBaseUrlValid;
   const shouldShowMissingUrlInfo = !configuredBaseUrl;
   const sections = { ...DEFAULT_PAGE_SECTIONS, ...(profile.page_sections ?? {}) };
   const pageConfig = { ...DEFAULT_PAGE_CONFIG, ...(profile.page_config ?? {}) };
-  const activeTheme = PAGE_THEMES[selectedTheme as keyof typeof PAGE_THEMES] ?? PAGE_THEMES.modern;
+  const activeTheme = PAGE_THEMES[selectedTheme] ?? PAGE_THEMES.modern;
   const displayCurrency = pageConfig.currency === 'SAR' || pageConfig.currency === 'ر.س' ? '⃁' : (pageConfig.currency || 'SAR');
+  const enabledPreviewSections = SECTION_ORDER_KEYS.reduce((count, key) => {
+    return count + ((sections[key] ?? DEFAULT_PAGE_SECTIONS[key]) ? 1 : 0);
+  }, 0);
+  const previewMinHeightClass = enabledPreviewSections <= 3
+    ? 'min-h-[420px]'
+    : enabledPreviewSections <= 4
+      ? 'min-h-[500px]'
+      : 'min-h-[620px]';
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6 pb-10 relative" dir="rtl">
@@ -1367,7 +1520,7 @@ export default function PageBuilderPage() {
       </div>
 
       {/* QR Code Dialog */}
-      <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
+      <Dialog open={showQrModal && isUrlUnlocked} onOpenChange={setShowQrModal}>
         <DialogContent className="wa9l-glass text-white max-w-sm" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
@@ -1378,20 +1531,20 @@ export default function PageBuilderPage() {
             <div className="bg-white p-4 rounded-xl">
               <QRCodeSVG
                 id="qr-svg"
-                value={publicUrl}
+                value={selectedPublicUrl}
                 size={200}
                 fgColor={activeTheme.accent}
                 level="M"
                 includeMargin={false}
               />
             </div>
-            <p className="text-xs text-slate-400 font-mono break-all text-center">{displayUrl}</p>
+            <p className="text-xs text-slate-400 font-mono break-all text-center">{selectedDisplayUrl}</p>
             <div className="flex gap-2 w-full">
               <Button onClick={downloadQr} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
                 <Download className="h-4 w-4" /> {t.downloadPng}
               </Button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent('صفحتي: ' + publicUrl)}`}
+                href={`https://wa.me/?text=${encodeURIComponent('صفحتي: ' + selectedPublicUrl)}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1"
               >
@@ -1421,19 +1574,56 @@ export default function PageBuilderPage() {
       {/* Top bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 wa9l-glass rounded-3xl px-5 py-4 relative z-10">
         <div className="min-w-0 flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-black/25 border border-blue-400/15 rounded-2xl px-3 py-2 min-w-0 max-w-xs sm:max-w-md">
-            <Globe className="h-3.5 w-3.5 shrink-0 text-blue-300" />
-            <p className="text-blue-200 font-mono text-xs truncate">{displayUrl}</p>
-          </div>
-          {shouldShowInvalidUrlWarning && (
-            <p className="text-xs text-red-400 flex items-center gap-1 shrink-0">
-              <AlertCircle className="h-3 w-3" />{t.invalidBaseUrl}
-            </p>
+          {isUrlUnlocked ? (
+            <>
+              <div className="flex items-center gap-2 bg-black/25 border border-blue-400/15 rounded-2xl px-3 py-2 min-w-0 max-w-xs sm:max-w-md">
+                <Globe className="h-3.5 w-3.5 shrink-0 text-blue-300" />
+                {domainOptions.length > 1 ? (
+                  <select
+                    value={selectedPublicUrl}
+                    onChange={(e) => setSelectedDomainUrl(e.target.value)}
+                    className="bg-transparent text-blue-200 font-mono text-xs truncate outline-none border-none max-w-[220px]"
+                    title={lang === 'ar' ? 'اختر النطاق' : 'Choose domain'}
+                  >
+                    {domainOptions.map((d) => (
+                      <option key={d.url} value={d.url} className="bg-slate-900 text-slate-100">
+                        {d.display}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-blue-200 font-mono text-xs truncate">{selectedDisplayUrl}</p>
+                )}
+              </div>
+              {shouldShowInvalidUrlWarning && (
+                <p className="text-xs text-red-400 flex items-center gap-1 shrink-0">
+                  <AlertCircle className="h-3 w-3" />{t.invalidBaseUrl}
+                </p>
+              )}
+              {shouldShowMissingUrlInfo && (
+                <p className="text-xs text-amber-400 flex items-center gap-1 shrink-0">
+                  <AlertCircle className="h-3 w-3" />{t.missingBaseUrl}
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-2xl px-3 py-2 min-w-0">
+              <Lock className="h-3.5 w-3.5 shrink-0 text-amber-300" />
+              <p className="text-xs text-amber-200">
+                {trialState.isTrialExpired
+                  ? (lang === 'ar' ? 'انتهت الفترة التجريبية — أكمل الدفع لإظهار رابط صفحتك.' : 'Trial expired — complete payment to unlock your page URL.')
+                  : (lang === 'ar' ? 'رابط صفحتك مخفي حتى إتمام الدفع لمرة واحدة.' : 'Your page URL is hidden until one-time payment is completed.')}
+              </p>
+            </div>
           )}
-          {shouldShowMissingUrlInfo && (
-            <p className="text-xs text-amber-400 flex items-center gap-1 shrink-0">
-              <AlertCircle className="h-3 w-3" />{t.missingBaseUrl}
-            </p>
+
+          {!isDemoSession && trialState.isTrialActive && (
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/25 rounded-2xl px-3 py-2">
+              <Sparkles className="h-3.5 w-3.5 text-blue-300" />
+              <span className="text-xs text-blue-200">
+                {lang === 'ar' ? `فترة تجريبية: ${trialState.daysLeft} يوم متبقي` : `Trial: ${trialState.daysLeft} day(s) left`}
+              </span>
+            </div>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -1454,16 +1644,30 @@ export default function PageBuilderPage() {
             </span>
           )}
           <div className="flex items-center gap-1">
-            <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
-              <QrCode className="h-3.5 w-3.5" /> QR
-            </Button>
-            <Button size="sm" variant="ghost" onClick={copyLink} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
-              {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? t.copied : t.copyLink}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => window.open(publicPath, '_blank', 'noopener,noreferrer')} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400/20 gap-1.5 text-xs transition-all">
-              <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
-            </Button>
+            {isUrlUnlocked ? (
+              <>
+                <Button size="sm" variant="ghost" onClick={() => setShowQrModal(true)} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
+                  <QrCode className="h-3.5 w-3.5" /> QR
+                </Button>
+                <Button size="sm" variant="ghost" onClick={copyLink} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.14] gap-1.5 text-xs transition-all">
+                  {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? t.copied : t.copyLink}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => window.open(selectedPublicUrl, '_blank', 'noopener,noreferrer')} className="h-8 px-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400/20 gap-1.5 text-xs transition-all">
+                  <ExternalLink className="h-3.5 w-3.5" /> {t.openPage}
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleUnlockUrls}
+                disabled={paying}
+                className="h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white gap-1.5 text-xs transition-all"
+              >
+                {paying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                {lang === 'ar' ? 'ادفع الآن لإظهار الرابط' : 'Pay now to unlock URL'}
+              </Button>
+            )}
             <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="h-8 px-2.5 rounded-xl text-slate-500 hover:text-red-300 hover:bg-red-500/10 transition-all">
               <LogOut className="h-3.5 w-3.5" />
             </Button>
@@ -1555,11 +1759,11 @@ export default function PageBuilderPage() {
                 <p className="text-sm font-bold text-white mb-1">{t.chooseDesign}</p>
                 <p className="text-slate-400 text-sm mb-4">{t.chooseDesignSub}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.values(PAGE_THEMES).filter((theme: any) => theme.dark).map((theme: any) => (
+                  {BUILDER_THEME_IDS.map((themeId) => PAGE_THEMES[themeId]).map((theme: any) => (
                     <button
                       key={theme.id}
                       onClick={() => { 
-                        setSelectedTheme(theme.id); 
+                        setSelectedTheme(theme.id as BuilderThemeId); 
                         updatePageConfig({ 
                           button_shape: theme.buttonShape
                         });
@@ -1585,7 +1789,7 @@ export default function PageBuilderPage() {
                         </div>
 
                         {/* Hero */}
-                        <div className="relative h-16" style={{ background: `linear-gradient(135deg, ${theme.accent}cc, ${theme.accent}55)` }}>
+                        <div className="relative h-24" style={{ background: `linear-gradient(135deg, ${theme.accent}cc, ${theme.accent}55)` }}>
                           <div className="absolute inset-0" style={{ background: theme.heroOverlay }} />
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-3">
                             <div className="h-2 w-20 rounded-sm bg-white/80" />
@@ -1681,30 +1885,6 @@ export default function PageBuilderPage() {
                     className="wa9l-field text-white w-28 font-mono text-sm"
                   />
                   <span className="text-xs text-slate-500">{t.brandColorHint}</span>
-                </div>
-              </div>
-
-              <div className="wa9l-card rounded-2xl p-5 space-y-3">
-                <p className="flex items-center gap-2 text-sm font-semibold text-white/95">
-                  {t.fontFamilyLabel}
-                </p>
-                <p className="text-xs text-slate-500">{t.fontFamilyHint}</p>
-                <select
-                  value={pageConfig.headingFont || 'inherit'}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updatePageConfig({ headingFont: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white"
-                >
-                  {FONT_OPTIONS.map((f) => (
-                    <option key={f.id} value={f.css}>
-                      {lang === 'ar' ? f.labelAr : f.labelEn}
-                    </option>
-                  ))}
-                </select>
-                <div className="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-3">
-                  <p className="text-[11px] text-slate-500 mb-2">{lang === 'ar' ? 'معاينة الخط' : 'Font preview'}</p>
-                  <p style={{ fontFamily: pageConfig.headingFont || 'inherit' }} className="text-lg text-white font-bold leading-relaxed">
-                    {lang === 'ar' ? 'مطر العقارية — واجهة احترافية لعروضك' : 'Matar Real Estate — Professional listings showcase'}
-                  </p>
                 </div>
               </div>
 
@@ -1931,7 +2111,7 @@ export default function PageBuilderPage() {
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
                         {pageConfig.seo_description || profile.bio || t.bizDescFallback}
                       </p>
-                      <p className="text-[10px] text-slate-600 mt-1 truncate">{displayUrl}</p>
+                      <p className="text-[10px] text-slate-600 mt-1 truncate">{selectedDisplayUrl}</p>
                     </div>
                   </div>
                 </div>
@@ -2417,7 +2597,7 @@ export default function PageBuilderPage() {
         <div className="min-w-0 relative z-0 xl:col-start-2 xl:row-start-1 xl:h-full">
           <div className="wa9l-card rounded-2xl overflow-hidden h-full flex flex-col">
             {/* Live inline preview — renders theme component directly, no save needed */}
-            <div className="relative overflow-hidden bg-black flex-1 min-h-[540px] xl:min-h-0">
+            <div className={`relative overflow-hidden bg-black flex-1 ${previewMinHeightClass} xl:min-h-0`}>
               {/* onClick capture blocks link navigation; scroll still works */}
               <div
                 className="overflow-y-auto overflow-x-hidden"

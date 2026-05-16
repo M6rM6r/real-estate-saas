@@ -5,29 +5,18 @@ import { headers } from 'next/headers'
 import Script from 'next/script'
 import PublicAgencyPage from '@/components/PublicAgencyPage'
 import PageViewTracker from '@/components/PageViewTracker'
+import {
+  buildPublishedTenantJsonLd,
+  buildPublishedTenantMetadata,
+  buildPublishedTenantPageUrl,
+} from '@/lib/public-page-metadata'
+import { findActiveTenantByHost } from '@/lib/tenant-domain'
+import { getRequestHost } from '@/lib/login-branding'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 const DEMO_SLUG = 'demo'
 const SAUDI_CAR_DEMO_SLUG = 'saudi-cars-demo'
 const LEGACY_DEMO_SLUG = 'luxury-homes-dubai'
-
-const getSchemaOrgType = (businessType?: string | null) => {
-  switch (businessType) {
-    case 'restaurant':
-      return 'Restaurant'
-    case 'salon':
-      return 'BeautySalon'
-    case 'retail':
-      return 'Store'
-    case 'services':
-      return 'ProfessionalService'
-    case 'car_dealer':
-      return 'AutoDealer'
-    case 'real_estate':
-      return 'RealEstateAgent'
-    default:
-      return 'Organization'
-  }
-}
 
 export const dynamic = 'force-dynamic'
 
@@ -58,28 +47,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const { slug } = params
   try {
   const headersList = await headers()
-  const host = headersList.get('host') || ''
+  const host = getRequestHost(headersList)
 
   let tenantSlug = slug
+  let isCustomDomain = false
 
   // Check if the host matches a custom domain
-  if (host && host !== 'localhost:3000' && host !== 'app.rewrew7.web.app' && !host.includes('vercel.app')) {
-    try {
-      const customDomainSnap = await withRetry(() =>
-        adminDb.collection('tenants')
-          .where('custom_domain', '==', host)
-          .where('status', '==', 'active')
-          .limit(1)
-          .get()
-      , 3, 600)
-      if (!customDomainSnap.empty) {
-        const tenantData = customDomainSnap.docs[0].data()
-        tenantSlug = tenantData.slug
-      }
-    } catch (error) {
-      // If custom domain lookup fails, continue with original slug
-      console.error('Custom domain lookup failed:', error)
+  try {
+    const tenantMatch = await findActiveTenantByHost(host)
+    if (tenantMatch?.slug) {
+      tenantSlug = tenantMatch.slug
+      isCustomDomain = true
     }
+  } catch (error) {
+    // If custom domain lookup fails, continue with original slug
+    console.error('Custom domain lookup failed:', error)
   }
 
   const tenantsSnap = await withRetry(() =>
@@ -102,41 +84,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       if (!fallback.empty) profileData = fallback.docs[0].data()
     }
   } catch { /* metadata is best-effort */ }
-  const profile = profileData
-
-  const pageLang = ((profile?.page_config as any)?.page_lang as 'ar' | 'en' | undefined) ?? 'ar'
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'
-  const seoTitle = ((profile?.page_config as any)?.seo_title as string | undefined) || tenant.name || `${slug}`
-  const rawDescription = ((profile?.page_config as any)?.seo_description as string | undefined)
-    || (profile?.bio as string | undefined)
-    || (pageLang === 'ar' ? 'خدمات احترافية متميزة' : 'Professional business services')
-  const seoDesc = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}...` : rawDescription
-  // Use the actual cover URL for og:image (CSS selector issue only affects <Image> component, not meta tags)
-  const rawCoverUrl = profile?.cover_url || profile?.coverUrl
-  const coverUrl = rawCoverUrl || `${appUrl}/${slug}/opengraph-image`
-  const canonicalUrl = `${appUrl}/${slug}`
-
-  return {
-    title: seoTitle,
-    description: seoDesc,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title: seoTitle,
-      description: seoDesc,
-      type: 'website',
-      locale: pageLang === 'ar' ? 'ar_SA' : 'en_US',
-      url: canonicalUrl,
-      images: [{ url: coverUrl, width: 1200, height: 630 }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seoTitle,
-      description: seoDesc,
-      images: [{ url: coverUrl, width: 1200, height: 630 }],
-    },
-  }
+  return buildPublishedTenantMetadata({
+    tenant: { ...tenant, slug: tenantSlug },
+    profile: profileData,
+    host,
+    isCustomDomain,
+  })
   } catch {
     return { title: slug }
   }
@@ -233,7 +186,7 @@ const DEMO_DATA = {
 export default async function AgencyPage({ params }: { params: { slug: string } }) {
   const { slug } = params
   const headersList = await headers()
-  const host = headersList.get('host') || ''
+  const host = getRequestHost(headersList)
 
   if (slug === LEGACY_DEMO_SLUG) {
     redirect(`/${SAUDI_CAR_DEMO_SLUG}`)
@@ -242,23 +195,14 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
   let tenantSlug = slug
 
   // Check if the host matches a custom domain
-  if (host && host !== 'localhost:3000' && host !== 'app.rewrew7.web.app' && !host.includes('vercel.app')) {
-    try {
-      const customDomainSnap = await withRetry(() =>
-        adminDb.collection('tenants')
-          .where('custom_domain', '==', host)
-          .where('status', '==', 'active')
-          .limit(1)
-          .get()
-      , 3, 600)
-      if (!customDomainSnap.empty) {
-        const tenantData = customDomainSnap.docs[0].data()
-        tenantSlug = tenantData.slug
-      }
-    } catch (error) {
-      // If custom domain lookup fails, continue with original slug
-      console.error('Custom domain lookup failed:', error)
+  try {
+    const tenantMatch = await findActiveTenantByHost(host)
+    if (tenantMatch?.slug) {
+      tenantSlug = tenantMatch.slug
     }
+  } catch (error) {
+    // If custom domain lookup fails, continue with original slug
+    console.error('Custom domain lookup failed:', error)
   }
 
   let tenantsSnap: any
@@ -288,6 +232,12 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
 
   const tenantDoc = tenantsSnap.docs[0]
   const tenant = serialize({ id: tenantDoc.id, ...tenantDoc.data() }) as { id: string; name: string; slug: string; primary_color: string; [key: string]: unknown }
+  if (isFeatureEnabled('PAYMENT_URL_LOCK')) {
+    const isTenantPaid = tenant.paid === true || String(tenant.billing_status ?? '').toLowerCase() === 'paid'
+    if (!isTenantPaid) {
+      notFound()
+    }
+  }
   const tenantId = tenantDoc.id
 
   const safe = <T,>(p: Promise<T>, fallback: T): Promise<T> => p.catch(() => fallback)
@@ -332,16 +282,23 @@ export default async function AgencyPage({ params }: { params: { slug: string } 
       : serialize(fallbackProfilesSnap.docs[0].data())
 
   const profileData = rawProfileData ? deepDecodeUrls(rawProfileData) : null
+  const canonicalUrl = buildPublishedTenantPageUrl({
+    host,
+    slug: tenantSlug,
+    isCustomDomain: tenantSlug !== slug,
+  })
 
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': ((tenant as any)?.business_type === 'real_estate') ? 'RealEstateAgent' : 'LocalBusiness',
-    name: tenant.name,
-    description: profileData?.bio ?? 'Professional business services',
-    url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.rewrew7.web.app'}/${slug}`,
+    ...buildPublishedTenantJsonLd({
+      tenant: { ...tenant, slug: tenantSlug },
+      profile: profileData,
+      host,
+      isCustomDomain: tenantSlug !== slug,
+    }),
     ...(profileData?.logo_url ? { logo: profileData.logo_url } : {}),
     ...(profileData?.contact_phone ? { telephone: profileData.contact_phone } : {}),
     ...(profileData?.contact_address ? { address: { '@type': 'PostalAddress', streetAddress: profileData.contact_address } } : {}),
+    url: canonicalUrl,
   }
 
   return (

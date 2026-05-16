@@ -39,6 +39,7 @@ type TenantDetail = {
   slug: string;
   theme?: string;
   status: 'active' | 'suspended';
+  paid?: boolean;
   business_type?: string;
   primary_color?: string;
   custom_domain?: string;
@@ -139,6 +140,29 @@ export default function AdminTenantDetailPage() {
       setData(prev => prev ? { ...prev, status: next } : prev);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update status');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePaid = async () => {
+    if (!data) return;
+    setSaving(true);
+    setError(null);
+    const next = !Boolean(data.paid);
+    try {
+      const res = await fetch(`/api/admin/tenants/${data.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paid: next }),
+      });
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(json.error ?? `Failed (${res.status})`);
+      }
+      setData(prev => prev ? { ...prev, paid: next } : prev);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to update payment status');
     } finally {
       setSaving(false);
     }
@@ -248,6 +272,14 @@ export default function AdminTenantDetailPage() {
             {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Power className="h-3.5 w-3.5 mr-1.5" />}
             {data.status === 'active' ? 'Suspend' : 'Reactivate'}
           </Button>
+          <Button
+            onClick={togglePaid}
+            disabled={saving}
+            className={`h-8 text-xs border ${Boolean(data.paid) ? 'border-[#00ff41]/40 text-[#00ff41] bg-[#00ff41]/10 hover:bg-[#00ff41]/20' : 'border-[#ff6b6b]/40 text-[#ff6b6b] bg-[#ff6b6b]/10 hover:bg-[#ff6b6b]/20'}`}
+          >
+            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
+            {Boolean(data.paid) ? 'Mark Unpaid' : 'Mark Paid'}
+          </Button>
         </div>
       </div>
 
@@ -311,6 +343,7 @@ export default function AdminTenantDetailPage() {
               { label: 'Name',         value: data.name },
               { label: 'Slug',         value: `/${data.slug}` },
               { label: 'Status',       value: data.status },
+              { label: 'Payment',      value: Boolean(data.paid) ? 'paid' : 'unpaid' },
               { label: 'Business Type', value: (() => { const b = BUSINESS_TYPES[data.business_type ?? 'real_estate']; return b ? `${b.icon} ${b.label}` : (data.business_type ?? '—'); })() },
               { label: 'Theme',        value: data.theme ?? 'modern' },
               { label: 'Custom Domain', value: data.custom_domain || '—' },

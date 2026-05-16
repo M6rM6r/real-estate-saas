@@ -14,14 +14,16 @@ import {
 } from 'recharts';
 
 function healthColor(score: number): string {
-  if (score >= 70) return '#00ff41'
-  if (score >= 35) return '#ffb441'
-  return '#ff4141'
+  if (score >= 70) return '#8fd1aa'
+  if (score >= 35) return '#f2c57c'
+  return '#fb7185'
 }
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const accent = '#8fd1aa';
+  const accentSoft = '#b8f0ca';
 
   useEffect(() => {
     fetch('/api/admin/metrics')
@@ -34,32 +36,33 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-2 border-[#00ff41]/60 border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 rounded-full border-2 border-emerald-200/40 border-t-transparent animate-spin" />
       </div>
     );
   }
 
   if (!data) {
-    return <p className="text-[#00ff41]/40 text-center py-20 font-mono">{'> ERROR: Failed to load metrics.'}</p>;
+    return <p className="py-20 text-center font-mono text-slate-500">{'> ERROR: Failed to load metrics.'}</p>;
   }
 
   return (
     <div className="space-y-8 font-mono">
       <div>
-        <h1 className="text-2xl font-bold text-[#00ff41]">{'> Overview_'}</h1>
-        <p className="text-[#00ff41]/40 text-sm mt-1">Platform-wide metrics and activity</p>
+        <h1 className="text-2xl font-bold" style={{ color: accentSoft }}>{'> Overview_'}</h1>
+        <p className="mt-1 text-sm text-slate-500">Platform-wide metrics and activity</p>
       </div>
 
-      <div className="bg-[#0d0d0d] border border-[#00ff41]/20 rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 rounded-2xl border p-4 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
         <div>
-          <p className="text-[#00ff41] text-sm font-semibold inline-flex items-center gap-2">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: accentSoft }}>
             <Sparkles className="h-4 w-4" /> Sales Demo Catalog
           </p>
-          <p className="text-[#00ff41]/45 text-xs mt-1">One-click access to polished demo cards with screenshots and direct links.</p>
+          <p className="mt-1 text-xs text-slate-500">One-click access to polished demo cards with screenshots and direct links.</p>
         </div>
         <a
           href="/admin/demo-catalog"
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#00ff41]/35 bg-[#00ff41]/10 hover:bg-[#00ff41]/20 text-[#00ff41] text-sm transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors"
+          style={{ borderColor: 'rgba(143, 209, 170, 0.28)', backgroundColor: 'rgba(143, 209, 170, 0.10)', color: accentSoft }}
         >
           Open Catalog <ExternalLink className="h-3.5 w-3.5" />
         </a>
@@ -72,47 +75,47 @@ export default function AdminDashboardPage() {
           { label: 'Posts (30d)', value: data.totalPosts, icon: FileText },
           { label: 'Media Files', value: data.totalMedia, icon: Image },
         ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="bg-[#0d0d0d] border border-[#00ff41]/20 rounded-xl p-5 hover:border-[#00ff41]/40 transition-colors">
+          <div key={label} className="rounded-2xl border p-5 transition-colors backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-[#00ff41]/60">{label}</p>
-              <div className="w-8 h-8 rounded-lg bg-[#00ff41]/10 border border-[#00ff41]/20 flex items-center justify-center">
-                <Icon className="h-4 w-4 text-[#00ff41]" />
+              <p className="text-sm text-slate-400">{label}</p>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl border" style={{ backgroundColor: 'rgba(143, 209, 170, 0.10)', borderColor: 'rgba(143, 209, 170, 0.20)' }}>
+                <Icon className="h-4 w-4" style={{ color: accent }} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-[#00ff41]">{value}</p>
+            <p className="text-3xl font-bold" style={{ color: accentSoft }}>{value}</p>
           </div>
         ))}
       </div>
 
       {/* Bar Chart */}
-      <div className="bg-[#0d0d0d] border border-[#00ff41]/20 rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="h-4 w-4 text-[#00ff41]" />
-          <h2 className="text-sm font-semibold text-[#00ff41]">New Agencies per Month</h2>
+      <div className="rounded-2xl border p-6 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
+        <div className="mb-6 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" style={{ color: accent }} />
+          <h2 className="text-sm font-semibold" style={{ color: accentSoft }}>New Agencies per Month</h2>
         </div>
         {data.agenciesPerMonth?.length > 0 ? (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.agenciesPerMonth}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#00ff4115" />
-                <XAxis dataKey="month" stroke="#00ff4140" fontSize={11} tickLine={false} />
-                <YAxis stroke="#00ff4140" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(143,209,170,0.10)" />
+                <XAxis dataKey="month" stroke="rgba(184,240,202,0.35)" fontSize={11} tickLine={false} />
+                <YAxis stroke="rgba(184,240,202,0.35)" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0d0d0d',
-                    border: '1px solid #00ff4140',
-                    borderRadius: '8px',
-                    color: '#00ff41',
+                    backgroundColor: '#08110d',
+                    border: '1px solid rgba(143, 209, 170, 0.22)',
+                    borderRadius: '14px',
+                    color: accentSoft,
                     fontSize: '12px',
                     fontFamily: 'monospace',
                   }}
                 />
-                <Bar dataKey="count" fill="#00ff41" radius={[4, 4, 0, 0]} opacity={0.8} />
+                <Bar dataKey="count" fill={accent} radius={[8, 8, 0, 0]} opacity={0.78} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-[#00ff41]/30 text-center py-12 text-sm">{'> no data available'}</p>
+          <p className="py-12 text-center text-sm text-slate-500">{'> no data available'}</p>
         )}
       </div>
 
