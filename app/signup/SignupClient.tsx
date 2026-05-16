@@ -11,7 +11,6 @@ import type { LoginBranding, LoginLang } from '@/lib/login-branding'
 
 const translations: Record<LoginLang, {
   title: string
-  subtitle: string
   businessName: string
   businessSlug: string
   email: string
@@ -25,11 +24,9 @@ const translations: Record<LoginLang, {
   passwordPlaceholder: string
   hidePassword: string
   showPassword: string
-  slugHint: string
 }> = {
   ar: {
     title: 'إنشاء حساب جديد',
-    subtitle: 'ابدأ نسختك التجريبية المجانية وسيتم تسجيل دخولك تلقائياً.',
     businessName: 'اسم النشاط',
     businessSlug: 'رابط النشاط',
     email: 'البريد الإلكتروني',
@@ -43,11 +40,9 @@ const translations: Record<LoginLang, {
     passwordPlaceholder: '٨ أحرف على الأقل',
     hidePassword: 'إخفاء كلمة المرور',
     showPassword: 'إظهار كلمة المرور',
-    slugHint: 'حروف إنجليزية صغيرة وأرقام وشرطة فقط.',
   },
   en: {
     title: 'Create your account',
-    subtitle: 'Start your free trial and get signed in automatically.',
     businessName: 'Business name',
     businessSlug: 'Business URL',
     email: 'Email address',
@@ -61,7 +56,6 @@ const translations: Record<LoginLang, {
     passwordPlaceholder: 'At least 8 characters',
     hidePassword: 'Hide password',
     showPassword: 'Show password',
-    slugHint: 'Lowercase letters, numbers, and hyphens only.',
   },
 }
 
@@ -190,7 +184,7 @@ export default function SignupClient({ branding }: { branding: LoginBranding }) 
 
       <div className="relative z-10 min-h-[100dvh] flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-10">
         <div className="w-full max-w-[480px] space-y-4">
-          <div className="flex flex-col items-center gap-2 pb-1 text-center">
+          <div className="flex flex-col items-center gap-1 pb-0 text-center">
             <Image
               src={branding.logoUrl}
               alt={branding.brandName}
@@ -201,7 +195,6 @@ export default function SignupClient({ branding }: { branding: LoginBranding }) 
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-none bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent tracking-tight">
               {branding.brandName}
             </h1>
-            <p className="text-slate-300/85 text-sm">{t.subtitle}</p>
           </div>
 
           <div className="rounded-2xl p-4 sm:p-6 space-y-4" style={{ background: 'rgba(6,6,20,0.62)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: `0 0 0 1px ${branding.accentColor}22` }}>
@@ -234,7 +227,6 @@ export default function SignupClient({ branding }: { branding: LoginBranding }) 
                   className="h-11 text-sm bg-slate-900/70 border-slate-600/60 text-slate-100 placeholder:text-slate-500"
                   placeholder={t.businessSlugPlaceholder}
                 />
-                <p className="text-[11px] text-slate-400">{t.slugHint}</p>
               </div>
 
               <div className="space-y-1.5">

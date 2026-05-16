@@ -1,18 +1,45 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LanguageProvider, useLanguage } from './LanguageContext';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isRTL } = useLanguage();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [isDemo, setIsDemo] = useState(false);
 
+  const isPublicBuilderEntry = pathname === '/dashboard/page-builder';
+
+  const activateDemoSession = useCallback(() => {
+    sessionStorage.setItem('demo_auth', 'true');
+    document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
+    setIsDemo(true);
+    setAuthed(true);
+  }, []);
+
   useEffect(() => {
+    let publicEntryFallbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+    if (isPublicBuilderEntry) {
+      setAuthed(true);
+    }
+
+    if (isPublicBuilderEntry) {
+      publicEntryFallbackTimer = setTimeout(() => {
+        setAuthed((prev) => {
+          if (prev !== null) return prev;
+          activateDemoSession();
+          return true;
+        });
+      }, 1800);
+    }
+
     const demoAuth = sessionStorage.getItem('demo_auth');
     if (demoAuth === 'true') {
+      if (publicEntryFallbackTimer) clearTimeout(publicEntryFallbackTimer);
       setIsDemo(true);
       setAuthed(true);
       return;
@@ -20,20 +47,38 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
     let unsub: (() => void) | undefined;
     (async () => {
-      const { auth } = await import('@/lib/firebase');
-      const { onAuthStateChanged } = await import('firebase/auth');
-      unsub = onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          router.push('/login');
-        } else {
-          sessionStorage.removeItem('demo_auth');
-          document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
-          setAuthed(true);
+      try {
+        const { auth } = await import('@/lib/firebase');
+        const { onAuthStateChanged } = await import('firebase/auth');
+        unsub = onAuthStateChanged(auth, (user) => {
+          if (publicEntryFallbackTimer) clearTimeout(publicEntryFallbackTimer);
+          if (!user) {
+            if (isPublicBuilderEntry) {
+              activateDemoSession();
+              return;
+            }
+            router.push('/login');
+          } else {
+            sessionStorage.removeItem('demo_auth');
+            document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
+            setIsDemo(false);
+            setAuthed(true);
+          }
+        });
+      } catch {
+        if (publicEntryFallbackTimer) clearTimeout(publicEntryFallbackTimer);
+        if (isPublicBuilderEntry) {
+          activateDemoSession();
+          return;
         }
-      });
+        router.push('/login');
+      }
     })();
-    return () => unsub?.();
-  }, [router]);
+    return () => {
+      if (publicEntryFallbackTimer) clearTimeout(publicEntryFallbackTimer);
+      unsub?.();
+    };
+  }, [activateDemoSession, isPublicBuilderEntry, router]);
 
   // expose logout for page-builder to call
   const handleLogout = useCallback(async () => {

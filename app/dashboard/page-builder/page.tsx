@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { authFetch } from '@/lib/api';
 import PublicAgencyPage from '@/components/PublicAgencyPage';
@@ -19,7 +21,7 @@ import {
   Image as ImageIcon, FileText, Globe, AlertCircle,
   CheckCircle2, Building2, Hash, Layout, Plus, Trash2, Bed, Bath, Maximize, Clock,
   QrCode, Download, ChevronDown, ChevronUp, Megaphone, Search, Crop, SlidersHorizontal, LogOut,
-  Sparkles, Eye, Wand2, Zap, Lock,
+  Sparkles, Eye, EyeOff, Wand2, Zap, Lock,
 } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop as CropType, type PixelCrop } from 'react-image-crop';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -52,6 +54,16 @@ const PB_T = {
     autoSavingSoon: 'حفظ تلقائي خلال ثوانٍ...', saving: 'جاري الحفظ...', saved: 'تم الحفظ',
     copyLink: 'نسخ الرابط', copied: 'تم النسخ!', openPage: 'فتح الصفحة',
     signOut: 'تسجيل الخروج',
+    loginNow: 'تسجيل الدخول',
+    createAccount: 'إنشاء حساب',
+    loginDialogTitle: 'الدخول إلى حسابك',
+    loginEmailLabel: 'البريد الإلكتروني',
+    loginPasswordLabel: 'كلمة المرور',
+    loginPasswordShow: 'إظهار كلمة المرور',
+    loginPasswordHide: 'إخفاء كلمة المرور',
+    loginSubmit: 'دخول',
+    loginWorking: 'جارٍ التحقق...',
+    loginErrorFallback: 'تعذّر تسجيل الدخول، تحقق من البيانات وحاول مرة أخرى.',
     qrTitle: 'رمز QR لصفحتك', downloadPng: 'تحميل PNG', whatsapp: 'واتساب',
     tabControl: '🎛️ تحكم', tabDesign: '🎨 التصميم', tabIdentity: '✍️ الهوية', tabListings: '🏠 العروض', tabConnect: '🔗 تواصل',
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
@@ -122,6 +134,16 @@ const PB_T = {
     autoSavingSoon: 'Auto-saving in a few seconds...', saving: 'Saving...', saved: 'Saved',
     copyLink: 'Copy Link', copied: 'Copied!', openPage: 'Open Page',
     signOut: 'Sign out',
+    loginNow: 'Login',
+    createAccount: 'Create account',
+    loginDialogTitle: 'Sign in to your account',
+    loginEmailLabel: 'Email address',
+    loginPasswordLabel: 'Password',
+    loginPasswordShow: 'Show password',
+    loginPasswordHide: 'Hide password',
+    loginSubmit: 'Sign in',
+    loginWorking: 'Checking...',
+    loginErrorFallback: 'Could not sign in, please check your credentials and try again.',
     qrTitle: 'QR Code for Your Page', downloadPng: 'Download PNG', whatsapp: 'WhatsApp',
     tabControl: '🎛️ Control', tabDesign: '🎨 Design', tabIdentity: '✍️ Identity', tabListings: '🏠 Listings', tabConnect: '🔗 Connect',
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
@@ -830,6 +852,7 @@ const isValidUrl = (value: string) => {
 };
 
 export default function PageBuilderPage() {
+  const router = useRouter();
   const { lang, toggleLang } = useLanguage();
   const { toast } = useToast();
   const t = PB_T[lang as keyof typeof PB_T];
@@ -865,6 +888,12 @@ export default function PageBuilderPage() {
   const [listingPublished, setListingPublished] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
   const [paying, setPaying] = useState(false);
   const [selectedDomainUrl, setSelectedDomainUrl] = useState('');
   const [activeTab, setActiveTab] = useState('design');
@@ -900,8 +929,39 @@ export default function PageBuilderPage() {
   ];
 
   useEffect(() => {
-    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
-    if (isDemo) {
+    if (typeof window === 'undefined') return;
+    const host = window.location.hostname;
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    if (!isLocalHost) return;
+    if (!('serviceWorker' in navigator) || !('caches' in window)) return;
+
+    const resetKey = 'wa9l_local_sw_reset_v1';
+
+    navigator.serviceWorker
+      .getRegistrations()
+      .then(async (registrations) => {
+        if (!registrations.length) return;
+
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+
+        if (!sessionStorage.getItem(resetKey)) {
+          sessionStorage.setItem(resetKey, '1');
+          window.location.reload();
+        }
+      })
+      .catch(() => {
+        // Best effort only.
+      });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const applyDemoState = () => {
+      if (cancelled) return;
       setIsDemoSession(true);
       const d = {
         profile: {
@@ -978,14 +1038,31 @@ export default function PageBuilderPage() {
       setGalleryItems(demoGallery);
       setTeamItems(demoTeam);
       setLoading(false);
+    };
+
+    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+    if (isDemo) {
+      applyDemoState();
       return;
     }
+
+    const timeoutId = setTimeout(() => {
+      if (cancelled) return;
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('demo_auth', 'true');
+      }
+      document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
+      applyDemoState();
+    }, 3500);
+
     Promise.all([
       authFetch<ProfileResponse>('/api/dashboard/profile'),
       authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
       authFetch<any[]>('/api/dashboard/news').catch(() => []),
       authFetch<any[]>('/api/dashboard/media').catch(() => []),
     ]).then(([profileRes, listingsRes, newsRes, mediaRes]) => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
         setIsDemoSession(false);
         setData(profileRes);
         if (profileRes.profile) {
@@ -1005,8 +1082,23 @@ export default function PageBuilderPage() {
         setGalleryItems(Array.isArray(mediaRes) ? mediaRes : []);
         setTeamItems([]);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('demo_auth', 'true');
+        }
+        document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
+        applyDemoState();
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -1358,6 +1450,39 @@ export default function PageBuilderPage() {
     }
   };
 
+  const handleDemoLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      const { auth } = await import('@/lib/firebase');
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      const cred = await signInWithEmailAndPassword(auth, loginEmail.trim(), loginPassword);
+      const token = await cred.user.getIdToken();
+      const res = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(data.error || t.loginErrorFallback);
+      }
+
+      sessionStorage.removeItem('demo_auth');
+      document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
+      setShowLoginModal(false);
+      setLoginPassword('');
+      router.push('/dashboard/page-builder');
+      router.refresh();
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : t.loginErrorFallback);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   const downloadQr = () => {
     const svg = document.getElementById('qr-svg');
     if (!svg) return;
@@ -1556,19 +1681,110 @@ export default function PageBuilderPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+        <DialogContent className="wa9l-glass text-white max-w-md" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          <DialogHeader>
+            <DialogTitle className="text-white">{t.loginDialogTitle}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleDemoLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="builder-login-email" className="text-slate-300 text-xs uppercase tracking-wider">{t.loginEmailLabel}</Label>
+              <Input
+                id="builder-login-email"
+                type="email"
+                value={loginEmail}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginEmail(e.target.value)}
+                required
+                dir="ltr"
+                autoComplete="email"
+                className="wa9l-field text-white"
+                placeholder="you@agency.com"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="builder-login-password" className="text-slate-300 text-xs uppercase tracking-wider">{t.loginPasswordLabel}</Label>
+              <div className="relative">
+                <Input
+                  id="builder-login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginPassword(e.target.value)}
+                  required
+                  dir="ltr"
+                  autoComplete="current-password"
+                  className="wa9l-field text-white pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200"
+                  aria-label={showPassword ? t.loginPasswordHide : t.loginPasswordShow}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {loginError && (
+              <div className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {loginError}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <Button type="submit" disabled={loginLoading} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white">
+                {loginLoading ? (
+                  <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> {t.loginWorking}</span>
+                ) : t.loginSubmit}
+              </Button>
+              <Link href="/signup" className="text-center text-xs text-cyan-300 hover:text-cyan-200 transition-colors">
+                {t.createAccount}
+              </Link>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <div className="mb-1 relative z-10 wa9l-fade flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold wa9l-gradient-text tracking-tight leading-tight">{t.pageBuilderTitle}</h1>
           <p className="text-xs md:text-sm text-slate-400 mt-0.5">{t.pageBuilderSub}</p>
         </div>
-        <button
-          type="button"
-          onClick={toggleLang}
-          className="px-3 py-2 rounded-lg border border-slate-600 text-slate-300 hover:text-blue-200 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all text-sm font-medium"
-          title={lang === 'ar' ? 'Switch to English' : 'تبديل إلى العربية'}
-        >
-          {lang === 'ar' ? '🇬🇧 EN' : '🇸🇦 AR'}
-        </button>
+        <div className="flex items-center gap-2">
+          {isDemoSession && (
+            <>
+              <span className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl border border-emerald-300/25 bg-emerald-500/10 text-emerald-200 text-xs font-semibold tracking-wide">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                {lang === 'ar' ? 'عرض مباشر' : 'LIVE DEMO'}
+              </span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setLoginError('');
+                  setShowLoginModal(true);
+                }}
+                className="h-10 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-blue-600 hover:from-indigo-500 hover:via-violet-500 hover:to-blue-500 text-white gap-2 text-sm font-semibold transition-all shadow-[0_0_24px_rgba(99,102,241,0.45)] ring-1 ring-indigo-300/25 hover:scale-[1.02]"
+              >
+                <Sparkles className="h-4 w-4" />
+                {t.loginNow}
+              </Button>
+              <Link href="/signup">
+                <Button size="sm" variant="ghost" className="h-10 px-3.5 rounded-xl border border-cyan-300/25 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10 hover:border-cyan-300/40 text-xs font-medium transition-all">
+                  {t.createAccount}
+                </Button>
+              </Link>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="px-3 py-2 rounded-lg border border-slate-600 text-slate-300 hover:text-blue-200 hover:border-blue-400/50 hover:bg-blue-500/10 transition-all text-sm font-medium"
+            title={lang === 'ar' ? 'Switch to English' : 'تبديل إلى العربية'}
+          >
+            {lang === 'ar' ? '🇬🇧 EN' : '🇸🇦 AR'}
+          </button>
+        </div>
       </div>
 
       {/* Top bar */}
@@ -1668,9 +1884,11 @@ export default function PageBuilderPage() {
                 {lang === 'ar' ? 'ادفع الآن لإظهار الرابط' : 'Pay now to unlock URL'}
               </Button>
             )}
-            <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="h-8 px-2.5 rounded-xl text-slate-500 hover:text-red-300 hover:bg-red-500/10 transition-all">
-              <LogOut className="h-3.5 w-3.5" />
-            </Button>
+            {!isDemoSession && (
+              <Button size="sm" variant="ghost" onClick={() => void handleSignOut()} className="h-8 px-2.5 rounded-xl text-slate-500 hover:text-red-300 hover:bg-red-500/10 transition-all">
+                <LogOut className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </div>
       </div>

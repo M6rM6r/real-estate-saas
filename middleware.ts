@@ -21,6 +21,7 @@ function getIncomingHost(request: NextRequest): string {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const isPublicBuilderEntry = pathname === '/dashboard/page-builder'
   const requestHeaders = new Headers(request.headers)
   const requestId = requestHeaders.get('x-request-id') ?? crypto.randomUUID()
   const incomingHost = getIncomingHost(request)
@@ -48,7 +49,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     const fbSession = request.cookies.get('fb_session')?.value
     const demoSession = request.cookies.get('demo_session')?.value
-    if (!fbSession && !demoSession) {
+    if (!fbSession && !demoSession && !isPublicBuilderEntry) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
