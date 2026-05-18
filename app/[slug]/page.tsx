@@ -137,7 +137,7 @@ const DEMO_DATA = {
       hero: true,
       listings: true,
       about: true,
-      news: true,
+      news: false,
       contact: true,
       working_hours: true,
       footer: true,

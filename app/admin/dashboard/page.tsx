@@ -87,6 +87,46 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border p-5 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
+          <h2 className="text-sm font-semibold" style={{ color: accentSoft }}>Billing Health</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2">
+              <p className="text-xs text-emerald-300/80">Paid</p>
+              <p className="text-xl font-bold text-emerald-300">{data.billing.paid}</p>
+            </div>
+            <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2">
+              <p className="text-xs text-amber-300/80">Pending</p>
+              <p className="text-xl font-bold text-amber-300">{data.billing.pending}</p>
+            </div>
+            <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2">
+              <p className="text-xs text-rose-300/80">Failed</p>
+              <p className="text-xl font-bold text-rose-300">{data.billing.failed}</p>
+            </div>
+            <div className="rounded-xl border border-slate-400/20 bg-slate-500/10 px-3 py-2">
+              <p className="text-xs text-slate-300/80">Unpaid</p>
+              <p className="text-xl font-bold text-slate-300">{data.billing.unpaid}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border p-5 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
+          <h2 className="text-sm font-semibold" style={{ color: accentSoft }}>Funnel (last 30 days)</h2>
+          <div className="mt-4 space-y-2 text-sm text-slate-300">
+            <div className="flex items-center justify-between"><span>Signups</span><span>{data.funnel.signupCompleted30d}</span></div>
+            <div className="flex items-center justify-between"><span>Signup failures</span><span>{data.funnel.signupFailed30d}</span></div>
+            <div className="flex items-center justify-between"><span>First listings</span><span>{data.funnel.firstListingCreated30d}</span></div>
+            <div className="flex items-center justify-between"><span>Payment sessions</span><span>{data.funnel.paymentSessionStarted30d}</span></div>
+            <div className="flex items-center justify-between"><span>Payments succeeded</span><span>{data.funnel.paymentSucceeded30d}</span></div>
+            <div className="flex items-center justify-between"><span>Payments failed</span><span>{data.funnel.paymentFailed30d}</span></div>
+            <div className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-3 py-2 flex items-center justify-between">
+              <span className="text-cyan-200">Signup → Paid Conversion</span>
+              <span className="text-cyan-300 font-bold">{data.funnel.signupToPaymentConversionPct30d}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Bar Chart */}
       <div className="rounded-2xl border p-6 backdrop-blur-xl" style={{ backgroundColor: 'rgba(8, 17, 13, 0.82)', borderColor: 'rgba(143, 209, 170, 0.16)' }}>
         <div className="mb-6 flex items-center gap-2">

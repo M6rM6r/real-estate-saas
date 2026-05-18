@@ -8,6 +8,7 @@
 const mockGet = jest.fn()
 const mockSelectGet = jest.fn()
 const mockCountGet = jest.fn()
+const mockFunnelWhereGet = jest.fn()
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
@@ -32,6 +33,7 @@ jest.mock('@/lib/firebase-admin', () => ({
       if (col === 'users') return { select: jest.fn().mockReturnValue({ get: mockSelectGet }) }
       if (col === 'leads') return { select: jest.fn().mockReturnValue({ get: mockSelectGet }) }
       if (col === 'media') return { count: jest.fn().mockReturnValue({ get: mockCountGet }) }
+      if (col === 'funnel_events') return { where: jest.fn().mockReturnValue({ get: mockFunnelWhereGet }) }
       return { get: mockGet }
     }),
   },
@@ -63,6 +65,7 @@ describe('GET /api/admin/metrics', () => {
     mockGet.mockReset()
     mockSelectGet.mockReset()
     mockCountGet.mockReset()
+    mockFunnelWhereGet.mockReset()
   })
 
   afterAll(() => {
@@ -101,6 +104,7 @@ describe('GET /api/admin/metrics', () => {
       docs: [{ data: () => ({ tenantId: 'tid', createdAt: new Date().toISOString() }) }],
     })
     mockCountGet.mockResolvedValue({ data: () => ({ count: 5 }) })
+    mockFunnelWhereGet.mockResolvedValue({ docs: [] })
 
     const res = await GET(makeRequest())
     expect(res.status).toBe(200)
@@ -119,6 +123,7 @@ describe('GET /api/admin/metrics', () => {
     mockGet.mockImplementation(() => Promise.reject(new Error('Firestore unavailable')))
     mockSelectGet.mockResolvedValue({ docs: [] })
     mockCountGet.mockResolvedValue({ data: () => ({ count: 0 }) })
+    mockFunnelWhereGet.mockResolvedValue({ docs: [] })
 
     const res = await GET(makeRequest())
     expect(res.status).toBe(500)

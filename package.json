@@ -16,9 +16,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test e2e/runtime-console-smoke.spec.ts --project=chromium",
     "test:e2e:ui": "playwright test --ui",
     "test:rules": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 jest --testPathPattern firestore-rules",
     "quality:done": "node scripts/check-done-criteria.mjs",
+    "billing:reconcile": "node scripts/reconcile-billing.mjs",
     "seed": "ts-node --project tsconfig.json scripts/seed.ts",
     "deploy": "firebase deploy --only apphosting",
     "analyze": "ANALYZE=true next build"
@@ -111,6 +113,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
     "@firebase/rules-unit-testing": "^5.0.0",
     "@playwright/test": "^1.59.1",
     "@testing-library/dom": "^10.4.1",

@@ -274,6 +274,22 @@ export type AdminMetrics = {
   totalAgencies: number;
   totalPosts: number;
   totalMedia: number;
+  billing: {
+    paid: number;
+    pending: number;
+    failed: number;
+    unpaid: number;
+  };
+  funnel: {
+    signupCompleted30d: number;
+    signupFailed30d: number;
+    profileUpdated30d: number;
+    firstListingCreated30d: number;
+    paymentSessionStarted30d: number;
+    paymentSucceeded30d: number;
+    paymentFailed30d: number;
+    signupToPaymentConversionPct30d: number;
+  };
   agenciesPerMonth: { month: string; count: number }[];
   topAgencies: { name: string; slug: string; postCount: number }[];
   allAgencies: {

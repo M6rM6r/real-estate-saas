@@ -21,7 +21,7 @@ import {
   STATUS_LABELS, STATUS_COLORS, CURRENCY_SYMBOLS,
   getPageConfig, getPageSections, getSectionOrderMap, buildWaLink, getBtnRadius,
   getHeadingFont,
-  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyCoverPlaceholder, EmptyState, THEME_LABELS,
+  SocialLinks, WorkingHours, WaIcon, ListingBadges, PropertyCard, EmptyCoverPlaceholder, EmptyState, PhoneText, THEME_LABELS,
 } from './shared'
 
 export default function ThemeDesert({ tenant, profile, listings, news, gallery: _gallery, team: _team, isPreview = false }: ThemePageProps) {
@@ -44,7 +44,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
   const [scrolled, setScrolled] = useState(false)
 
   const whatsapp = profile?.social_links?.whatsapp
-  const waDisplay = whatsapp ? '+' + whatsapp.replace(/\D/g, '') : ''
+  const waDisplay = whatsapp ? whatsapp.replace(/\D/g, '') : ''
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
@@ -271,9 +271,9 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
                     </div>
                     {(profile?.contact_phone || profile?.contact_email) && (
                       <div className="mt-4 flex flex-wrap gap-4">
-                        {profile.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                        {profile.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex max-w-full min-w-0 items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> <PhoneText value={profile.contact_phone} /></a>}
                         {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                          <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
+                          <a key={i} href={`tel:${n}`} className="flex max-w-full min-w-0 items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> <PhoneText value={n} /></a>
                         ))}
                         {profile.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                       </div>
@@ -312,10 +312,10 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
             <div className="max-w-xl mx-auto text-center">
               <p className="text-sm mb-8 text-gray-400">{L.contactSubtitle}</p>
               <div className="flex flex-col items-center gap-3" dir="ltr">
-                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }} dir="ltr"><WaIcon className="w-5 h-5" /> واتساب: {waDisplay}</a>}
-                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {profile.contact_phone}</a>}
+                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full flex-wrap items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#25D366' }} dir="ltr"><WaIcon className="w-5 h-5" /> <span>واتساب:</span> <PhoneText value={waDisplay} /></a>}
+                {profile?.contact_phone && <a href={`tel:${profile.contact_phone}`} className="flex max-w-full min-w-0 items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> <PhoneText value={profile.contact_phone} /></a>}
                 {(profile?.extra_phones ?? []).filter(Boolean).map((n, i) => (
-                  <a key={i} href={`tel:${n}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> {n}</a>
+                  <a key={i} href={`tel:${n}`} className="flex max-w-full min-w-0 items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5A15 15 0 012 3.5z" clipRule="evenodd"/></svg> <PhoneText value={n} /></a>
                 ))}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm font-semibold dsr-text hover:underline" dir="ltr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
               </div>
@@ -344,7 +344,7 @@ export default function ThemeDesert({ tenant, profile, listings, news, gallery: 
               </div>
               <div>
                 <h4 className="text-xs tracking-widest uppercase mb-3" style={{ color: `${primary}70` }}>{L.footerContact}</h4>
-                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><WaIcon className="w-3.5 h-3.5 shrink-0" /> {waDisplay}</a>}
+                {whatsapp && <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex max-w-full min-w-0 items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><WaIcon className="w-3.5 h-3.5 shrink-0" /> <PhoneText value={waDisplay} /></a>}
                 {profile?.contact_email && <a href={`mailto:${profile.contact_email}`} className="flex items-center gap-2 text-sm mb-2 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z"/><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z"/></svg> {profile.contact_email}</a>}
                 <div className="mt-4"><SocialLinks profile={profile} waLink={waLink} /></div>
               </div>

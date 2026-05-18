@@ -7,6 +7,22 @@ const DEMO_METRICS = {
   totalAgencies: 5,
   totalPosts: 127,
   totalMedia: 348,
+  billing: {
+    paid: 3,
+    pending: 1,
+    failed: 0,
+    unpaid: 1,
+  },
+  funnel: {
+    signupCompleted30d: 12,
+    signupFailed30d: 2,
+    profileUpdated30d: 18,
+    firstListingCreated30d: 7,
+    paymentSessionStarted30d: 6,
+    paymentSucceeded30d: 4,
+    paymentFailed30d: 1,
+    signupToPaymentConversionPct30d: 33.3,
+  },
   agenciesPerMonth: [
     { month: '2024-05', count: 1 },
     { month: '2024-06', count: 0 },
@@ -56,6 +72,17 @@ export async function GET(request: NextRequest) {
         totalAgencies: 0,
         totalPosts: 0,
         totalMedia: 0,
+        billing: { paid: 0, pending: 0, failed: 0, unpaid: 0 },
+        funnel: {
+          signupCompleted30d: 0,
+          signupFailed30d: 0,
+          profileUpdated30d: 0,
+          firstListingCreated30d: 0,
+          paymentSessionStarted30d: 0,
+          paymentSucceeded30d: 0,
+          paymentFailed30d: 0,
+          signupToPaymentConversionPct30d: 0,
+        },
         agenciesPerMonth: [],
         topAgencies: [],
       }, { status: 503 })
@@ -68,17 +95,54 @@ export async function GET(request: NextRequest) {
     const twelveMonthsAgo = new Date(now)
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11)
 
-    const [tenantsSnap, postsSnap, mediaSnap, usersSnap, leadsSnap] = await Promise.all([
+    const [tenantsSnap, postsSnap, mediaSnap, usersSnap, leadsSnap, funnelEventsSnap] = await Promise.all([
       adminDb.collection('tenants').get(),
       adminDb.collection('posts').select('tenantId', 'createdAt', 'type').get(),
       adminDb.collection('media').count().get(),
       adminDb.collection('users').select('tenantId').get(),
       adminDb.collection('leads').select('tenantId').get(),
+      adminDb.collection('funnel_events').where('created_at', '>=', thirtyDaysAgo).get(),
     ])
 
     const tenants = tenantsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Array<{
       id: string; name: string; slug: string; status?: string; createdAt?: { toDate: () => Date } | string
     }>
+
+    const billing = { paid: 0, pending: 0, failed: 0, unpaid: 0 }
+    tenants.forEach((tenant) => {
+      const status = String((tenant as { billing_status?: string }).billing_status ?? 'unpaid').toLowerCase()
+      if (status === 'paid') billing.paid += 1
+      else if (status === 'pending') billing.pending += 1
+      else if (status === 'failed') billing.failed += 1
+      else billing.unpaid += 1
+    })
+
+    const funnelCounts: Record<string, number> = {
+      signup_completed: 0,
+      signup_failed: 0,
+      profile_updated: 0,
+      first_listing_created: 0,
+      payment_session_started: 0,
+      payment_succeeded: 0,
+      payment_failed: 0,
+    }
+    const signupTenants = new Set<string>()
+    const paidTenants = new Set<string>()
+
+    funnelEventsSnap.docs.forEach((doc) => {
+      const data = doc.data() as { name?: string; tenant_id?: string | null }
+      const name = String(data.name ?? '').toLowerCase()
+      if (name in funnelCounts) funnelCounts[name] += 1
+
+      const tenantId = String(data.tenant_id ?? '').trim()
+      if (tenantId && name === 'signup_completed') signupTenants.add(tenantId)
+      if (tenantId && name === 'payment_succeeded') paidTenants.add(tenantId)
+    })
+
+    const signupToPaymentConversionPct30d =
+      signupTenants.size > 0
+        ? Number(((paidTenants.size / signupTenants.size) * 100).toFixed(1))
+        : 0
 
     const postCountByTenant = new Map<string, number>()
     const listingCountByTenant = new Map<string, number>()
@@ -159,6 +223,17 @@ export async function GET(request: NextRequest) {
       totalAgencies: tenants.length,
       totalPosts: recentPostsCount,
       totalMedia: mediaSnap.data().count,
+      billing,
+      funnel: {
+        signupCompleted30d: funnelCounts.signup_completed,
+        signupFailed30d: funnelCounts.signup_failed,
+        profileUpdated30d: funnelCounts.profile_updated,
+        firstListingCreated30d: funnelCounts.first_listing_created,
+        paymentSessionStarted30d: funnelCounts.payment_session_started,
+        paymentSucceeded30d: funnelCounts.payment_succeeded,
+        paymentFailed30d: funnelCounts.payment_failed,
+        signupToPaymentConversionPct30d,
+      },
       agenciesPerMonth: Object.entries(monthCounts).map(([month, count]) => ({ month, count })),
       topAgencies: rankedAgencies.slice(0, 10).map(({ name, slug, postCount }) => ({ name, slug, postCount })),
       allAgencies: rankedAgencies,

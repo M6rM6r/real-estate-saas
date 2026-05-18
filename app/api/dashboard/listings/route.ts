@@ -6,6 +6,7 @@ import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
 import { getLatencyBucket, getRequestId, logRouteError, logRouteInfo, logRouteStart } from '@/lib/observability'
 import { FirestoreListingRepository } from '@/lib/repositories/listing-repository'
+import { trackFunnelEvent } from '@/lib/funnel-events'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
   try {
     const { title, body: description, images, published, ...rest } = body
     const id = uuidv4()
+    const existingCount = (await listingsRepo.findByTenant(session.tenantId)).length
     const doc = {
       tenantId: session.tenantId,
       type: 'listing',
@@ -103,6 +105,22 @@ export async function POST(request: NextRequest) {
     }
     await listingsRepo.create(id, doc as Parameters<FirestoreListingRepository['create']>[1])
     await logMutation({ tenantId: session.tenantId, action: 'create', resource: 'listing', resourceId: id, userId: session.uid, after: doc as Record<string, unknown> })
+    await trackFunnelEvent({
+      name: 'listing_created',
+      tenantId: session.tenantId,
+      uid: session.uid,
+      requestId: getRequestId(request),
+      metadata: { listingId: id, published: !!published },
+    })
+    if (existingCount === 0) {
+      await trackFunnelEvent({
+        name: 'first_listing_created',
+        tenantId: session.tenantId,
+        uid: session.uid,
+        requestId: getRequestId(request),
+        metadata: { listingId: id },
+      })
+    }
     const tenantDoc = await adminDb.collection('tenants').doc(session.tenantId).get()
     const slug = tenantDoc.data()?.slug as string | undefined
     if (slug) revalidatePath(`/${slug}`)

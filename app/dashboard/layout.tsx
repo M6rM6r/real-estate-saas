@@ -98,10 +98,33 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return () => { delete (window as any).__dashboardLogout; };
   }, [handleLogout]);
 
+  useEffect(() => {
+    const onAuthExpired = () => {
+      if (isDemo) return;
+      sessionStorage.removeItem('demo_auth');
+      document.cookie = 'demo_session=; path=/; max-age=0; SameSite=Lax';
+      setAuthed(false);
+      router.push('/login');
+    };
+
+    window.addEventListener('wa9l:auth-expired', onAuthExpired as EventListener);
+    return () => {
+      window.removeEventListener('wa9l:auth-expired', onAuthExpired as EventListener);
+    };
+  }, [isDemo, router]);
+
   if (authed === null) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (authed === false) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-slate-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

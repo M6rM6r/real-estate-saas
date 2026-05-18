@@ -81,6 +81,7 @@ export default function SignupClient({ branding }: { branding: LoginBranding }) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [logoLoadError, setLogoLoadError] = useState(false)
 
   useEffect(() => {
     const savedLang = localStorage.getItem('app_lang') as LoginLang | null
@@ -186,11 +187,12 @@ export default function SignupClient({ branding }: { branding: LoginBranding }) 
         <div className="w-full max-w-[480px] space-y-4">
           <div className="flex flex-col items-center gap-1 pb-0 text-center">
             <Image
-              src={branding.logoUrl}
+              src={logoLoadError ? '/favicon.svg' : branding.logoUrl}
               alt={branding.brandName}
               width={64}
               height={64}
               className="h-14 w-14 sm:h-16 sm:w-16 object-contain"
+              onError={() => setLogoLoadError(true)}
             />
             <h1 className="text-3xl sm:text-4xl font-extrabold leading-none bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent tracking-tight">
               {branding.brandName}

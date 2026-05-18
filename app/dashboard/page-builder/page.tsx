@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
-import { authFetch } from '@/lib/api';
+import { authFetch, isApiErrorStatus } from '@/lib/api';
 import PublicAgencyPage from '@/components/PublicAgencyPage';
 import type { Profile, Tenant } from '@/lib/types';
 import { PAGE_THEMES } from '@/lib/types';
@@ -34,6 +34,7 @@ import { getTenantTrialState } from '@/lib/billing/subscription';
 import { buildDomainOptions, pickSelectedDomainUrl } from './utils';
 import { useLanguage } from '@/app/dashboard/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { SessionRequiredCard } from '@/components/ui/session-required-card';
 
 const PB_T = {
   ar: {
@@ -64,6 +65,9 @@ const PB_T = {
     loginSubmit: 'دخول',
     loginWorking: 'جارٍ التحقق...',
     loginErrorFallback: 'تعذّر تسجيل الدخول، تحقق من البيانات وحاول مرة أخرى.',
+    sessionRequiredTitle: 'يلزم تسجيل الدخول',
+    sessionRequiredDesc: 'انتهت جلستك أو لم تقم بتسجيل الدخول. سجل الدخول للمتابعة.',
+    retryLoad: 'إعادة المحاولة',
     qrTitle: 'رمز QR لصفحتك', downloadPng: 'تحميل PNG', whatsapp: 'واتساب',
     tabControl: '🎛️ تحكم', tabDesign: '🎨 التصميم', tabIdentity: '✍️ الهوية', tabListings: '🏠 العروض', tabConnect: '🔗 تواصل',
     pageControlTitle: '🎛️ تحكّم الصفحة', pageControlSub: 'اسحب الأقسام لتحديد ترتيب ظهورها على الصفحة العامة.',
@@ -144,6 +148,9 @@ const PB_T = {
     loginSubmit: 'Sign in',
     loginWorking: 'Checking...',
     loginErrorFallback: 'Could not sign in, please check your credentials and try again.',
+    sessionRequiredTitle: 'Sign-in required',
+    sessionRequiredDesc: 'Your session expired or you are not signed in. Please sign in to continue.',
+    retryLoad: 'Retry',
     qrTitle: 'QR Code for Your Page', downloadPng: 'Download PNG', whatsapp: 'WhatsApp',
     tabControl: '🎛️ Control', tabDesign: '🎨 Design', tabIdentity: '✍️ Identity', tabListings: '🏠 Listings', tabConnect: '🔗 Connect',
     pageControlTitle: '🎛️ Page Control', pageControlSub: 'Drag sections to set their order on the public page.',
@@ -880,6 +887,8 @@ export default function PageBuilderPage() {
   const [galleryItems, setGalleryItems] = useState<any[]>([]);
   const [teamItems, setTeamItems] = useState<any[]>([]);
   const [isDemoSession, setIsDemoSession] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [loadNonce, setLoadNonce] = useState(0);
   const [showListingForm, setShowListingForm] = useState(false);
   const [editingListing, setEditingListing] = useState<any>(null);
   const [listingForm, setListingForm] = useState({ title: '', price: '', location: '', bedrooms: '', bathrooms: '', area_sqm: '', image: '', extra_images: [] as string[], card_style: 'standard', status: 'available', offer_type: 'sale', property_type: '', body: '', notes: '' });
@@ -997,7 +1006,7 @@ export default function PageBuilderPage() {
             hero: true,
             listings: true,
             about: true,
-            news: true,
+            news: false,
             contact: true,
             working_hours: true,
             footer: true,
@@ -1040,29 +1049,24 @@ export default function PageBuilderPage() {
       setLoading(false);
     };
 
-    const isDemo = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
-    if (isDemo) {
+    const hasDemoStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('demo_auth') === 'true';
+    const hasDemoCookie = typeof document !== 'undefined' && /(?:^|;\s*)demo_session=1(?:;|$)/.test(document.cookie);
+    if (hasDemoStorage || hasDemoCookie) {
       applyDemoState();
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      if (cancelled) return;
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('demo_auth', 'true');
-      }
-      document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
-      applyDemoState();
-    }, 3500);
+    (async () => {
+      try {
+        const profileRes = await authFetch<ProfileResponse>('/api/dashboard/profile');
+        const [listingsRes, newsRes, mediaRes] = await Promise.all([
+          authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
+          authFetch<any[]>('/api/dashboard/news').catch(() => []),
+          authFetch<any[]>('/api/dashboard/media').catch(() => []),
+        ]);
 
-    Promise.all([
-      authFetch<ProfileResponse>('/api/dashboard/profile'),
-      authFetch<{ data: any[] }>('/api/dashboard/listings').catch(() => ({ data: [] })),
-      authFetch<any[]>('/api/dashboard/news').catch(() => []),
-      authFetch<any[]>('/api/dashboard/media').catch(() => []),
-    ]).then(([profileRes, listingsRes, newsRes, mediaRes]) => {
         if (cancelled) return;
-        clearTimeout(timeoutId);
+        setAuthRequired(false);
         setIsDemoSession(false);
         setData(profileRes);
         if (profileRes.profile) {
@@ -1081,25 +1085,34 @@ export default function PageBuilderPage() {
         setNewsItems(Array.isArray(newsRes) ? newsRes : []);
         setGalleryItems(Array.isArray(mediaRes) ? mediaRes : []);
         setTeamItems([]);
-      })
-      .catch(() => {
+      } catch (error) {
         if (cancelled) return;
-        clearTimeout(timeoutId);
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('demo_auth', 'true');
+        if (isApiErrorStatus(error, 401)) {
+          setAuthRequired(true);
+          setShowLoginModal(true);
+          setIsDemoSession(false);
+          setData(null);
+          setListings([]);
+          setNewsItems([]);
+          setGalleryItems([]);
+          setTeamItems([]);
+          return;
         }
-        document.cookie = 'demo_session=1; path=/; max-age=86400; SameSite=Lax';
-        applyDemoState();
-      })
-      .finally(() => {
+
+        toast({
+          title: lang === 'ar' ? 'تعذر تحميل البيانات' : 'Could not load data',
+          description: error instanceof Error ? error.message : undefined,
+          variant: 'destructive',
+        });
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
-      clearTimeout(timeoutId);
     };
-  }, []);
+  }, [lang, toast, loadNonce]);
 
   useEffect(() => {
     if (isDemoSession) return
@@ -1306,21 +1319,6 @@ export default function PageBuilderPage() {
       setFieldErrors({ contact_email: t.emailInvalidField });
       setActiveTab('connect');
       return;
-    }
-
-    const urlCandidates: Array<{ label: string; value?: string; field: string; tab: string }> = [
-      { label: t.logoUrlLabel,  value: profile.logo_url || '',  field: 'logo_url',  tab: 'design' },
-      { label: t.coverUrlLabel, value: profile.cover_url || '', field: 'cover_url', tab: 'design' },
-    ];
-    for (const candidate of urlCandidates) {
-      const v = candidate.value?.trim();
-      if (v && !isValidUrl(v)) {
-        setSaveStatus('error');
-        setSaveError(`${candidate.label} — ${t.invalidUrlMsg}`);
-        setFieldErrors({ [candidate.field]: t.invalidUrlField });
-        setActiveTab(candidate.tab);
-        return;
-      }
     }
 
     for (const day of DAY_ORDER) {
@@ -1543,6 +1541,25 @@ export default function PageBuilderPage() {
           <p className="text-sm text-slate-400">{t.loadingPage}</p>
         </div>
       </div>
+    );
+  }
+
+  if (authRequired && !isDemoSession) {
+    return (
+      <SessionRequiredCard
+        className="mx-auto w-full max-w-xl py-12 px-4"
+        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+        title={t.sessionRequiredTitle}
+        description={t.sessionRequiredDesc}
+        retryLabel={t.retryLoad}
+        loginLabel={t.loginNow}
+        signupLabel={t.createAccount}
+        onRetry={() => {
+          setAuthRequired(false);
+          setLoading(true);
+          setLoadNonce((v) => v + 1);
+        }}
+      />
     );
   }
 

@@ -6,6 +6,8 @@ import { adminDb } from '@/lib/firebase-admin'
 import { logMutation } from '@/lib/audit'
 import { normalizeWhatsAppTarget } from '@/lib/whatsapp'
 import { getTenantTrialState } from '@/lib/billing/subscription'
+import { getRequestId } from '@/lib/observability'
+import { trackFunnelEvent } from '@/lib/funnel-events'
 import { z } from 'zod'
 
 const emptyToNull = (v: unknown) => {
@@ -188,5 +190,15 @@ export async function PATCH(request: NextRequest) {
   const slug = tenantDoc.data()?.slug as string | undefined
   if (slug) revalidatePath(`/${slug}`)
   await logMutation({ tenantId: session.tenantId, action: 'update', resource: 'profile', resourceId: session.tenantId, userId: session.uid })
+  await trackFunnelEvent({
+    name: 'profile_updated',
+    tenantId: session.tenantId,
+    uid: session.uid,
+    requestId: getRequestId(request),
+    metadata: {
+      profileFields: Object.keys(profileFields ?? {}),
+      tenantFields: Object.keys(tenantFields ?? {}),
+    },
+  })
   return NextResponse.json({ id: doc.id, ...doc.data() })
 }

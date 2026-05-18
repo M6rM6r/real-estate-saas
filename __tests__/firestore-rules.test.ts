@@ -123,6 +123,29 @@ describeIfEmulator('Firestore Security Rules', () => {
     })
   })
 
+  // ── /tenants/{tenantId}/profile/{docId} + media/team isolation ─────────────
+  describe('/tenants/{tenantId}/profile|media|team isolation', () => {
+    it('denies different tenant from writing profile', async () => {
+      const db = testEnv.authenticatedContext('other', { tenantId: 't2' }).firestore()
+      await assertFails(db.doc('tenants/t1/profile/t1').set({ bio: 'hack' }))
+    })
+
+    it('allows owner to write profile', async () => {
+      const db = testEnv.authenticatedContext('owner', { tenantId: 't1' }).firestore()
+      await assertSucceeds(db.doc('tenants/t1/profile/t1').set({ bio: 'owner update' }))
+    })
+
+    it('denies different tenant from writing media', async () => {
+      const db = testEnv.authenticatedContext('other', { tenantId: 't2' }).firestore()
+      await assertFails(db.doc('tenants/t1/media/m1').set({ url: 'https://x' }))
+    })
+
+    it('denies different tenant from reading team', async () => {
+      const db = testEnv.authenticatedContext('other', { tenantId: 't2' }).firestore()
+      await assertFails(db.collection('tenants/t1/team').get())
+    })
+  })
+
   // ── /tenants/{tenantId}/leads/{leadId} ──────────────────────────────────────
   describe('/tenants/{tenantId}/leads/{leadId}', () => {
     it('allows public to create a lead (contact form)', async () => {
@@ -145,6 +168,31 @@ describeIfEmulator('Firestore Security Rules', () => {
     it('denies a different tenant from reading leads', async () => {
       const db = testEnv.authenticatedContext('other', { tenantId: 't2' }).firestore()
       await assertFails(db.collection('tenants/t1/leads').get())
+    })
+  })
+
+  // ── /tenants/{tenantId}/analytics/{docId} ──────────────────────────────────
+  describe('/tenants/{tenantId}/analytics/{docId}', () => {
+    beforeEach(async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        const db = ctx.firestore()
+        await db.doc('tenants/t1/analytics/day-1').set({ views: 30 })
+      })
+    })
+
+    it('allows unauthenticated analytics write for public tracking', async () => {
+      const db = testEnv.unauthenticatedContext().firestore()
+      await assertSucceeds(db.doc('tenants/t1/analytics/day-2').set({ views: 1 }, { merge: true }))
+    })
+
+    it('denies unauthenticated analytics read', async () => {
+      const db = testEnv.unauthenticatedContext().firestore()
+      await assertFails(db.collection('tenants/t1/analytics').get())
+    })
+
+    it('denies other tenant analytics read', async () => {
+      const db = testEnv.authenticatedContext('other', { tenantId: 't2' }).firestore()
+      await assertFails(db.collection('tenants/t1/analytics').get())
     })
   })
 
